@@ -1,0 +1,11 @@
+KEREM SERTİFİKA - KURULUM
+
+1) Bu paketteki dosyaları (index.html, manifest.webmanifest, sw.js, icon-*.png) bir İNTERNET ADRESİNE (https) yükleyin.
+   Ücretsiz seçenekler: Cloudflare Pages, Netlify (sürükle-bırak), GitHub Pages.
+   DİKKAT: Yüklediğiniz adresi bilen herkes sayfayı açabilir. Sayfanın içinde şablonlarınız
+   (Akkurtlar logosu, şablondaki hazır kaşe görseli) bulunur. Gizli kalması gerekiyorsa
+   parola korumalı barındırma kullanın ya da adresi paylaşmayın.
+2) Telefonda Chrome ile adresi açın: menü > "Uygulamayı yükle" / "Ana ekrana ekle".
+3) Bilgisayarda Chrome/Edge adres çubuğundaki yükle simgesine basın.
+Bir kez yüklendikten sonra internet olmadan çalışır.
+Girilen bilgiler, kaşe görselleri ve aylık sayaçlar yalnızca o cihazda saklanır.
