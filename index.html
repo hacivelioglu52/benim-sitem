@@ -982,7 +982,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     function renderRow(r){
       var li=el('li','card'); r.el=li;
       var head=el('div','card-head'), badge=cfg.badge(); head.appendChild(badge.el);
-      if(r.example) head.appendChild(el('span','chip','Örnek satır, üzerine yazın'));
+      
       head.appendChild(el('span','spacer'));
       var del=el('button','btn quiet','Sil'); del.type='button';
       del.addEventListener('click', function(){ rows=rows.filter(function(x){return x!==r}); li.remove(); if(!rows.length) addRow(); updateZip(); save(); });
@@ -1037,7 +1037,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         setStatus(done+' dosya '+(parts>1?parts+' ZIP parçası halinde ':'')+'hazırlandı.','ok');
       }catch(e){ setStatus(e.message||'ZIP hazırlanamadı.','bad'); }
     }
-    addBtn.addEventListener('click', function(){ var r=addRow(); var f=document.getElementById(r.id+'-'+cfg.fields[0].key); if(f) f.focus(); });
+    addBtn.addEventListener('click', function(){ if(rows.length===1 && rows[0].example){ var f0=document.getElementById(rows[0].id+'-'+cfg.fields[0].key); if(f0) f0.focus(); return; } var r=addRow(); var f=document.getElementById(r.id+'-'+cfg.fields[0].key); if(f) f.focus(); });
     applyBtn.addEventListener('click', function(){
       var d=commonDate.value; if(!d){ setStatus('Önce bir tarih seçin.','bad'); return; }
       rows.forEach(function(r){ r.tarih=d; var i=document.getElementById(r.id+'-tarih'); if(i) i.value=d; refresh(r); }); save(); setStatus('Tarih tüm satırlara uygulandı.','ok');
@@ -1071,16 +1071,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var riskList=makeList({
     panel:'p-risk', store:'risk-olusturucu-v1', core:{check:function(r){ return RiskCore.check(rr(r)); }}, zipName:'risk-degerlendirme', addLabel:'Araç ekle',
     dateLabel:'Tümüne uygulanacak tarih (yeni araçlar bugünün tarihini alır)',
-    pastePlaceholder:'34 ABC 123\tAHMET ÖRNEK\tALİ VELİ\t25.10.2026',
+    pastePlaceholder:'Plaka  [Tab]  Ruhsat sahibi  [Tab]  Sürücü  [Tab]  Tarih',
     pasteHint:'Sütun sırası: Plaka, Ruhsat sahibi, Sürücü, Tarih. Sürücü boşsa boş kalır, ruhsat sahibi boşsa seçili firma yazılır, tarih boşsa bugünün tarihi kullanılır.',
     fields:[
-      {key:'plaka',label:'Araç plaka',cls:'plate-in',placeholder:'34 ABC 123',req:true},
+      {key:'plaka',label:'Araç plaka',cls:'plate-in',placeholder:'Plaka',req:true},
       {key:'sahip',label:'Ruhsat sahibinin adı soyadı / iş yeri adı',placeholder:'Boşsa seçili firma yazılır',req:true},
       {key:'surucu',label:'Sürücü adı',placeholder:'Boşsa boş kalır',req:true},
       {key:'tarih',label:'Gerçekleştirilme tarihi',type:'date'}
     ],
-    example:{plaka:'34 ABC 123',sahip:'Ahmet Örnek',surucu:'Ali Veli',example:true},
-    badge:function(){ var p=el('div','plate'); p.setAttribute('aria-hidden','true'); p.appendChild(el('span','tr','TR')); var n=el('span','num'); p.appendChild(n); return {el:p,set:function(t){ n.textContent=t.plaka||'34 ABC 123'; n.className='num'+(t.plaka?'':' empty'); }}; },
+    example:{example:true},
+    badge:function(){ var p=el('div','plate'); p.setAttribute('aria-hidden','true'); p.appendChild(el('span','tr','TR')); var n=el('span','num'); p.appendChild(n); return {el:p,set:function(t){ n.textContent=t.plaka||'PLAKA'; n.className='num'+(t.plaka?'':' empty'); }}; },
     preview:function(t){ return 'Kapak, plaka: '+t.a3+'\nA7: '+t.a7+'\nA8: '+t.a8.replace(/\r\n/g,'\n    ')+'\nA10: '+t.a10; },
     fileName:function(r){ return RiskCore.fileName(r.plaka).replace(/\.xlsx$/,''); },
     formats:[
@@ -1129,7 +1129,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     panel:'p-cert', store:'cert-olusturucu-v1', zipName:'isg-belgeleri', addLabel:'Kişi ekle',
     dateLabel:'Tümüne uygulanacak tarih (yeni kişiler bugünün tarihini alır)', extra:outPanel,
     core:{check:function(r){ var c=CertCore.check(withD(r)); return {problems:c.problems,notes:[],texts:c.texts}; }},
-    pastePlaceholder:'AHMET ÖRNEK\t25.10.2026\tŞOFÖR\tGETA ASANSÖR',
+    pastePlaceholder:'Ad soyad  [Tab]  Veriliş tarihi  [Tab]  Görev  [Tab]  Çalıştığı proje',
     pasteHint:'Sütun sırası: Ad soyad, Veriliş tarihi, Görev, Çalıştığı proje. Tarih boşsa bugünün tarihi, görev boşsa Firma ayarlarındaki görev kullanılır. Proje boşsa o satır eklenmez.',
     fields:[
       {key:'ad',label:'Katılımcının adı soyadı',placeholder:'Ad Soyad',req:true},
@@ -1139,7 +1139,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     ],
     extraKeys:['nosign','nologo','noek'],
     rowExtra:function(r,onChange){ var w=el('div','row-actions'); [['nosign','İmzasız çıkar'],['nologo','Logosuz çıkar'],['noek','Firma ek satırlarını basma']].forEach(function(o){ w.appendChild(chkRow(o[1], r[o[0]], function(v){ r[o[0]]=v; onChange(); })); }); return w; },
-    example:{ad:'Ahmet Örnek',example:true},
+    example:{example:true},
     badge:function(){ var p=el('div','person empty','Ad soyad'); p.setAttribute('aria-hidden','true'); return {el:p,set:function(t){ p.textContent=t.ad||'Ad soyad'; p.className='person'+(t.ad?'':' empty'); }}; },
     preview:function(t){ return 'Adı soyadı: '+t.ad+'\nVeriliş tarihi: '+t.tarih+' (Geçerlilik Süresi: '+t.gecerlilik+')\nBölüm/Görev: '+t.gorev+'\nEğitimin süresi: '+t.sure+'\nİşyeri: '+t.isyeri+'\nEğitimi veren kurum: '+t.kurum+(t.ek&&t.ek.length?'\n'+t.ek.map(function(e){ return e.l+': '+e.v; }).join('\n'):''); },
     fileName:function(r){ return CertCore.fileName(r.ad).replace(/\.docx$/,''); },
