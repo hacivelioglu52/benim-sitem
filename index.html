@@ -322,7 +322,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
     return u;
   }
-  function fileName(plaka) { return normPlate(plaka).replace(/[^0-9A-Z]+/g, '_').replace(/^_|_$/g, '') + '.xlsx'; }
+  function fileName(plaka) { return normPlate(plaka).replace(/[^0-9A-Z]+/g, ' ').trim() + '.xlsx'; }
 
   var api = { ORIG: ORIG, buildTexts: buildTexts, check: check, fill: fill, fileName: fileName,
               normPlate: normPlate, fmtDate: fmtDate, toIsoDate: toIsoDate, trUpper: trUpper };
@@ -364,8 +364,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return { problems: p, texts: t };
   }
   function fileName(ad) {
-    var s = up(ad).replace(/İ/g, 'I').replace(/Ş/g, 'S').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
-    return (s.replace(/[^A-Z0-9]+/g, ' ').trim() || 'BELGE') + ' ISG.docx';
+    var s = up(ad); /* Türkçe harfler korunur */
+    return (s.replace(/[^A-Z0-9ÇĞİÖŞÜ]+/g, ' ').trim() || 'BELGE') + ' İSG.docx';
   }
   function rep(x, from, to, what) {
     var i = x.indexOf(from);
@@ -1069,7 +1069,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function rr(r){ return Object.assign({},r,{sahip:r.sahip||F().name}); }
   var XLSX_MIME='';
   var riskList=makeList({
-    panel:'p-risk', store:'risk-olusturucu-v1', core:{check:function(r){ return RiskCore.check(rr(r)); }}, zipName:'risk-degerlendirme', addLabel:'Araç ekle',
+    panel:'p-risk', store:'risk-olusturucu-v1', dupSep:' ', core:{check:function(r){ return RiskCore.check(rr(r)); }}, zipName:'risk-degerlendirme', addLabel:'Araç ekle',
     dateLabel:'Tümüne uygulanacak tarih (yeni araçlar bugünün tarihini alır)',
     pastePlaceholder:'Plaka  [Tab]  Ruhsat sahibi  [Tab]  Sürücü  [Tab]  Tarih',
     pasteHint:'Sütun sırası: Plaka, Ruhsat sahibi, Sürücü, Tarih. Sürücü boşsa boş kalır, ruhsat sahibi boşsa seçili firma yazılır, tarih boşsa bugünün tarihi kullanılır.',
