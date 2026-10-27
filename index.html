@@ -801,7 +801,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function emptySt(){ return {items:[],rotate:'sira'}; }
   function newFirm(o){ return Object.assign({id:uid(),name:'',kurum:CertCore.DEF.kurum,gorev:CertCore.DEF.gorev,sure:CertCore.DEF.sure,gecerlilik:CertCore.DEF.gecerlilik,logos:{firma:{mode:'tpl'},kurum:{mode:'tpl'}},ek:[],pl:'Çalıştığı Proje',ps:' projesinde çalışmaktadır',isv:emptySt()}, o||{}); }
   function loadFirms(){
-    var raw=lsGet(FKEY); LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo;
+    var raw=lsGet(FKEY); LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; LG.projeOn=!!LG.projeOn;
     if(!raw || !Array.isArray(raw.list) || !raw.list.length){ /* eski sürümden aktar (kaydedilmez; ilk değişiklikte kaydedilir) */
       var d0=lsGet('cert-defaults-v1')||{};
       var f=newFirm({id:'f1',name:d0.isyeri||CertCore.DEF.isyeri,kurum:d0.kurum||CertCore.DEF.kurum,gorev:d0.gorev||CertCore.DEF.gorev,sure:d0.sure||CertCore.DEF.sure,gecerlilik:d0.gecerlilik||CertCore.DEF.gecerlilik});
@@ -988,7 +988,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       del.addEventListener('click', function(){ rows=rows.filter(function(x){return x!==r}); li.remove(); if(!rows.length) addRow(); updateZip(); save(); });
       head.appendChild(del); li.appendChild(head);
       var fields=el('div','fields'); cfg.fields.forEach(function(f){ fields.appendChild(mkField(r,f)); }); li.appendChild(fields);
-      if(cfg.rowExtra) li.appendChild(cfg.rowExtra(r, function(){ save(); }));
+      if(cfg.rowExtra) li.appendChild(cfg.rowExtra(r, function(){ if(r.refs) refresh(r); save(); }));
       var notes=el('div','notes'); li.appendChild(notes);
       var det=el('details','preview'); det.appendChild(el('summary',null,'Dosyaya yazılacak metinler')); var pre=el('pre'); det.appendChild(pre); li.appendChild(det);
       var act=el('div','card-actions'), dbtns=[];
@@ -1112,7 +1112,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function logoSel(r,key){ var o=F().logos[key]; if(noLogo(r)||o.mode==='none') return 'none'; if(o.mode==='img'&&o.data) return 'img'; return 'tpl'; }
   function logoWord(r){ var out={}; ['firma','kurum'].forEach(function(k){ var t=logoSel(r,k), o=F().logos[k]; out[k]= t==='none' ? null : t==='img' ? {png:dataUrlToBytes(o.data),w:o.w,h:o.h} : undefined; }); return out; }
   function logoPdf(r){ var out={}; ['firma','kurum'].forEach(function(k){ var t=logoSel(r,k); out[k]={kind:t,data:t==='img'?F().logos[k].data:null}; }); return out; }
-  function exLines(r){ var f=F(), out=[]; if(!r.noek) f.ek.forEach(function(e){ if(e.l && e.v) out.push({l:e.l,v:e.v}); }); var pr=String(r.proje||'').trim(); if(pr) out.push({l:f.pl||'Çalıştığı Proje',v:pr+(f.ps||'')}); return out.slice(0,3); }
+  function exLines(r){ var f=F(), out=[]; if(!r.noek) f.ek.forEach(function(e){ if(e.l && e.v) out.push({l:e.l,v:e.v}); }); var pr=String(r.proje||'').trim(); if(pr && (LG.projeOn||r.projeon)) out.push({l:f.pl||'Çalıştığı Proje',v:pr+(f.ps||'')}); return out.slice(0,3); }
   function withD(r){ var f=F(); return {ad:r.ad,tarih:r.tarih,gorev:r.gorev||f.gorev,sure:f.sure,gecerlilik:f.gecerlilik,isyeri:f.name,kurum:f.kurum,ek:exLines(r)}; }
   function refreshDocs(){ if(certList) certList.refreshAll(); riskList.refreshAll(); }
 
@@ -1121,6 +1121,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     outPanel.textContent=''; outPanel.appendChild(el('h2',null,'Çıktı seçenekleri'));
     outPanel.appendChild(chkRow('Tüm sertifikaları imzasız / kaşesiz çıkar (uzman, hekim, işveren)', LG.noSign, function(v){ LG.noSign=v; saveLG(); }));
     outPanel.appendChild(chkRow('Tüm sertifikaları logosuz çıkar (iki logo da basılmaz)', LG.noLogo, function(v){ LG.noLogo=v; saveLG(); }));
+    outPanel.appendChild(chkRow('Tüm sertifikalara "Çalıştığı proje" satırını bas (proje alanı doluysa)', LG.projeOn, function(v){ LG.projeOn=v; saveLG(); refreshDocs(); }));
+    outPanel.appendChild(el('p','hint','Çalıştığı proje satırı kapalı gelir, siz izin verirseniz çıkar: ya yukarıdaki kutuyla tüm sertifikalar için, ya da yalnızca istediğiniz kişinin satırındaki "Çalıştığı proje satırını bas" kutusuyla. Proje alanı boşsa satır hiçbir zaman çıkmaz.'));
     outPanel.appendChild(el('p','hint','Orijinal ya da ıslak imzalı kaşe gerekiyorsa imzasız çıkarıp elle imzalatın. Yalnızca bazı belgeler için gerekiyorsa her satırdaki "İmzasız çıkar" ve "Logosuz çıkar" kutularını kullanın. Logo, ünvan ve ek satırlar Firma ayarları sekmesindedir. Seçili firma: '+(F().name||'(adsız)')+'.'));
   }
   renderOutPanel();
@@ -1137,8 +1139,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       {key:'gorev',label:'Bölüm / görev',placeholder:'Boşsa Firma ayarlarındaki görev',req:true},
       {key:'proje',label:'Çalıştığı proje (isteğe bağlı)',placeholder:'Boşsa ek satır eklenmez'}
     ],
-    extraKeys:['nosign','nologo','noek'],
-    rowExtra:function(r,onChange){ var w=el('div','row-actions'); [['nosign','İmzasız çıkar'],['nologo','Logosuz çıkar'],['noek','Firma ek satırlarını basma']].forEach(function(o){ w.appendChild(chkRow(o[1], r[o[0]], function(v){ r[o[0]]=v; onChange(); })); }); return w; },
+    extraKeys:['nosign','nologo','noek','projeon'],
+    rowExtra:function(r,onChange){ var w=el('div','row-actions'); [['nosign','İmzasız çıkar'],['nologo','Logosuz çıkar'],['noek','Firma ek satırlarını basma'],['projeon','Çalıştığı proje satırını bas']].forEach(function(o){ w.appendChild(chkRow(o[1], r[o[0]], function(v){ r[o[0]]=v; onChange(); })); }); return w; },
     example:{example:true},
     badge:function(){ var p=el('div','person empty','Ad soyad'); p.setAttribute('aria-hidden','true'); return {el:p,set:function(t){ p.textContent=t.ad||'Ad soyad'; p.className='person'+(t.ad?'':' empty'); }}; },
     preview:function(t){ return 'Adı soyadı: '+t.ad+'\nVeriliş tarihi: '+t.tarih+' (Geçerlilik Süresi: '+t.gecerlilik+')\nBölüm/Görev: '+t.gorev+'\nEğitimin süresi: '+t.sure+'\nİşyeri: '+t.isyeri+'\nEğitimi veren kurum: '+t.kurum+(t.ek&&t.ek.length?'\n'+t.ek.map(function(e){ return e.l+': '+e.v; }).join('\n'):''); },
@@ -1189,7 +1191,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var blob, n=1;
       ['uzman','hekim','isveren'].forEach(function(k){ n=Math.max(n,cands(k).length); });
       if(prevKind==='cert'){
-        var r={ad:'Örnek Ad Soyad',tarih:todayIso(),gorev:'',proje:'Örnek Proje'}, st={};
+        var r={ad:'Örnek Ad Soyad',tarih:todayIso(),gorev:'',proje:'Örnek Proje',projeon:true}, st={};
         ['uzman','hekim','isveren'].forEach(function(k){ st[k]=LG.noSign?{kind:'none'}:pdfStamp(peek(k)); });
         blob=await PdfGen.certPreview(CertCore.check(withD(r)).texts, st, logoPdf(r));
       } else {
@@ -1283,10 +1285,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function onFirmChanged(){ renderFirmBar(); renderFirmTab(); renderStamps(); renderOutPanel(); refreshDocs(); doPreview(); }
   renderFirmBar(); renderFirmTab();
   hooks.firms=function(){ loadFirms(); onFirmChanged(); };
-  hooks.logos=function(){ LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; renderOutPanel(); };
+  hooks.logos=function(){ LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; LG.projeOn=!!LG.projeOn; renderOutPanel(); refreshDocs(); };
 
   /* ---------- talep formu (Excel) ---------- */
-  var reqRoot=document.getElementById('p-req'), reqItems=[], reqDate=todayIso(), reqName='';
+  var reqRoot=document.getElementById('p-req'), reqItems=[], reqDate=todayIso(), reqName='', reqProje=false;
   function colIdx(ref){ var m=/^([A-Z]+)/.exec(ref)[1], n=0; for(var i=0;i<m.length;i++) n=n*26+m.charCodeAt(i)-64; return n; }
   function U(x){ return String(x||'').toLocaleUpperCase('tr-TR'); }
   async function readSheet(file){
@@ -1339,6 +1341,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(reqItems.length){
       p.appendChild(el('p','hint','Dosya: '+reqName+' · Seçili firma: '+(F().name||'(adsız)')));
       var dl=el('label','field'); dl.appendChild(el('span',null,'Belge tarihi (formda tarih yoksa bugün)')); var di=document.createElement('input'); di.type='date'; di.value=reqDate; di.addEventListener('input', function(){ reqDate=di.value; }); dl.appendChild(di); p.appendChild(dl);
+      p.appendChild(chkRow('İSG sertifikalarına "Çalıştığı proje" satırını da bas (proje adı formdan alınır)', reqProje, function(v){ reqProje=v; }));
       var tw=el('div','tablewrap'), t=el('table','rep'), th=el('thead'), tr=el('tr');
       ['Proje','Plaka','Şoför','Tedarikçi','Formdaki talep','Risk','İSG'].forEach(function(h){ tr.appendChild(el('th',null,h)); }); th.appendChild(tr); t.appendChild(th);
       var tb=el('tbody'); reqItems.forEach(function(it){
@@ -1360,7 +1363,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var rs=[], cs=[];
     reqItems.forEach(function(it){
       if(it.risk) rs.push({plaka:RiskCore.normPlate(it.plaka),sahip:it.ted,surucu:it.sofor,tarih:reqDate});
-      if(it.isg) cs.push({ad:it.sofor,tarih:reqDate,gorev:'',proje:it.proje});
+      if(it.isg) cs.push({ad:it.sofor,tarih:reqDate,gorev:'',proje:it.proje,projeon:reqProje});
     });
     if(!rs.length && !cs.length){ setStatus('Eklenecek satır seçilmedi.','bad'); return; }
     if(rs.length) riskList.addMany(rs); if(cs.length) certList.addMany(cs);
