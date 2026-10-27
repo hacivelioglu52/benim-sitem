@@ -1249,6 +1249,36 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     [['cert','Sertifikayı göster'],['risk','Risk değerlendirmesini göster']].forEach(function(m){ var b=el('button','btn'+(prevKind===m[0]?' primary':''),m[1]); b.type='button'; b.addEventListener('click', function(){ prevKind=m[0]; renderFirmTab(); doPreview(); }); a4.appendChild(b); });
     var bnx=el('button','btn','Başka örnek'); bnx.type='button'; bnx.addEventListener('click', function(){ prevIx++; doPreview(); }); a4.appendChild(bnx);
     p4.appendChild(a4); var cap=el('p','hint'); cap.id='prev-cap'; p4.appendChild(cap); var box=el('div','prevbox'); box.id='prev-box'; p4.appendChild(box); firmRoot.appendChild(p4);
+
+    var p6=el('div','panel'); p6.appendChild(el('h2',null,'Yedek'));
+    p6.appendChild(el('p','hint','Firmalar, logolar, imza/kaşe görselleri, listeler ve aylık sayaçlar tek dosyaya yedeklenir. Telefon değişirse ya da tarayıcı verileri silinirse yedekten geri yükleyebilirsiniz. Ara sıra yedek almanız önerilir.'));
+    var a6=el('div','row-actions'), bb=el('button','btn primary','Yedek al'), br=el('button','btn','Yedekten yükle');
+    bb.type='button'; br.type='button'; bb.addEventListener('click', doBackup);
+    var rf=document.createElement('input'); rf.type='file'; rf.id='restore-file'; rf.accept='.json,application/json';
+    br.addEventListener('click', function(){ rf.click(); });
+    var pend=el('div','row-actions');
+    rf.addEventListener('change', async function(){
+      var fl=rf.files&&rf.files[0]; rf.value=''; if(!fl) return; pend.textContent='';
+      try{
+        var o=JSON.parse(await fl.text()); if(!o||o.app!=='kerem-sertifika'||!o.data) throw new Error('Bu bir Kerem Sertifika yedek dosyası değil.');
+        var n=BK.filter(function(k){ return o.data[k[0]]!=null; }).length; if(!n) throw new Error('Yedek dosyası boş.');
+        pend.appendChild(el('p','hint','Yedek tarihi: '+String(o.date||'').slice(0,10)+' · '+n+' bölüm. Geri yüklerseniz bu cihazdaki mevcut veriler yedektekilerle değişir.'));
+        var go=el('button','btn primary','Geri yükle'); go.type='button'; go.addEventListener('click', function(){ doRestore(o); }); pend.appendChild(go);
+        var no=el('button','btn quiet','Vazgeç'); no.type='button'; no.addEventListener('click', function(){ pend.textContent=''; }); pend.appendChild(no);
+      }catch(e){ setStatus(e.message||'Yedek dosyası okunamadı.','bad'); }
+    });
+    a6.appendChild(bb); a6.appendChild(br); p6.appendChild(a6); p6.appendChild(rf); p6.appendChild(pend); firmRoot.appendChild(p6);
+  }
+  var BK=[['firms',FKEY],['logo',LOGO_KEY],['stamps',STAMP_KEY],['risk','risk-olusturucu-v1'],['cert','cert-olusturucu-v1'],['log',LOG_KEY],['ctr','isg-ctr-v2']];
+  async function doBackup(){
+    saveFirms();
+    var o={app:'kerem-sertifika',v:1,date:new Date().toISOString(),data:{}};
+    BK.forEach(function(k){ var v=k[0]==='firms'?FM:lsGetPlain(k[1]); if(v!=null) o.data[k[0]]=v; });
+    await offer('kerem-sertifika-yedek-'+todayIso()+'.json', new Blob([JSON.stringify(o)],{type:'application/json'}));
+  }
+  function doRestore(o){
+    BK.forEach(function(k){ var v=o.data[k[0]]; if(v==null) return; if(k[0]==='ctr'){ try{ localStorage.setItem(k[1],JSON.stringify(v)); }catch(e){} } else lsSet(k[1],v); });
+    setStatus('Yedek geri yüklendi, sayfa yenileniyor…','ok'); setTimeout(function(){ location.reload(); },700);
   }
   function onFirmChanged(){ renderFirmBar(); renderFirmTab(); renderStamps(); renderOutPanel(); refreshDocs(); doPreview(); }
   renderFirmBar(); renderFirmTab();
