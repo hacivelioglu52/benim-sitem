@@ -365,7 +365,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   function fileName(ad) {
     var s = up(ad).replace(/İ/g, 'I').replace(/Ş/g, 'S').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
-    return 'ISG_' + (s.replace(/[^A-Z0-9]+/g, '_').replace(/^_|_$/g, '') || 'BELGE') + '.docx';
+    return (s.replace(/[^A-Z0-9]+/g, ' ').trim() || 'BELGE') + ' ISG.docx';
   }
   function rep(x, from, to, what) {
     var i = x.indexOf(from);
@@ -1026,7 +1026,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             setStatus('Hazırlanıyor… '+(done+i+1)+'/'+ok.length+(parts>1?' (parça '+(pi+1)+'/'+parts+')':''));
             await new Promise(function(res){ setTimeout(res,0); });
             var name=cfg.fileName(chunk[i]), base=name, k=1;
-            while(used[name+f.ext]){ k++; name=base+'_'+k; }
+            while(used[name+f.ext]){ k++; name=base+(cfg.dupSep||'_')+k; }
             used[name+f.ext]=1; zip.file(name+f.ext, await f.build(chunk[i]), {createFolders:false});
           }
           var out=await zip.generateAsync({type:'blob',compression:'STORE'});
@@ -1128,7 +1128,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   renderOutPanel();
   var certBytes=null;
   certList=makeList({
-    panel:'p-cert', store:'cert-olusturucu-v1', zipName:'isg-belgeleri', addLabel:'Kişi ekle',
+    panel:'p-cert', store:'cert-olusturucu-v1', zipName:'isg-belgeleri', dupSep:' ', addLabel:'Kişi ekle',
     dateLabel:'Tümüne uygulanacak tarih (yeni kişiler bugünün tarihini alır)', extra:outPanel,
     core:{check:function(r){ var c=CertCore.check(withD(r)); return {problems:c.problems,notes:[],texts:c.texts}; }},
     pastePlaceholder:'Ad soyad  [Tab]  Veriliş tarihi  [Tab]  Görev  [Tab]  Çalıştığı proje',
