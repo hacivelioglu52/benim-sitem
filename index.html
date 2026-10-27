@@ -169,7 +169,6 @@ details.dpanel[open]>summary{margin-bottom:10px}
 .seg input{position:absolute;opacity:0;pointer-events:none}
 .seg label:has(input:checked){background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
 .seg label:has(input:focus-visible){outline:2px solid #1d4ed8;outline-offset:2px}
-.ocr-prev{max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--line)}
 </style>
 
 <div class="wrap">
@@ -188,7 +187,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-req" aria-selected="false" aria-controls="p-req" type="button">Talep formu</button>
     <button role="tab" id="tab-firm" aria-selected="false" aria-controls="p-firm" type="button">Firma</button>
     <button role="tab" id="tab-stamp" aria-selected="false" aria-controls="p-stamp" type="button">İmza / Kaşe</button>
-    <button role="tab" id="tab-ocr" aria-selected="false" aria-controls="p-ocr" type="button">Yazı çevirici</button>
+    <button role="tab" id="tab-ocr" aria-selected="false" aria-controls="p-ocr" type="button">Yazı biçimi</button>
     <button role="tab" id="tab-rep" aria-selected="false" aria-controls="p-rep" type="button">Aylık sayılar</button>
   </div>
 
@@ -1427,17 +1426,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   /* ---------- yazı çevirici (fotoğraf/el yazısı → düz yazı, büyük-küçük harf) ---------- */
   var ocrRoot=document.getElementById('p-ocr');
   (function(){
-    var MODE='title', tesLoad=null;
+    var MODE='title';
     function convert(t){
       if(MODE==='upper') return t.toLocaleUpperCase('tr');
       if(MODE==='lower') return t.toLocaleLowerCase('tr');
       if(MODE==='title') return t.toLocaleLowerCase('tr').replace(/(^|[\s\-\/(.,'’])(\S)/g, function(m,a,b){ return a+b.toLocaleUpperCase('tr'); }).replace(/(['’])(\S)/g, function(m,a,b){ return a+b.toLocaleLowerCase('tr'); });
       return t;
     }
-    var p=el('div','panel'); p.appendChild(el('h2',null,'El yazısı / fotoğraf → düz yazı'));
-    p.appendChild(el('p','hint','Fotoğraf seçin ya da metni kutuya yazıp yapıştırın; sonra büyük-küçük harf biçimini seçin. Fotoğraftan okuma için internet gerekir. Basılı yazı iyi okunur, el yazısında hatalar olabilir: sonucu kutuda düzeltin.'));
-    var pr=el('div','bar'); var pick=el('label','btn primary','Fotoğraf / resim seç'); var fi=document.createElement('input'); fi.type='file'; fi.accept='image/*'; fi.hidden=true; pick.appendChild(fi); pr.appendChild(pick); p.appendChild(pr);
-    var img=document.createElement('img'); img.className='ocr-prev'; img.alt='Seçilen resim'; img.hidden=true; p.appendChild(img);
+    var p=el('div','panel'); p.appendChild(el('h2',null,'Yazı biçimi (büyük-küçük harf)'));
+    p.appendChild(el('p','hint','Metni kutuya yazın veya yapıştırın, biçimi seçip "Biçimi uygula"ya basın. Türkçe harfler doğru dönüşür.'));
     var ta=document.createElement('textarea'); ta.className='ocr-out'; ta.setAttribute('aria-label','Metin'); ta.placeholder='Metin burada görünür; elle de yazabilir veya yapıştırabilirsiniz.'; p.appendChild(ta);
     var seg=el('div','seg'); [['title','Baş Harfler Büyük'],['upper','HEPSİ BÜYÜK'],['lower','hepsi küçük'],['keep','Olduğu gibi']].forEach(function(o){ var l=el('label'), r=document.createElement('input'); r.type='radio'; r.name='ocr-mode'; r.value=o[0]; if(o[0]===MODE) r.checked=true; r.addEventListener('change', function(){ MODE=o[0]; }); l.appendChild(r); l.appendChild(document.createTextNode(o[1])); seg.appendChild(l); }); p.appendChild(seg);
     var act=el('div','row-actions');
@@ -1445,19 +1442,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var bCopy=el('button','btn','Kopyala'); bCopy.type='button'; bCopy.addEventListener('click', async function(){ try{ await navigator.clipboard.writeText(ta.value); setStatus('Kopyalandı.','ok'); }catch(e){ ta.select(); document.execCommand('copy'); setStatus('Kopyalandı.','ok'); } });
     var bAdd=el('button','btn','İSG listesine isim olarak ekle'); bAdd.type='button'; bAdd.addEventListener('click', function(){ var names=ta.value.split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean).map(convert); if(!names.length){ setStatus('Eklenecek satır yok.','bad'); return; } certList.addMany(names.map(function(n){ return {ad:n,tarih:todayIso()}; })); setStatus(names.length+' isim İSG listesine eklendi (her satır bir kişi).','ok'); show('cert'); });
     act.appendChild(bConv); act.appendChild(bCopy); act.appendChild(bAdd); p.appendChild(act);
-    function loadTes(){ if(window.Tesseract) return Promise.resolve(); if(tesLoad) return tesLoad; tesLoad=new Promise(function(ok,no){ var sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'; sc.onload=ok; sc.onerror=function(){ tesLoad=null; no(new Error('Okuma modülü yüklenemedi. İnternet bağlantısını kontrol edin.')); }; document.head.appendChild(sc); }); return tesLoad; }
-    fi.addEventListener('change', async function(){
-      var f=fi.files&&fi.files[0]; if(!f) return;
-      img.src=URL.createObjectURL(f); img.hidden=false; setStatus('Resim okunuyor, birkaç saniye sürebilir...');
-      try{
-        await loadTes();
-        var res=await window.Tesseract.recognize(f,'tur+eng');
-        var t=(res.data.text||'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
-        if(!t){ setStatus('Resimde okunabilir yazı bulunamadı.','bad'); }
-        else{ ta.value=convert(t); setStatus('Okundu. Hataları kutuda düzeltebilirsiniz.','ok'); }
-      }catch(e){ setStatus(e.message||'Resim okunamadı.','bad'); }
-      fi.value='';
-    });
     ocrRoot.appendChild(p);
   })();
 
