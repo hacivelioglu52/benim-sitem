@@ -1,6 +1,6 @@
-<!doctype html><html lang="tr"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="tr"><head><script>window.__PWA=true;</script><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Kerem Sertifika</title>
-<meta name="claude:viewport-fit-sides" content="cover"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1d4ed8"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="claude:viewport-fit-sides" content="cover"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1d4ed8"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes">
 
 <style>
 :root{
@@ -162,6 +162,14 @@ details.dpanel[open]>summary{margin-bottom:10px}
 .lb img{max-width:100%;max-height:100%;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/16px 16px;border-radius:6px}
 .thumb .im img,.stamp .view img{cursor:zoom-in}
 @media (max-width:520px){.card-actions .btn{flex:1 1 auto}.after details{font-size:13.5px}}
+
+.ocr-out{width:100%;min-height:160px;font:inherit;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);resize:vertical}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{flex:1 1 140px;display:flex;align-items:center;justify-content:center;padding:10px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;font-size:14px;text-align:center}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label:has(input:checked){background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.seg label:has(input:focus-visible){outline:2px solid #1d4ed8;outline-offset:2px}
+.ocr-prev{max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--line)}
 </style>
 
 <div class="wrap">
@@ -180,6 +188,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-req" aria-selected="false" aria-controls="p-req" type="button">Talep formu</button>
     <button role="tab" id="tab-firm" aria-selected="false" aria-controls="p-firm" type="button">Firma</button>
     <button role="tab" id="tab-stamp" aria-selected="false" aria-controls="p-stamp" type="button">İmza / Kaşe</button>
+    <button role="tab" id="tab-ocr" aria-selected="false" aria-controls="p-ocr" type="button">Yazı çevirici</button>
     <button role="tab" id="tab-rep" aria-selected="false" aria-controls="p-rep" type="button">Aylık sayılar</button>
   </div>
 
@@ -197,6 +206,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <div class="stamps" id="stamps"></div>
   </section>
 
+  <section id="p-ocr" role="tabpanel" aria-labelledby="tab-ocr" hidden></section>
   <section id="p-rep" role="tabpanel" aria-labelledby="tab-rep" hidden>
     <div class="panel">
       <h2>Aylık sayılar</h2>
@@ -221,7 +231,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <p class="status" id="status" role="status" aria-live="polite"></p>
   </section>
 </div>
-<script>window.__PWA=true;</script>
+<script>window.__PWA=false;</script>
 <script>/*!
 
 JSZip v3.10.1 - A JavaScript class for generating and reading zip files
@@ -1413,8 +1423,46 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   hooks.cert=function(){ certList.reload(); };
   hooks.defaults=function(){ D=Object.assign({}, CertCore.DEF, lsGet(DKEY)||{}); Array.prototype.forEach.call(dgrid.querySelectorAll('input'), function(i,ix){ i.value=D[DK[ix]]||''; }); certList.refreshAll(); };
 
+
+  /* ---------- yazı çevirici (fotoğraf/el yazısı → düz yazı, büyük-küçük harf) ---------- */
+  var ocrRoot=document.getElementById('p-ocr');
+  (function(){
+    var MODE='title', tesLoad=null;
+    function convert(t){
+      if(MODE==='upper') return t.toLocaleUpperCase('tr');
+      if(MODE==='lower') return t.toLocaleLowerCase('tr');
+      if(MODE==='title') return t.toLocaleLowerCase('tr').replace(/(^|[\s\-\/(.,'’])(\S)/g, function(m,a,b){ return a+b.toLocaleUpperCase('tr'); }).replace(/(['’])(\S)/g, function(m,a,b){ return a+b.toLocaleLowerCase('tr'); });
+      return t;
+    }
+    var p=el('div','panel'); p.appendChild(el('h2',null,'El yazısı / fotoğraf → düz yazı'));
+    p.appendChild(el('p','hint','Fotoğraf seçin ya da metni kutuya yazıp yapıştırın; sonra büyük-küçük harf biçimini seçin. Fotoğraftan okuma için internet gerekir. Basılı yazı iyi okunur, el yazısında hatalar olabilir: sonucu kutuda düzeltin.'));
+    var pr=el('div','bar'); var pick=el('label','btn primary','Fotoğraf / resim seç'); var fi=document.createElement('input'); fi.type='file'; fi.accept='image/*'; fi.hidden=true; pick.appendChild(fi); pr.appendChild(pick); p.appendChild(pr);
+    var img=document.createElement('img'); img.className='ocr-prev'; img.alt='Seçilen resim'; img.hidden=true; p.appendChild(img);
+    var ta=document.createElement('textarea'); ta.className='ocr-out'; ta.setAttribute('aria-label','Metin'); ta.placeholder='Metin burada görünür; elle de yazabilir veya yapıştırabilirsiniz.'; p.appendChild(ta);
+    var seg=el('div','seg'); [['title','Baş Harfler Büyük'],['upper','HEPSİ BÜYÜK'],['lower','hepsi küçük'],['keep','Olduğu gibi']].forEach(function(o){ var l=el('label'), r=document.createElement('input'); r.type='radio'; r.name='ocr-mode'; r.value=o[0]; if(o[0]===MODE) r.checked=true; r.addEventListener('change', function(){ MODE=o[0]; }); l.appendChild(r); l.appendChild(document.createTextNode(o[1])); seg.appendChild(l); }); p.appendChild(seg);
+    var act=el('div','row-actions');
+    var bConv=el('button','btn primary','Biçimi uygula'); bConv.type='button'; bConv.addEventListener('click', function(){ ta.value=convert(ta.value); setStatus('Biçim uygulandı.','ok'); });
+    var bCopy=el('button','btn','Kopyala'); bCopy.type='button'; bCopy.addEventListener('click', async function(){ try{ await navigator.clipboard.writeText(ta.value); setStatus('Kopyalandı.','ok'); }catch(e){ ta.select(); document.execCommand('copy'); setStatus('Kopyalandı.','ok'); } });
+    var bAdd=el('button','btn','İSG listesine isim olarak ekle'); bAdd.type='button'; bAdd.addEventListener('click', function(){ var names=ta.value.split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean).map(convert); if(!names.length){ setStatus('Eklenecek satır yok.','bad'); return; } certList.addMany(names.map(function(n){ return {ad:n,tarih:todayIso()}; })); setStatus(names.length+' isim İSG listesine eklendi (her satır bir kişi).','ok'); show('cert'); });
+    act.appendChild(bConv); act.appendChild(bCopy); act.appendChild(bAdd); p.appendChild(act);
+    function loadTes(){ if(window.Tesseract) return Promise.resolve(); if(tesLoad) return tesLoad; tesLoad=new Promise(function(ok,no){ var sc=document.createElement('script'); sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'; sc.onload=ok; sc.onerror=function(){ tesLoad=null; no(new Error('Okuma modülü yüklenemedi. İnternet bağlantısını kontrol edin.')); }; document.head.appendChild(sc); }); return tesLoad; }
+    fi.addEventListener('change', async function(){
+      var f=fi.files&&fi.files[0]; if(!f) return;
+      img.src=URL.createObjectURL(f); img.hidden=false; setStatus('Resim okunuyor, birkaç saniye sürebilir...');
+      try{
+        await loadTes();
+        var res=await window.Tesseract.recognize(f,'tur+eng');
+        var t=(res.data.text||'').replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+        if(!t){ setStatus('Resimde okunabilir yazı bulunamadı.','bad'); }
+        else{ ta.value=convert(t); setStatus('Okundu. Hataları kutuda düzeltebilirsiniz.','ok'); }
+      }catch(e){ setStatus(e.message||'Resim okunamadı.','bad'); }
+      fi.value='';
+    });
+    ocrRoot.appendChild(p);
+  })();
+
   /* ---------- sekmeler ---------- */
-  var tabs=['risk','cert','req','firm','stamp','rep'];
+  var tabs=['risk','cert','req','firm','stamp','ocr','rep'];
   function show(n){ tabs.forEach(function(t){ var on=t===n; document.getElementById('tab-'+t).setAttribute('aria-selected',on?'true':'false'); document.getElementById('p-'+t).hidden=!on; }); try{ localStorage.setItem('isg-tab',n); }catch(e){} if(n==='rep') renderReport(); if(n==='firm') doPreview(); }
   tabs.forEach(function(t){ document.getElementById('tab-'+t).addEventListener('click', function(){ show(t); }); });
   var st=null; try{ st=localStorage.getItem('isg-tab'); }catch(e){} if(st && tabs.indexOf(st)>=0) show(st);
