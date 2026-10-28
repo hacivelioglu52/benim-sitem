@@ -1094,7 +1094,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     function reload(){
       rows=[]; rowsEl.textContent='';
       var saved=lsGet(cfg.store);
-      if(saved && Array.isArray(saved.rows) && saved.rows.length){ seq=saved.seq||0; saved.rows.forEach(function(v){ var r=Object.assign(newRow(),v); rows.push(r); rowsEl.appendChild(renderRow(r)); }); updateZip(); }
+      var keep=(saved && Array.isArray(saved.rows)) ? saved.rows.filter(function(v){ return cfg.fields.some(function(f){ return f.key!=='tarih' && v[f.key]; }); }) : [];
+      if(keep.length){ seq=saved.seq||0; keep.forEach(function(v){ var r=Object.assign(newRow(),v); rows.push(r); rowsEl.appendChild(renderRow(r)); }); updateZip(); }
       else { seq=0; var ex=newRow(cfg.example); rows.push(ex); rowsEl.appendChild(renderRow(ex)); updateZip(); }
     }
     reload();
