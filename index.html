@@ -1645,17 +1645,17 @@ QBANK=[
     var sCat=sel('Eğitim türü',QCATS.concat([['karisik','Karışık (tüm konulardan)']]),'temel');
     var sCnt=sel('Soru sayısı',[['5','5 soru'],['10','10 soru'],['15','15 soru'],['20','20 soru']],'10');
     var sImg=sel('Görselli sorular',[['mix','Karışık (görselli ve görselsiz)'],['none','Görselsiz'],['all','Hepsi görselli']],'mix');
-    var fAd=fld('Katılımcı adı soyadı (boş bırakılabilir)',''), fFirm=fld('Firma',(F()&&F().name)||''), fTar=fld('Tarih',todayIso(),'date');
+    var fAd=fld('Katılımcı adı soyadı (boş bırakılabilir)',''), fFirm=fld('Firma',''), fTar=fld('Tarih','','date');
     p.appendChild(g);
     var sd=el('div','seg'); QSECT.forEach(function(s){ var l=el('label'), c=document.createElement('input'); c.type='checkbox'; c.addEventListener('change', function(){ sectors[s[0]]=c.checked; draw(true); }); l.appendChild(c); l.appendChild(document.createTextNode(s[1])); sd.appendChild(l); });
     p.appendChild(el('p','hint','İş kolu (isteğe bağlı, birden fazla seçilebilir). Hiçbiri seçili değilse ortak sorular gelir:')); p.appendChild(sd);
     var FORMS={temel:['formmgz004.3','2','15.04.2025','11.04.2025'],acil:['formmgz006.3','2','16.04.2025','11.04.2025']};
     var TITLES={temel:'TEMEL İŞ SAĞLIĞI VE GÜVENLİĞİ EĞİTİMİ DEĞERLENDİRME SINAVI',acil:'İŞ SAĞLIĞI VE GÜVENLİĞİ ACİL DURUM EKİBİ VE YANGIN EĞİTİMİ DEĞERLENDİRME SINAVI'};
-    var fd=el('details','dpanel'); fd.appendChild(el('summary',null,'Form bilgileri (belge no, revizyon, yer, görev)')); var fb=el('div','dbody'), fg=el('div','fields'); fb.appendChild(fg); fd.appendChild(fb);
+    var fd=el('details','dpanel'); fd.appendChild(el('summary',null,'Form bilgileri (isteğe bağlı: belge no, revizyon, yer, görev)')); var fb=el('div','dbody'), fg=el('div','fields'); fb.appendChild(fg); fd.appendChild(fb);
     var FKEY='isg-form-v1', fsaved=lsGet(FKEY)||{};
-    var fi=[['Döküman no',0],['Revizyon no',1],['Revizyon tarihi',2],['Yayın tarihi',3]].map(function(a){ var l=el('label','field'); l.appendChild(el('span',null,a[0])); var i=document.createElement('input'); l.appendChild(i); fg.appendChild(l); i.addEventListener('input', function(){ var k=sCat.value; fsaved[k]=fsaved[k]||{}; fsaved[k][a[1]]=i.value; lsSet(FKEY,fsaved); }); return i; });
+    var fi=[['Döküman no',0],['Revizyon no',1],['Revizyon tarihi',2],['Yayın tarihi',3]].map(function(a){ var l=el('label','field'); l.appendChild(el('span',null,a[0])); var i=document.createElement('input'); l.appendChild(i); fg.appendChild(l); return i; });
     var fYer=fld('Yer (boş bırakılabilir)',''), fGorev=fld('Görevi (boş bırakılabilir)',''); fg.appendChild(fYer.parentNode); fg.appendChild(fGorev.parentNode);
-    function loadForm(){ var k=sCat.value, d=FORMS[k]||['','','','']; fi.forEach(function(i,n){ var sv=(fsaved[k]||{})[n]; i.value=(sv!=null?sv:d[n]); }); }
+    function loadForm(){ fi.forEach(function(i){ i.value=''; }); }
     p.appendChild(fd); loadForm();
     var act=el('div','row-actions');
     var bNew=el('button','btn','Yeni sorular'); bNew.type='button';
@@ -1757,7 +1757,6 @@ QBANK=[
     bS.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); await offer(nm(false), await build(false)); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
     bK.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); await offer(nm(true), await build(true)); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
     pick(); draw(false);
-    document.getElementById('tab-sinav').addEventListener('click', function(){ if(!fFirm.value && F()) fFirm.value=F().name||''; });
   })();
 
   /* ---------- sekmeler ---------- */
