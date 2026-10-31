@@ -1966,16 +1966,27 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     var fYer=fld('Yer (boş bırakılabilir)',''), fGorev=fld('Görevi (boş bırakılabilir)',''); fg.appendChild(fYer.parentNode); fg.appendChild(fGorev.parentNode);
     function loadForm(){ fi.forEach(function(i){ i.value=''; }); }
     p.appendChild(fd); loadForm();
-    var pd=el('details','dpanel'); pd.open=true; pd.appendChild(el('summary',null,'Sınava giren personel (katılım formu için)')); var pb=el('div','dbody'); pd.appendChild(pb);
-    pb.appendChild(el('p','hint','Her satıra bir kişi yazın: Ad Soyad ; Görev (görev boş bırakılabilir). Katılım formu seçili sınav başlığına göre hazırlanır.'));
-    var fPpl=document.createElement('textarea'); fPpl.rows=6; fPpl.style.width='100%'; fPpl.setAttribute('aria-label','Sınava giren personel'); fPpl.placeholder='Ad Soyad ; Görev'; try{ fPpl.value=localStorage.getItem('isg-sinav-ppl')||''; }catch(e){} fPpl.addEventListener('input', function(){ try{ localStorage.setItem('isg-sinav-ppl',fPpl.value); }catch(e){} });
-    pb.appendChild(fPpl); p.appendChild(pd);
     var act=el('div','row-actions');
     var bNew=el('button','btn','Yeni sorular'); bNew.type='button';
     var bAns=el('button','btn','Cevapları göster'); bAns.type='button';
     var bS=el('button','btn primary','Sınav kâğıdı (PDF)'); bS.type='button';
     var bK=el('button','btn','Cevap anahtarı (PDF)'); bK.type='button';
-    var bP=el('button','btn','Sınav katılım formu (PDF)'); bP.type='button'; act.appendChild(bNew); act.appendChild(bAns); act.appendChild(bS); act.appendChild(bK); act.appendChild(bP); p.appendChild(act);
+    act.appendChild(bNew); act.appendChild(bAns); act.appendChild(bS); act.appendChild(bK); p.appendChild(act);
+    var kp=el('details','dpanel'); kp.appendChild(el('summary',null,'Sınav katılım formu (sınava girenlerin isimleri)')); var kb=el('div','dbody'); kp.appendChild(kb);
+    kb.appendChild(el('p','hint','Form başlığı ve sınavın adı seçili eğitim türüne göre gelir. Sınava girecek personeli her satıra bir kişi olacak şekilde yazın (Ad Soyad ; Görev).'));
+    var kg=el('div','fields'); kb.appendChild(kg);
+    function kfld(label,type){ var l=el('label','field'); l.appendChild(el('span',null,label)); var i=document.createElement('input'); i.type=type||'text'; l.appendChild(i); kg.appendChild(l); return i; }
+    var kSure=kfld('Sınav süresi (örn. 20 dakika)'), kSaat=kfld('Sınav saati');
+    var kl=el('label','field'); kl.appendChild(el('span',null,'Sınava giren personel (her satır: Ad Soyad ; Görev)')); var kKat=document.createElement('textarea'); kKat.className='ocr-out'; kKat.style.minHeight='140px'; kKat.placeholder='Örn: AYŞE YILMAZ ; Satış Danışmanı'; kl.appendChild(kKat); kb.appendChild(kl);
+    var ka=el('div','row-actions'); var kFrom=el('button','btn','İSG listesinden al'); kFrom.type='button'; var kPdf=el('button','btn primary','Sınav katılım formu (PDF)'); kPdf.type='button'; ka.appendChild(kFrom); ka.appendChild(kPdf); kb.appendChild(ka);
+    kp.open=true; p.appendChild(kp);
+    kFrom.addEventListener('click', function(){ var d=lsGet('cert-olusturucu-v1'), rows=(d&&d.rows)||[]; var lines=rows.filter(function(r){ return r.ad; }).map(function(r){ return r.ad+' ; '+(r.gorev||''); }); if(!lines.length){ setStatus('İSG listesinde isim yok.','bad'); return; } kKat.value=lines.join('\n'); setStatus(lines.length+' kişi listeden alındı.','ok'); });
+    function examTitle(){ var k=sCat.value; return TITLES[k]||(catName(k).toLocaleUpperCase('tr')+' DEĞERLENDİRME SINAVI'); }
+    kPdf.addEventListener('click', async function(){ try{
+      setStatus('PDF hazırlanıyor...'); var tv=fTar.value, m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(tv||''), tar=(m?m[3]+'.'+m[2]+'.'+m[1]:'')+(kSaat.value?(m?'   Saat: ':'Saat: ')+kSaat.value:'');
+      var ps=kKat.value.split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean).map(function(l){ var a=l.split(/[;\t]/); return [(a[0]||'').trim(),(a.slice(1).join(' ')||'').trim()]; });
+      var b=await window.__katilimBuild({sinav:true,title:'SINAV KATILIM FORMU',ad:examTitle(),isy:fFirm.value,yer:fYer.value,sure:kSure.value,tarih:tar,people:ps,di:fi.map(function(x){ return x.value; })});
+      await offer(examTitle().replace(/[\\\/:*?"<>|]/g,'')+' KATILIM FORMU.pdf', b); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
     root.appendChild(p);
     var list=el('div'); root.appendChild(list);
 
@@ -2092,51 +2103,6 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     function nm(k){ var a=(fAd.value||'').trim().toLocaleUpperCase('tr'); return (a?a+' ':'')+(k?'SINAV CEVAP ANAHTARI':'SINAV')+'.pdf'; }
     bS.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); await offer(nm(false), await buildAuto(false)); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
     bK.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); await offer(nm(true), await build(true)); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
-
-    async function buildAtt(){
-      var W=1240,H=1754,S=W/595.32,FS='Arial, Helvetica, sans-serif', cvs=[], cv, ctx, y, LM=34*S, RM=W-34*S, TW=RM-LM;
-      function newPage(){ cv=document.createElement('canvas'); cv.width=W; cv.height=H; ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#000'; ctx.textBaseline='middle'; ctx.strokeStyle='#000'; cvs.push(cv); }
-      function wrapW(t,font,maxW){ ctx.font=font; var out=[], line=''; String(t).split(/\s+/).forEach(function(w){ var tt=line?line+' '+w:w; if(ctx.measureText(tt).width>maxW && line){ out.push(line); line=w; } else line=tt; }); if(line) out.push(line); return out; }
-      function cellText(t,x,y1,w,h,font,align){ ctx.font=font; ctx.textAlign=align||'left'; var ls=wrapW(t,font,w-16), lh=parseInt(font.replace(/\D*(\d+)px.*/,'$1'),10)*1.25, top=y1+h/2-(ls.length-1)*lh/2; ls.forEach(function(l,i){ ctx.fillText(l,align==='center'?x+w/2:x+8,top+i*lh); }); ctx.textAlign='left'; }
-      var k=sCat.value, base=(TITLES[k]||(catName(k).toLocaleUpperCase('tr')+' DEĞERLENDİRME SINAVI')), title=base+' KATILIM FORMU';
-      var ppl=(fPpl.value||'').split(/\n/).map(function(l){ return l.trim(); }).filter(Boolean).map(function(l){ var a=l.split(/[;\t]/); return [a[0].trim().toLocaleUpperCase('tr'),(a[1]||'').trim()]; });
-      var lg=logoSrc(), li=lg?await loadImg(lg):null;
-      function header(){
-        var hx=LM, hy=16*S, hw=TW, hh=114*S, c1=135*S, c3=153*S, c2=hw-c1-c3;
-        ctx.lineWidth=4; ctx.strokeRect(hx,hy,hw,hh); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(hx+c1,hy); ctx.lineTo(hx+c1,hy+hh); ctx.moveTo(hx+c1+c2,hy); ctx.lineTo(hx+c1+c2,hy+hh); ctx.stroke();
-        if(li){ var r=Math.min((c1-30)/li.naturalWidth,(hh-30)/li.naturalHeight); ctx.drawImage(li,hx+(c1-li.naturalWidth*r)/2,hy+(hh-li.naturalHeight*r)/2,li.naturalWidth*r,li.naturalHeight*r); }
-        ctx.fillStyle='#000'; ctx.font='bold 25px '+FS; ctx.textAlign='center'; var tl=wrapW(title,'bold 25px '+FS,c2-30), tlh=34, ty=hy+hh/2-(tl.length-1)*tlh/2; tl.forEach(function(l,i){ ctx.fillText(l,hx+c1+c2/2,ty+i*tlh); }); ctx.textAlign='left';
-        var inf=[['Döküman No:',fi[0].value],['Revizyon No:',fi[1].value],['Revizyon Tarihi:',fi[2].value],['Yayın Tarihi:',fi[3].value]], rh=hh/4, lw2=76*S;
-        inf.forEach(function(r,i){ var ry=hy+i*rh; if(i){ ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2,ry); ctx.lineTo(hx+hw,ry); ctx.stroke(); } cellText(r[0],hx+c1+c2,ry,lw2,rh,'20px '+FS); cellText(r[1],hx+c1+c2+lw2,ry,c3-lw2,rh,'20px '+FS); });
-        ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2+lw2,hy); ctx.lineTo(hx+c1+c2+lw2,hy+hh); ctx.stroke();
-        return hy+hh+26*S;
-      }
-      newPage(); y=header();
-      var rowH=21*S, lab=[['SINAVIN ADI',base],['FİRMASI',fFirm.value],['YER',fYer.value],['TARİH',fmtDate(fTar.value)],['KATILAN SAYISI',String(ppl.length||'')]], cA=62*S, nameH=0;
-      var nl=wrapW(base,'21px '+FS,TW-cA-16); var h0=Math.max(rowH,nl.length*27+10); var th=h0+rowH*4;
-      ctx.lineWidth=3; ctx.strokeRect(LM,y,TW,th); ctx.lineWidth=1.5; var ry=y;
-      lab.forEach(function(r,i){ var hh=i===0?h0:rowH; if(i){ ctx.beginPath(); ctx.moveTo(LM,ry); ctx.lineTo(RM,ry); ctx.stroke(); } cellText(r[0],LM,ry,cA,hh,'bold 17px '+FS); cellText(r[1],LM+cA,ry,TW-cA,hh,'21px '+FS); ry+=hh; });
-      ctx.beginPath(); ctx.moveTo(LM+cA,y); ctx.lineTo(LM+cA,y+th); ctx.stroke();
-      y+=th+22*S;
-      var cols=[34*S,0,120*S,80*S,56*S]; cols[1]=TW-cols[0]-cols[2]-cols[3]-cols[4]; var hd=['S.N','ADI SOYADI','GÖREVİ','İMZA','PUAN'];
-      var rH=26*S, total=Math.max(ppl.length,10), idx=0;
-      function tableHead(){ ctx.lineWidth=2; ctx.fillStyle='#e8e8e8'; ctx.fillRect(LM,y,TW,rH); ctx.fillStyle='#000'; ctx.strokeRect(LM,y,TW,rH); var x=LM; hd.forEach(function(t,i){ cellText(t,x,y,cols[i],rH,'bold 20px '+FS,'center'); x+=cols[i]; if(i<4){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+rH); ctx.stroke(); } }); y+=rH; }
-      tableHead();
-      while(idx<total){
-        if(y+rH>H-150*S){ newPage(); y=header(); tableHead(); }
-        var pr=ppl[idx]||['',''];
-        ctx.lineWidth=1.5; ctx.strokeRect(LM,y,TW,rH); var x=LM;
-        [String(idx+1),pr[0],pr[1],'',''].forEach(function(t,i){ if(t) cellText(t,x,y,cols[i],rH,(i===1?'20px ':'19px ')+FS,i===0?'center':'left'); x+=cols[i]; if(i<4){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+rH); ctx.stroke(); } });
-        y+=rH; idx++;
-      }
-      y+=34*S; if(y+90*S>H-30){ newPage(); y=60*S; }
-      var bw=(TW-20*S)/2; ctx.lineWidth=2; ctx.strokeRect(LM,y,bw,78*S); ctx.strokeRect(LM+bw+20*S,y,bw,78*S);
-      cellText('SINAV SORUMLUSU / EĞİTMEN',LM,y,bw,26*S,'bold 19px '+FS,'center'); cellText('İŞVEREN / İŞVEREN VEKİLİ',LM+bw+20*S,y,bw,26*S,'bold 19px '+FS,'center');
-      cvs.forEach(function(c,i){ if(cvs.length>1){ var x=c.getContext('2d'); x.textBaseline='alphabetic'; x.font='20px '+FS; x.fillStyle='#666'; x.textAlign='center'; x.fillText('Sayfa '+(i+1)+' / '+cvs.length,W/2,H-34); } });
-      var pages=[]; for(var i=0;i<cvs.length;i++) pages.push({wPt:595.32,hPt:841.92,jw:W,jh:H,jpeg:await PdfGen.toJpeg(cvs[i])});
-      return PdfGen.pdfBlob(pages);
-    }
-    bP.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); var k=sCat.value, n=(catName(k).toLocaleUpperCase('tr')+' SINAVI KATILIM FORMU').replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' '); await offer(n+'.pdf', await buildAtt()); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
     pick(); draw(false);
   })();
   /* ---------- eğitim katılım formu ---------- */
@@ -2175,8 +2141,8 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     function people(){ return fKat.value.split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean).map(function(l){ var a=l.split(/[;\t]/); return [(a[0]||'').trim(),(a.slice(1).join(' ')||'').trim()]; }); }
     function logoSrc(){ var o=F()&&F().logos&&F().logos.kurum; if(!o||o.mode==='none') return ''; if(o.mode==='img'&&o.data) return o.data; return LOGO_TEKSEN; }
     function loadImg(src){ return new Promise(function(ok){ var im=new Image(); im.onload=function(){ ok(im); }; im.onerror=function(){ ok(null); }; im.src=src; }); }
-    async function build(){
-      var W=1240,H=1754,S=W/595.32,FS='Arial, Helvetica, sans-serif', cvs=[], cv, ctx, LM=18*S, RM=W-18*S, TW=RM-LM;
+    async function build(o){
+      o=o||{}; var W=1240,H=1754,S=W/595.32,FS='Arial, Helvetica, sans-serif', cvs=[], cv, ctx, LM=18*S, RM=W-18*S, TW=RM-LM;
       function newPage(){ cv=document.createElement('canvas'); cv.width=W; cv.height=H; ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.textBaseline='middle'; cvs.push(cv); }
       function wrapW(t,font,maxW){ ctx.font=font; var out=[], line=''; String(t).split(/\s+/).forEach(function(w){ var tt=line?line+' '+w:w; if(ctx.measureText(tt).width>maxW && line){ out.push(line); line=w; } else line=tt; }); if(line) out.push(line); return out; }
       function line(x1,y1,x2,y2,w){ ctx.lineWidth=w||2; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); }
@@ -2189,24 +2155,24 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
       newPage();
       var h=head(), ls0=logoSrc(); 
       if(ls0){ var li=await loadImg(ls0); if(li){ var r=Math.min((h.c1-36)/li.naturalWidth,(h.hh-30)/li.naturalHeight); ctx.drawImage(li,LM+(h.c1-li.naturalWidth*r)/2,h.hy+(h.hh-li.naturalHeight*r)/2,li.naturalWidth*r,li.naturalHeight*r); } }
-      ctx.font='bold 32px '+FS; ctx.textAlign='center'; ctx.fillText('EĞİTİM KATILIM FORMU',LM+h.c1+h.c2/2,h.hy+h.hh/2); ctx.textAlign='left';
-      var inf=[['Döküman No:',di[0].value],['Revizyon No:',di[1].value],['Revizyon Tarihi:',di[2].value],['Yayın Tarihi:',di[3].value]], rh=h.hh/4;
+      ctx.font='bold 32px '+FS; ctx.textAlign='center'; ctx.fillText(o.title||'EĞİTİM KATILIM FORMU',LM+h.c1+h.c2/2,h.hy+h.hh/2); ctx.textAlign='left';
+      var dv=o.di||di.map(function(x){ return x.value; }); var inf=[['Döküman No:',dv[0]],['Revizyon No:',dv[1]],['Revizyon Tarihi:',dv[2]],['Yayın Tarihi:',dv[3]]], rh=h.hh/4;
       inf.forEach(function(r,i){ var ry=h.hy+i*rh; if(i) line(LM+h.c1+h.c2,ry,RM,ry,1.5); cell(r[0],LM+h.c1+h.c2,ry,h.lw2,rh,'20px '+FS); cell(r[1],LM+h.c1+h.c2+h.lw2,ry,h.c3-h.lw2,rh,'19px '+FS); });
       line(LM+h.c1+h.c2+h.lw2,h.hy,LM+h.c1+h.c2+h.lw2,h.hy+h.hh,1.5);
       /* bilgi tablosu */
-      var y=h.hy+h.hh+16*S, ps=people(), n=ps.length;
-      var xA=LM, wA=140*S, wB=125*S, wC=135*S, wD=TW-wA-wB-wC, rows=[[22,'EĞİTİMİN ADI',fAd.value,'EĞİTİM SAATİ',fSaat.value],[22,'İŞYERİ ÜNVANI',fIsy.value,'EĞİTİM SÜRESİ',fSure.value],[28,'EĞİTİM YERİ',fYer.value,'KATILIMCI SAYISI',fSay.value||(n?String(n):'')]];
+      var y=h.hy+h.hh+16*S, ps=o.people||people(), n=ps.length;
+      var xA=LM, wA=140*S, wB=125*S, wC=135*S, wD=TW-wA-wB-wC, rows=o.sinav?[[22,'SINAVIN ADI',o.ad,'',''],[22,'İŞYERİ ÜNVANI',o.isy,'SINAV SÜRESİ',o.sure],[28,'SINAV YERİ',o.yer,'KATILIMCI SAYISI',n?String(n):'']]:[[22,'EĞİTİMİN ADI',fAd.value,'EĞİTİM SAATİ',fSaat.value],[22,'İŞYERİ ÜNVANI',fIsy.value,'EĞİTİM SÜRESİ',fSure.value],[28,'EĞİTİM YERİ',fYer.value,'KATILIMCI SAYISI',fSay.value||(n?String(n):'')]];
       var yy=y; ctx.lineWidth=3; 
-      rows.forEach(function(r){ var rhh=r[0]*S, nl=wrapW(r[2],'22px '+FS,wB-12).length; if(nl>1) rhh=Math.max(rhh,nl*28+12); r.push(rhh); yy+=rhh; });
+      rows.forEach(function(r){ var rhh=r[0]*S, nl=wrapW(r[2],'22px '+FS,(o.sinav&&r[1]==='SINAVIN ADI'?TW-wA:wB)-12).length; if(nl>1) rhh=Math.max(rhh,nl*28+12); r.push(rhh); yy+=rhh; });
       var rowsH=yy-y, r4=22*S; ctx.lineWidth=3; ctx.strokeRect(LM,y,TW,rowsH+r4);
-      var cy=y; rows.forEach(function(r,i){ if(i) line(LM,cy,RM,cy,1.5); cell(r[1],xA,cy,wA,r[5],'bold 25px '+FS); cell(r[2],xA+wA,cy,wB,r[5],'22px '+FS); cell(r[3],xA+wA+wB,cy,wC,r[5],'bold 25px '+FS); cell(r[4],xA+wA+wB+wC,cy,wD,r[5],'22px '+FS); cy+=r[5]; });
-      line(LM,cy,RM,cy,1.5); cell('EĞİTİM TARİHİ',xA,cy,wA,r4,'bold 25px '+FS); cell(fmtDate(fTar.value),xA+wA,cy,TW-wA,r4,'22px '+FS);
-      [xA+wA,xA+wA+wB,xA+wA+wB+wC].forEach(function(x){ line(x,y,x,cy,1.5); }); cy+=r4;
+      var cy=y; rows.forEach(function(r,i){ if(i) line(LM,cy,RM,cy,1.5); cell(r[1],xA,cy,wA,r[5],'bold 25px '+FS); if(o.sinav&&i===0){ cell(r[2],xA+wA,cy,TW-wA,r[5],'bold 22px '+FS); } else { cell(r[2],xA+wA,cy,wB,r[5],'22px '+FS); cell(r[3],xA+wA+wB,cy,wC,r[5],'bold 25px '+FS); cell(r[4],xA+wA+wB+wC,cy,wD,r[5],'22px '+FS); } cy+=r[5]; });
+      line(LM,cy,RM,cy,1.5); cell(o.sinav?'SINAV TARİHİ':'EĞİTİM TARİHİ',xA,cy,wA,r4,'bold 25px '+FS); cell(o.sinav?o.tarih:fmtDate(fTar.value),xA+wA,cy,TW-wA,r4,'22px '+FS);
+      [xA+wA,xA+wA+wB,xA+wA+wB+wC].forEach(function(x,ix){ var y0=y; if(o.sinav&&ix>=1) y0=y+rows[0][5]; line(x,y0,x,cy,1.5); }); cy+=r4;
       /* içerik */
-      var by=cy; ctx.font='bold 25px '+FS; var barH=24*S; ctx.lineWidth=3; ctx.strokeRect(LM,by,TW,barH); ctx.textAlign='center'; ctx.fillText('EĞİTİM İÇERİĞİ',LM+TW/2,by+barH/2); ctx.textAlign='left';
+      var ty=cy+18*S, by, barH, cH; if(!o.sinav){ by=cy; ctx.font='bold 25px '+FS; barH=24*S; ctx.lineWidth=3; ctx.strokeRect(LM,by,TW,barH); ctx.textAlign='center'; ctx.fillText('EĞİTİM İÇERİĞİ',LM+TW/2,by+barH/2); ctx.textAlign='left';
       var cLines=[]; fIc.value.split(/\n/).forEach(function(par){ if(!par.trim()){ return; } wrapW(par.trim(),'21px '+FS,TW-20).forEach(function(l){ cLines.push(l); }); });
-      var cH=Math.max(cLines.length*27+18, 40*S); ctx.strokeRect(LM,by+barH,TW,cH); ctx.font='21px '+FS; cLines.forEach(function(l,i){ ctx.fillText(l,LM+10,by+barH+16+i*27+10); });
-      var ty=by+barH+cH+18*S;
+      cH=Math.max(cLines.length*27+18, 40*S); ctx.strokeRect(LM,by+barH,TW,cH); ctx.font='21px '+FS; cLines.forEach(function(l,i){ ctx.fillText(l,LM+10,by+barH+16+i*27+10); });
+      ty=by+barH+cH+18*S; }
       /* katılımcı tablosu */
       var rowH=21.6*S, hdrH=30*S, footH=55*S, wN=40/1.2483*S, wI=145/1.2483*S, wD2=95/1.2483*S, wG=191/1.2483*S, wAd=TW-wN-wI-wD2-wG;
       var idx=0, total=Math.max(n,13);
@@ -2216,7 +2182,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
         var tb=top, th=hdrH+cnt*rowH; ctx.lineWidth=3; ctx.strokeRect(LM,tb,TW,th);
         var xs=[LM+wN,LM+wN+wAd,LM+wN+wAd+wG,LM+wN+wAd+wG+wI]; xs.forEach(function(x){ line(x,tb,x,tb+th,1.5); });
         line(LM,tb+hdrH,RM,tb+hdrH,2.5);
-        cell('S.N',LM,tb,wN,hdrH,'bold 25px '+FS,'c'); cell('ADI SOYADI',LM+wN,tb,wAd,hdrH,'bold 25px '+FS,'c'); cell('GÖREVİ',xs[1],tb,wG,hdrH,'bold 25px '+FS,'c'); cell('İMZA',xs[2],tb,wI,hdrH,'bold 25px '+FS,'c'); cell('DEĞERLENDİRME',xs[3],tb,wD2,hdrH,'bold 14px '+FS,'c');
+        cell('S.N',LM,tb,wN,hdrH,'bold 25px '+FS,'c'); cell('ADI SOYADI',LM+wN,tb,wAd,hdrH,'bold 25px '+FS,'c'); cell('GÖREVİ',xs[1],tb,wG,hdrH,'bold 25px '+FS,'c'); cell('İMZA',xs[2],tb,wI,hdrH,'bold 25px '+FS,'c'); if(o.sinav) cell('PUAN',xs[3],tb,wD2,hdrH,'bold 22px '+FS,'c'); else cell('DEĞERLENDİRME',xs[3],tb,wD2,hdrH,'bold 14px '+FS,'c');
         for(var i=0;i<cnt;i++){ var ry=tb+hdrH+i*rowH; if(i) line(LM,ry,RM,ry,1.2); var no=idx+i+1; cell(String(no),LM,ry,wN,rowH,'22px '+FS,'c'); var pp=ps[idx+i]; if(pp){ cell(pp[0],LM+wN,ry,wAd,rowH,'21px '+FS); cell(pp[1],xs[1],ry,wG,rowH,'19px '+FS); } }
         idx+=cnt; return tb+th;
       }
@@ -2224,10 +2190,11 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
       for(;;){ var willFitAll=(function(){ var avail=H-40*S-ty-hdrH-footH; return Math.floor(avail/rowH)>=total-idx; })(); endY=table(ty,willFitAll); if(idx>=total && willFitAll) break; if(idx>=total){ break; } if(willFitAll) break; newPage(); ty=30*S; }
       /* alt imza alanı */
       var fy=endY; ctx.fillStyle='#d9d9d9'; ctx.fillRect(LM,fy,TW,footH); ctx.fillStyle='#000'; ctx.lineWidth=3; ctx.strokeRect(LM,fy,TW,footH); line(LM+TW*0.62,fy,LM+TW*0.62,fy+footH,1.5);
-      ctx.textAlign='center'; ctx.font='22px '+FS; ctx.fillText('EĞİTMEN',LM+TW*0.31,fy+16*S*0.9+8); ctx.fillText('İş Güvenliği Uzmanı',LM+TW*0.31,fy+16*S*0.9+34); ctx.fillText('İŞVEREN / İŞVEREN VEKİLİ',LM+TW*0.81,fy+16*S*0.9+8); ctx.textAlign='left';
+      ctx.textAlign='center'; ctx.font='22px '+FS; ctx.fillText(o.sinav?'SINAVI YAPAN':'EĞİTMEN',LM+TW*0.31,fy+16*S*0.9+8); ctx.fillText('İş Güvenliği Uzmanı',LM+TW*0.31,fy+16*S*0.9+34); ctx.fillText('İŞVEREN / İŞVEREN VEKİLİ',LM+TW*0.81,fy+16*S*0.9+8); ctx.textAlign='left';
       var pages=[]; for(var i=0;i<cvs.length;i++) pages.push({wPt:595.32,hPt:841.92,jw:W,jh:H,jpeg:await PdfGen.toJpeg(cvs[i])});
       return PdfGen.pdfBlob(pages);
     }
+    window.__katilimBuild=build;
     bPdf.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); var nm=(fAd.value||'EGITIM').trim()+' KATILIM FORMU.pdf'; await offer(nm, await build()); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
   })();
 
