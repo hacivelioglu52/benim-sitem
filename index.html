@@ -179,7 +179,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk değerlendirmesi ve Temel İSG belgesi hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 38 · 30.10.2026</strong></p>
+    <p class="lede">Risk değerlendirmesi ve Temel İSG belgesi hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 39 · 31.10.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -1966,12 +1966,16 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     var fYer=fld('Yer (boş bırakılabilir)',''), fGorev=fld('Görevi (boş bırakılabilir)',''); fg.appendChild(fYer.parentNode); fg.appendChild(fGorev.parentNode);
     function loadForm(){ fi.forEach(function(i){ i.value=''; }); }
     p.appendChild(fd); loadForm();
+    var pd=el('details','dpanel'); pd.open=true; pd.appendChild(el('summary',null,'Sınava giren personel (katılım formu için)')); var pb=el('div','dbody'); pd.appendChild(pb);
+    pb.appendChild(el('p','hint','Her satıra bir kişi yazın: Ad Soyad ; Görev (görev boş bırakılabilir). Katılım formu seçili sınav başlığına göre hazırlanır.'));
+    var fPpl=document.createElement('textarea'); fPpl.rows=6; fPpl.style.width='100%'; fPpl.setAttribute('aria-label','Sınava giren personel'); fPpl.placeholder='Ad Soyad ; Görev'; try{ fPpl.value=localStorage.getItem('isg-sinav-ppl')||''; }catch(e){} fPpl.addEventListener('input', function(){ try{ localStorage.setItem('isg-sinav-ppl',fPpl.value); }catch(e){} });
+    pb.appendChild(fPpl); p.appendChild(pd);
     var act=el('div','row-actions');
     var bNew=el('button','btn','Yeni sorular'); bNew.type='button';
     var bAns=el('button','btn','Cevapları göster'); bAns.type='button';
     var bS=el('button','btn primary','Sınav kâğıdı (PDF)'); bS.type='button';
     var bK=el('button','btn','Cevap anahtarı (PDF)'); bK.type='button';
-    act.appendChild(bNew); act.appendChild(bAns); act.appendChild(bS); act.appendChild(bK); p.appendChild(act);
+    var bP=el('button','btn','Sınav katılım formu (PDF)'); bP.type='button'; act.appendChild(bNew); act.appendChild(bAns); act.appendChild(bS); act.appendChild(bK); act.appendChild(bP); p.appendChild(act);
     root.appendChild(p);
     var list=el('div'); root.appendChild(list);
 
@@ -2088,6 +2092,51 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     function nm(k){ var a=(fAd.value||'').trim().toLocaleUpperCase('tr'); return (a?a+' ':'')+(k?'SINAV CEVAP ANAHTARI':'SINAV')+'.pdf'; }
     bS.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); await offer(nm(false), await buildAuto(false)); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
     bK.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); await offer(nm(true), await build(true)); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
+
+    async function buildAtt(){
+      var W=1240,H=1754,S=W/595.32,FS='Arial, Helvetica, sans-serif', cvs=[], cv, ctx, y, LM=34*S, RM=W-34*S, TW=RM-LM;
+      function newPage(){ cv=document.createElement('canvas'); cv.width=W; cv.height=H; ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#000'; ctx.textBaseline='middle'; ctx.strokeStyle='#000'; cvs.push(cv); }
+      function wrapW(t,font,maxW){ ctx.font=font; var out=[], line=''; String(t).split(/\s+/).forEach(function(w){ var tt=line?line+' '+w:w; if(ctx.measureText(tt).width>maxW && line){ out.push(line); line=w; } else line=tt; }); if(line) out.push(line); return out; }
+      function cellText(t,x,y1,w,h,font,align){ ctx.font=font; ctx.textAlign=align||'left'; var ls=wrapW(t,font,w-16), lh=parseInt(font.replace(/\D*(\d+)px.*/,'$1'),10)*1.25, top=y1+h/2-(ls.length-1)*lh/2; ls.forEach(function(l,i){ ctx.fillText(l,align==='center'?x+w/2:x+8,top+i*lh); }); ctx.textAlign='left'; }
+      var k=sCat.value, base=(TITLES[k]||(catName(k).toLocaleUpperCase('tr')+' DEĞERLENDİRME SINAVI')), title=base+' KATILIM FORMU';
+      var ppl=(fPpl.value||'').split(/\n/).map(function(l){ return l.trim(); }).filter(Boolean).map(function(l){ var a=l.split(/[;\t]/); return [a[0].trim().toLocaleUpperCase('tr'),(a[1]||'').trim()]; });
+      var lg=logoSrc(), li=lg?await loadImg(lg):null;
+      function header(){
+        var hx=LM, hy=16*S, hw=TW, hh=114*S, c1=135*S, c3=153*S, c2=hw-c1-c3;
+        ctx.lineWidth=4; ctx.strokeRect(hx,hy,hw,hh); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(hx+c1,hy); ctx.lineTo(hx+c1,hy+hh); ctx.moveTo(hx+c1+c2,hy); ctx.lineTo(hx+c1+c2,hy+hh); ctx.stroke();
+        if(li){ var r=Math.min((c1-30)/li.naturalWidth,(hh-30)/li.naturalHeight); ctx.drawImage(li,hx+(c1-li.naturalWidth*r)/2,hy+(hh-li.naturalHeight*r)/2,li.naturalWidth*r,li.naturalHeight*r); }
+        ctx.fillStyle='#000'; ctx.font='bold 25px '+FS; ctx.textAlign='center'; var tl=wrapW(title,'bold 25px '+FS,c2-30), tlh=34, ty=hy+hh/2-(tl.length-1)*tlh/2; tl.forEach(function(l,i){ ctx.fillText(l,hx+c1+c2/2,ty+i*tlh); }); ctx.textAlign='left';
+        var inf=[['Döküman No:',fi[0].value],['Revizyon No:',fi[1].value],['Revizyon Tarihi:',fi[2].value],['Yayın Tarihi:',fi[3].value]], rh=hh/4, lw2=76*S;
+        inf.forEach(function(r,i){ var ry=hy+i*rh; if(i){ ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2,ry); ctx.lineTo(hx+hw,ry); ctx.stroke(); } cellText(r[0],hx+c1+c2,ry,lw2,rh,'20px '+FS); cellText(r[1],hx+c1+c2+lw2,ry,c3-lw2,rh,'20px '+FS); });
+        ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2+lw2,hy); ctx.lineTo(hx+c1+c2+lw2,hy+hh); ctx.stroke();
+        return hy+hh+26*S;
+      }
+      newPage(); y=header();
+      var rowH=21*S, lab=[['SINAVIN ADI',base],['FİRMASI',fFirm.value],['YER',fYer.value],['TARİH',fmtDate(fTar.value)],['KATILAN SAYISI',String(ppl.length||'')]], cA=62*S, nameH=0;
+      var nl=wrapW(base,'21px '+FS,TW-cA-16); var h0=Math.max(rowH,nl.length*27+10); var th=h0+rowH*4;
+      ctx.lineWidth=3; ctx.strokeRect(LM,y,TW,th); ctx.lineWidth=1.5; var ry=y;
+      lab.forEach(function(r,i){ var hh=i===0?h0:rowH; if(i){ ctx.beginPath(); ctx.moveTo(LM,ry); ctx.lineTo(RM,ry); ctx.stroke(); } cellText(r[0],LM,ry,cA,hh,'bold 17px '+FS); cellText(r[1],LM+cA,ry,TW-cA,hh,'21px '+FS); ry+=hh; });
+      ctx.beginPath(); ctx.moveTo(LM+cA,y); ctx.lineTo(LM+cA,y+th); ctx.stroke();
+      y+=th+22*S;
+      var cols=[34*S,0,120*S,80*S,56*S]; cols[1]=TW-cols[0]-cols[2]-cols[3]-cols[4]; var hd=['S.N','ADI SOYADI','GÖREVİ','İMZA','PUAN'];
+      var rH=26*S, total=Math.max(ppl.length,10), idx=0;
+      function tableHead(){ ctx.lineWidth=2; ctx.fillStyle='#e8e8e8'; ctx.fillRect(LM,y,TW,rH); ctx.fillStyle='#000'; ctx.strokeRect(LM,y,TW,rH); var x=LM; hd.forEach(function(t,i){ cellText(t,x,y,cols[i],rH,'bold 20px '+FS,'center'); x+=cols[i]; if(i<4){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+rH); ctx.stroke(); } }); y+=rH; }
+      tableHead();
+      while(idx<total){
+        if(y+rH>H-150*S){ newPage(); y=header(); tableHead(); }
+        var pr=ppl[idx]||['',''];
+        ctx.lineWidth=1.5; ctx.strokeRect(LM,y,TW,rH); var x=LM;
+        [String(idx+1),pr[0],pr[1],'',''].forEach(function(t,i){ if(t) cellText(t,x,y,cols[i],rH,(i===1?'20px ':'19px ')+FS,i===0?'center':'left'); x+=cols[i]; if(i<4){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,y+rH); ctx.stroke(); } });
+        y+=rH; idx++;
+      }
+      y+=34*S; if(y+90*S>H-30){ newPage(); y=60*S; }
+      var bw=(TW-20*S)/2; ctx.lineWidth=2; ctx.strokeRect(LM,y,bw,78*S); ctx.strokeRect(LM+bw+20*S,y,bw,78*S);
+      cellText('SINAV SORUMLUSU / EĞİTMEN',LM,y,bw,26*S,'bold 19px '+FS,'center'); cellText('İŞVEREN / İŞVEREN VEKİLİ',LM+bw+20*S,y,bw,26*S,'bold 19px '+FS,'center');
+      cvs.forEach(function(c,i){ if(cvs.length>1){ var x=c.getContext('2d'); x.textBaseline='alphabetic'; x.font='20px '+FS; x.fillStyle='#666'; x.textAlign='center'; x.fillText('Sayfa '+(i+1)+' / '+cvs.length,W/2,H-34); } });
+      var pages=[]; for(var i=0;i<cvs.length;i++) pages.push({wPt:595.32,hPt:841.92,jw:W,jh:H,jpeg:await PdfGen.toJpeg(cvs[i])});
+      return PdfGen.pdfBlob(pages);
+    }
+    bP.addEventListener('click', async function(){ try{ setStatus('PDF hazırlanıyor...'); var k=sCat.value, n=(catName(k).toLocaleUpperCase('tr')+' SINAVI KATILIM FORMU').replace(/[\\\/:*?"<>|]/g,' ').replace(/\s+/g,' '); await offer(n+'.pdf', await buildAtt()); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
     pick(); draw(false);
   })();
   /* ---------- eğitim katılım formu ---------- */
