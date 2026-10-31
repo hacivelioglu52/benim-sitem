@@ -134,7 +134,7 @@ header{margin-bottom:10px}
 .firmbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .firmbar label{font-size:13px;font-weight:600;color:var(--muted);flex:0 0 auto}
 .firmbar select{flex:1 1 auto;font-weight:600}
-.tabs{position:sticky;top:0;z-index:20;background:var(--bg);margin-bottom:12px;padding-top:4px}
+.navwrap{position:sticky;top:0;z-index:20;background:var(--bg);margin-bottom:12px;padding-top:6px}.navwrap .tabs{position:static;margin-bottom:0}.groups{display:flex;gap:6px;margin-bottom:6px}.groups button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:6px 4px;font-weight:600;font-size:14px;min-height:38px;white-space:nowrap}.groups button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}.tabs button[hidden]{display:none}
 .tabs button{padding:10px 12px;font-size:14px}
 .bar{padding:10px 12px;gap:8px;margin-bottom:12px;align-items:center}
 .bar>.btn{flex:0 0 auto}
@@ -179,13 +179,14 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk değerlendirmesi ve Temel İSG belgesi hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 41 · 31.10.2026</strong></p>
+    <p class="lede">Risk değerlendirmesi, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 42 · 31.10.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select></div>
 
+  <div class="navwrap"><div class="groups" id="groups" role="group" aria-label="Ana bölümler"></div>
   <div class="tabs" role="tablist" aria-label="Bölümler">
     <button role="tab" id="tab-risk" aria-selected="true" aria-controls="p-risk" type="button">Risk (RD)</button>
     <button role="tab" id="tab-cert" aria-selected="false" aria-controls="p-cert" type="button">İSG belgesi</button>
@@ -198,7 +199,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-sinav" aria-selected="false" aria-controls="p-sinav" type="button">Sınav hazırla</button>
     <button role="tab" id="tab-ocr" aria-selected="false" aria-controls="p-ocr" type="button">Yazı biçimi</button>
     <button role="tab" id="tab-rep" aria-selected="false" aria-controls="p-rep" type="button">Aylık sayılar</button>
-  </div>
+  </div></div>
 
   <section id="p-risk" role="tabpanel" aria-labelledby="tab-risk"></section>
   <section id="p-cert" role="tabpanel" aria-labelledby="tab-cert" hidden></section>
@@ -830,7 +831,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     document.getElementById('rep-dt2').textContent= repSel ? 'Günlük sayılar: '+monthName(repSel) : 'Günlük sayılar';
     var d=document.getElementById('rep-detail'); d.textContent='';
-    document.getElementById('rep-dt').textContent= repSel ? 'Ayrıntı: '+monthName(repSel) : 'Ayrıntı';
+    document.getElementById('rep-dt').textContent= repSel ? 'Ayrıntı: '+monthName(repSel) : 'Ayrıntı'; document.getElementById('rep-dt2').parentNode.style.display=repSel?'':'none'; document.getElementById('rep-dt').parentNode.style.display=repSel?'':'none';
     if(repSel){ a[repSel].items.sort(function(x,y){ return x.d<y.d?-1:x.d>y.d?1:0; }).forEach(function(o){ var r=el('div'); r.appendChild(el('span',null,(o.t==='risk'?'Risk · ':'İSG · ')+o.n+(o.f?' · '+o.f:''))); r.appendChild(el('span',null,o.d.split('-').reverse().join('.'))); d.appendChild(r); }); }
   }
   document.getElementById('rep-csv').addEventListener('click', async function(){
@@ -2056,7 +2057,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     var kSure=kfld('Sınav süresi (örn. 20 dakika)'), kSaat=kfld('Sınav saati');
     var kl=el('label','field'); kl.appendChild(el('span',null,'Sınava giren personel (her satır: Ad Soyad ; Görev)')); var kKat=document.createElement('textarea'); kKat.className='ocr-out'; kKat.style.minHeight='140px'; kKat.placeholder='Örn: AYŞE YILMAZ ; Satış Danışmanı'; kl.appendChild(kKat); kb.appendChild(kl);
     var ka=el('div','row-actions'); var kFrom=el('button','btn','İSG listesinden al'); kFrom.type='button'; var kPdf=el('button','btn primary','Sınav katılım formu (PDF)'); kPdf.type='button'; ka.appendChild(kFrom); ka.appendChild(kPdf); kb.appendChild(ka);
-    kp.open=true; p.appendChild(kp);
+    p.appendChild(kp);
     kFrom.addEventListener('click', function(){ var d=lsGet('cert-olusturucu-v1'), rows=(d&&d.rows)||[]; var lines=rows.filter(function(r){ return r.ad; }).map(function(r){ return r.ad+' ; '+(r.gorev||''); }); if(!lines.length){ setStatus('İSG listesinde isim yok.','bad'); return; } kKat.value=lines.join('\n'); setStatus(lines.length+' kişi listeden alındı.','ok'); });
     function examTitle(){ var k=sCat.value; return TITLES[k]||(catName(k).toLocaleUpperCase('tr')+' DEĞERLENDİRME SINAVI'); }
     kPdf.addEventListener('click', async function(){ try{
@@ -2507,12 +2508,12 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     return o+'</svg>';
   }
   var p=el('div','panel'); p.appendChild(el('h2',null,'Görsel afiş (personel bilgilendirme)'));
-  p.appendChild(el('p','hint','İş kolunu, acil durumu ve görev yerini seçin; adım adım resimli afiş hazırlanır. PDF olarak yazdırıp çalışma alanına asabilirsiniz.'));
+  p.appendChild(el('p','hint','İş kolunu ve konuyu seçin; adım adım resimli afiş hazırlanır. PDF olarak yazdırıp asabilirsiniz. Birden fazla eğitim seçmek için aşağıdaki arama alanını kullanın.'));
   var g=el('div','fields roomy');
   function sel(label,opts){ var l=el('label','field'); l.appendChild(el('span',null,label)); var s=document.createElement('select'); opts.forEach(function(o){ var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; s.appendChild(op); }); l.appendChild(s); g.appendChild(l); return s; }
   var sSec=sel('İş kolu',SECT), sMode=sel('İçerik',[['acil','Acil durum afişleri'],['egitim','Eğitim görselleri (işbaşı, İSG ve temel İSG konuları)']]), sS=sel('Konu',SN), sR=sel('Görev yeri',ROLES);
   p.appendChild(g);
-  var act=el('div','row-actions'), b1=el('button','btn primary','Afiş (PDF)'), b2=el('button','btn','Tüm görev yerleri (PDF)'), b3=el('button','btn','Resim (PNG)'), b4=el('button','btn','Seçili iş kolu ve içeriğin tümü (PDF)'), b5=el('button','btn','Dağıtım kartı (A4\'te 4 adet)'); [b1,b2,b3,b4,b5].forEach(function(b){ b.type='button'; act.appendChild(b); }); p.appendChild(act);
+  var act=el('div','row-actions'), b1=el('button','btn primary','Afiş (PDF)'), b2=el('button','btn','Tüm görev yerleri (PDF)'), b3=el('button','btn','Resim (PNG)'), b4=el('button','btn','Seçili iş kolu ve içeriğin tümü (PDF)'), b5=el('button','btn','Dağıtım kartı (A4\'te 4 adet)'); [b1,b3].forEach(function(b){ b.type='button'; act.appendChild(b); }); p.appendChild(act); var mo=el('details','dpanel'); mo.appendChild(el('summary',null,'Diğer çıktılar (tüm görev yerleri, tüm rehber, dağıtım kartı)')); var mob=el('div','dbody'); var moa=el('div','row-actions'); [b2,b4,b5].forEach(function(b){ b.type='button'; moa.appendChild(b); }); mob.appendChild(moa); mo.appendChild(mob); p.appendChild(mo);
   var prev=el('div'); prev.style.cssText='max-width:560px;margin:12px auto;border:1px solid var(--line);border-radius:8px;overflow:hidden'; p.appendChild(prev);
   root.appendChild(p);
   function secScn(){ if(sMode.value==='egitim'){ return sSec.value==='magaza'?SNE:SNE.filter(function(x){ return SNE_GEN.indexOf(x[0])>=0; }); } var l=SC_S[sSec.value]; return l?SN.filter(function(x){ return l.indexOf(x[0])>=0; }):SN; }
@@ -2520,9 +2521,10 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   function fillAll(){ fillSel(sS,secScn()); fillRoles(); }
   function fillRoles(){ if(sMode.value==='egitim'){ fillSel(sR,[['genel','Tüm personel']]); return; } var rl=(ROLES_S[sSec.value]||ROLES), d=S[sS.value], cur=sR.value; var opts=rl.filter(function(r){ return d.roles[r[0]]||r[0]==='genel'||sSec.value==='ofis'||sSec.value==='destek'; }); if(!opts.length) opts=[['genel','Tüm personel']]; fillSel(sR,opts); if(!opts.some(function(o){return o[0]===cur;})) sR.selectedIndex=0; }
   function curRole(){ return sR.value||'genel'; }
+  function modeUi(){ var e=sMode.value==='egitim'; sR.parentNode.style.display=e?'none':''; b2.style.display=e?'none':''; }
   function PO(sc,r){ return poster(sc,r,sSec.value); }
   function draw(){ prev.innerHTML=PO(sS.value,curRole()).replace(/width="1240" height="1754"/,'style="width:100%;height:auto;display:block"'); }
-  sMode.addEventListener('change',function(){ fillAll(); draw(); }); sSec.addEventListener('change',function(){ fillAll(); draw(); }); sS.addEventListener('change',function(){ fillRoles(); draw(); }); sR.addEventListener('change',draw); fillAll(); draw();
+  sMode.addEventListener('change',function(){ fillAll(); modeUi(); draw(); }); sSec.addEventListener('change',function(){ fillAll(); draw(); }); sS.addEventListener('change',function(){ fillRoles(); draw(); }); sR.addEventListener('change',draw); fillAll(); modeUi(); draw();
   function toCanvas(svg){ return new Promise(function(ok,no){ var im=new Image(); im.onload=function(){ var c=document.createElement('canvas'); c.width=W; c.height=H; c.getContext('2d').drawImage(im,0,0,W,H); ok(c); }; im.onerror=function(){ no(new Error('Afiş hazırlanamadı.')); }; im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg); }); }
   async function pdf(list,name){ var pages=[]; for(var i=0;i<list.length;i++){ var c=await toCanvas(list[i]); pages.push({wPt:595.32,hPt:841.92,jw:W,jh:H,jpeg:await PdfGen.toJpeg(c)}); } await offer(name,PdfGen.pdfBlob(pages)); }
   var sname=function(){ return sub(SN.concat(SNE).filter(function(x){return x[0]===sS.value;})[0][1],sSec.value).toLocaleUpperCase('tr'); };
@@ -2556,9 +2558,12 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
 
   /* ---------- sekmeler ---------- */
   var tabs=['risk','cert','req','firm','stamp','katilim','acilrehber','afis','sinav','ocr','rep'];
-  function show(n){ tabs.forEach(function(t){ var on=t===n; document.getElementById('tab-'+t).setAttribute('aria-selected',on?'true':'false'); document.getElementById('p-'+t).hidden=!on; }); try{ localStorage.setItem('isg-tab',n); }catch(e){} if(n==='rep') renderReport(); if(n==='firm') doPreview(); }
+  var GRP=[['Belgeler',['risk','cert','req']],['Eğitim',['katilim','acilrehber','afis','sinav']],['Ayarlar',['firm','stamp','ocr']],['Sayılar',['rep']]];
+  var gbox=document.getElementById('groups'), gbtn=GRP.map(function(g){ var b=document.createElement('button'); b.type='button'; b.textContent=g[0]; b.addEventListener('click',function(){ var cur=null; try{ cur=localStorage.getItem('isg-tab-'+g[0]); }catch(e){} show(g[1].indexOf(cur)>=0?cur:g[1][0]); }); gbox.appendChild(b); return b; });
+  function grpSync(n){ GRP.forEach(function(g,i){ var on=g[1].indexOf(n)>=0; gbtn[i].setAttribute('aria-pressed',on?'true':'false'); g[1].forEach(function(t){ document.getElementById('tab-'+t).hidden=!on||g[1].length<2; }); if(on){ try{ localStorage.setItem('isg-tab-'+g[0],n); }catch(e){} document.querySelector('.tabs').style.display=g[1].length<2?'none':''; } }); }
+  function show(n){ tabs.forEach(function(t){ var on=t===n; document.getElementById('tab-'+t).setAttribute('aria-selected',on?'true':'false'); document.getElementById('p-'+t).hidden=!on; }); grpSync(n); try{ localStorage.setItem('isg-tab',n); }catch(e){} if(n==='rep') renderReport(); if(n==='firm') doPreview(); }
   tabs.forEach(function(t){ document.getElementById('tab-'+t).addEventListener('click', function(){ show(t); }); });
-  var st=null; try{ st=localStorage.getItem('isg-tab'); }catch(e){} if(st && tabs.indexOf(st)>=0) show(st);
+  var st=null; try{ st=localStorage.getItem('isg-tab'); }catch(e){} show(st && tabs.indexOf(st)>=0 ? st : 'risk');
   renderStrip(); renderReport();
 
   /* ---------- çevrimdışı çalışma (servis çalışanı) ---------- */
