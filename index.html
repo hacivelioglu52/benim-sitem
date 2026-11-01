@@ -179,7 +179,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk değerlendirmesi, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 43 · 01.11.2026</strong></p>
+    <p class="lede">Risk değerlendirmesi, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 44 · 01.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -191,6 +191,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-risk" aria-selected="true" aria-controls="p-risk" type="button">Risk (RD)</button>
     <button role="tab" id="tab-cert" aria-selected="false" aria-controls="p-cert" type="button">İSG belgesi</button>
     <button role="tab" id="tab-req" aria-selected="false" aria-controls="p-req" type="button">Talep formu</button>
+    <button role="tab" id="tab-plan" aria-selected="false" aria-controls="p-plan" type="button">Yıllık plan</button>
     <button role="tab" id="tab-firm" aria-selected="false" aria-controls="p-firm" type="button">Firma</button>
     <button role="tab" id="tab-stamp" aria-selected="false" aria-controls="p-stamp" type="button">İmza / Kaşe</button>
     <button role="tab" id="tab-katilim" aria-selected="false" aria-controls="p-katilim" type="button">Katılım formu</button>
@@ -205,6 +206,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
   <section id="p-cert" role="tabpanel" aria-labelledby="tab-cert" hidden></section>
 
   <section id="p-req" role="tabpanel" aria-labelledby="tab-req" hidden></section>
+  <section id="p-plan" role="tabpanel" aria-labelledby="tab-plan" hidden></section>
   <section id="p-firm" role="tabpanel" aria-labelledby="tab-firm" hidden></section>
 
   <section id="p-stamp" role="tabpanel" aria-labelledby="tab-stamp" hidden>
@@ -2562,9 +2564,205 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   b3.addEventListener('click', async function(){ try{ var c=await toCanvas(PO(sS.value,curRole())); c.toBlob(function(b){ offer('AFİŞ '+sname()+'.png',b); },'image/png'); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
 })();
 
+
+/* ---------- Yıllık plan (eğitim / çalışma) ---------- */
+(function(){
+  var root=document.getElementById('p-plan'); if(!root) return;
+  var MO=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var K='6331 sayılı İSG Kanunu', U='Çalışanların İSG Eğitimlerinin Usul ve Esasları Hakkında Yönetmelik', AC='İşyerlerinde Acil Durumlar Hakkında Yönetmelik', HZ='İSG Hizmetleri Yönetmeliği', RD='İSG Risk Değerlendirmesi Yönetmeliği', EK='İş Ekipmanlarının Kullanımında Sağlık ve Güvenlik Şartları Yönetmeliği', HJ='İş Hijyeni Ölçüm, Test ve Analizleri Hakkında Yönetmelik', BN='İşyeri Bina ve Eklentilerinde Alınacak Sağlık ve Güvenlik Önlemlerine İlişkin Yönetmelik', KD='Kişisel Koruyucu Donanımların İşyerlerinde Kullanılması Hakkında Yönetmelik', KM='Kimyasal Maddelerle Çalışmalarda Sağlık ve Güvenlik Önlemleri Hakkında Yönetmelik', SI='Sağlık ve Güvenlik İşaretleri Yönetmeliği', KR='İSG Kurulları Hakkında Yönetmelik', YG='Binaların Yangından Korunması Hakkında Yönetmelik';
+  var A=[1,2,3,4,5,6,7,8,9,10,11,12], EV=[2,4,6,8,10,12];
+  function g(n,s,y,d){ return {g:1,n:n,s:s||'',y:y||'',d:d||'',m:[]}; }
+  function i(n,s,y,d,m){ return {n:n,s:s||'',y:y||'',d:d||'',m:m||[]}; }
+  var P={};
+  P['egt-ozet']=[
+    i('Temel İSG Eğitimi','İSG Uzmanı / İşveren / İşyeri Hekimi',U,'',EV),
+    i('Risk Değerlendirme Ekip Eğitimi','İSG Uzmanı / İşveren',RD,'',EV),
+    i('Acil Durum Destek Ekibi Eğitimi','İSG Uzmanı / İşveren',AC+' / '+YG,'',EV)];
+  var EGU='İGU', EYH='İşyeri Hekimi';
+  P['egt-kap']=[
+    i('İSG eğitim planları ve kayıtlarının hazırlanması','İSG Uzmanı / İşyeri Hekimi',K+' md.17','',A),
+    g('İşe başlama eğitimi (çalışan fiilen çalışmaya başlamadan önce)','Mağaza müdürü / amir',U,'2 saat'),
+    i('Çalışma mevzuatı ile ilgili bilgiler','','','',A), i('Çalışanların yasal hak ve sorumlulukları','','','',A), i('İşyeri temizliği ve düzeni','','','',A), i('İş kazası ve meslek hastalığından doğan hukuki sonuçlar','','','',A), i('İşyeri genel İSG kuralları','','','',A), i('Yapılan işe özgü genel bilgi ve kurallar','','','',A), i('Kullanılacak ekipman tanıtımı ve alınacak güvenlik tedbirleri','','','',A),
+    g('Genel konular (tüm çalışanlara)',EGU,U,'4 saat'),
+    i('Çalışma mevzuatı ile ilgili bilgiler','','','',[1]), i('Çalışanların yasal hak ve sorumlulukları','','','',[4]), i('İşyeri temizliği ve düzeni','','','',[6]), i('İş kazası ve meslek hastalığından doğan hukuki sonuçlar','','','',[2]),
+    g('Sağlık konuları (tüm çalışanlara)',EYH,U,'4 saat'),
+    i('Meslek hastalıklarının sebepleri','','','',[3]), i('Hastalıktan korunma prensipleri ve korunma tekniklerinin uygulanması','','','',[3]), i('Biyolojik ve psikososyal risk etmenleri','','','',[5]), i('İlkyardım','','','',[8]), i('Tütün ürünlerinin zararları ve pasif etkilenim','','','',[9]),
+    g('Teknik konular (tüm çalışanlara)',EGU,U,'4 saat'),
+    i('Kimyasal, fiziksel ve ergonomik risk etmenleri','','','',[1,4,7,10]), i('Elle kaldırma ve taşıma','','','',[1,4,7,10]), i('Parlama, patlama, yangın ve yangından korunma','','','',[2]), i('İş ekipmanlarının güvenli kullanımı','','','',[5]), i('Ekranlı araçlarla çalışma','','','',[3]), i('Elektrik tehlikeleri, riskleri ve önlemleri','','','',[1,4,7,10]), i('İş kazalarının sebepleri ve korunma prensipleri ile tekniklerinin uygulanması','','','',[1]), i('Sağlık ve güvenlik işaretleri','','','',[1]), i('Kişisel koruyucu donanım kullanımı','','','',[2]), i('İSG genel kuralları ve güvenlik kültürü','','','',[2]), i('Tahliye ve kurtarma','','','',[2]),
+    g('Diğer konular',EGU+' / '+EYH,U,'1 saat'),
+    i('İş kazasında davranış şekilleri','','','',[1]), i('Kimyasallarla çalışma ve güvenlik','','','',[2,5,8]), i('Deprem durumunda davranış şekilleri ve güvenlik','','','',[1,3,6,9]),
+    g('Acil durum ekipleri eğitimleri','Dış eğitim',AC+' / '+K+' md.11',''),
+    i('Yangınla mücadele','','','',[1,4,7,10]), i('İlkyardım','','','',[1,4,7,10]), i('Tahliye ve kurtarma','','','',[1,4,7,10])];
+  P['cal-ozet']=[
+    i('Risk analizi kontrol / yapım','İşveren / İSG Uzmanı / İşyeri Hekimi / Destek Elemanları / Çalışan Temsilcisi',RD,'',EV),
+    i('Acil durum planı kontrol / yapım','İşveren / İSG Uzmanı / İşyeri Hekimi / Destek Elemanları / Çalışan Temsilcisi',AC,'',EV),
+    i('İSG eğitimleri','İSG Uzmanı / İşyeri Hekimi',U,'',EV),
+    i('Saha denetimi','İSG Uzmanı / İşyeri Hekimi',K,'',EV),
+    i('Sağlık tetkiklerinin yapılması','İşyeri Hekimi',K,'',EV),
+    i('İşbaşı eğitimleri','İnsan Kaynakları',U,'',EV),
+    i('Periyodik muayeneler','İşyeri Hekimi',K,'',EV),
+    i('Mekanik iş ekipmanı periyodik kontrolleri','İşveren (gerektiğinde)',EK,'',[]),
+    i('Elektrik tesisatı periyodik kontrolleri','İşveren (gerektiğinde)',EK,'',[]),
+    i('Ortam ölçümü','İşveren (gerektiğinde)',HJ,'',[]),
+    i('Acil durum tatbikatı','İşyeri yönetimi',AC,'',[]),
+    i('İş kazalarının raporlanması','İSG Uzmanı / İşyeri Hekimi',K,'',EV),
+    i('Kök neden analizlerinin yapılması','İşveren / İSG Uzmanı',K,'',EV),
+    i('Saha uygulama takibinin yapılması','İşveren / İSG Uzmanı',K,'',EV),
+    i('Personel istek ve önerilerinin toplanması','İşveren / İSG Uzmanı',K,'',EV),
+    i('Yıllık çalışma planının hazırlanması','İşveren / İSG Uzmanı / İşyeri Hekimi',HZ,'',[1]),
+    i('Yıllık eğitim planının hazırlanması','İşveren / İSG Uzmanı / İşyeri Hekimi',HZ,'',[1]),
+    i('Yıllık değerlendirme planının hazırlanması','İşveren / İSG Uzmanı / İşyeri Hekimi',HZ,'',[1])];
+  P['cal-kap']=[
+    g('1. İSG Kurulu'),
+    i('İSG yıllık çalışma planı','İSG Kurulu',HZ+' md.12','Yılda 1',[1]), i('İSG yıllık değerlendirme raporu','İSG Kurulu',KR+' md.6','Yılda 1',[12]),
+    g('2. Risk değerlendirmesi, tespit ve denetimler'),
+    i('Tehlikelerin tespiti, analizi, tedbirlerin alınması','İşveren',K+' md.4','Sürekli',A), i('Engelli personel listesi','İşveren',K+' md.4, 10','Gerektiğinde',A), i('İş ekipmanları listesi, periyodik kontrol planları','İşveren',EK+' md.7','Gerektiğinde',[2]), i('Ekranlı araç listesi, risklerin belirlenmesi','İşveren','Ekranlı Araçlarla Çalışmalarda Sağlık ve Güvenlik Önlemleri Hakkında Yönetmelik md.5','Sürekli',A), i('Meslek hastalığı, iş kazası takibi, kaydının tutulması','İşveren',K+' md.14','Sürekli',A), i('Genel denetimler ve saha denetim tutanakları','İşveren / İGU / İYH',K+' md.4','Sürekli',A), i('İSG tespit ve öneri defterinin doldurulması','İşveren / İGU / İYH',HZ+' md.7','Sürekli',A),
+    g('3. Tesisatlar'),
+    i('Elektrik tesisatı periyodik kontrolü','İşveren',EK+' Ek-III Tablo 3','Yılda 1',[3]), i('Topraklama tesisatı periyodik kontrolü','İşveren',EK+' Ek-III Tablo 3','Yılda 1',[3]), i('Yangın tesisatı, hortumlar, boru tesisatı periyodik kontrolü','İşveren',EK+' Ek-III Tablo 3','Yılda 1',[4]), i('Havalandırma ve klima tesisatı periyodik kontrolü','İşveren',EK+' Ek-III Tablo 3','Yılda 1',[5]), i('Yangın söndürme cihazı periyodik kontrolü','İşveren',EK+' Ek-III Tablo 3','Gerektiğinde',[3]),
+    g('4. Hijyen ve teknik ölçümler'),
+    i('Gürültü ölçümü','İşveren','Çalışanların Gürültü ile İlgili Risklerden Korunmalarına Dair Yönetmelik md.6','',[8]), i('Aydınlatma ölçümü','İşveren',BN+' Ek-I','',[8]), i('Ortam sıcaklığı (termal konfor)','İşveren',BN+' Ek-I','',[8]), i('Havalandırma (mekanik ve genel)','İşveren',BN+' Ek-I','Yılda 1',[8]),
+    g('5. Acil durumlar'),
+    i('Acil durum organizasyon şeması','İşveren',AC+' md.8','Gerektiğinde',[2,8]), i('Yangın, tahliye ve ilkyardım tatbikatları','İşveren',AC+' md.13','Yılda 1',[4]), i('Acil durum ekiplerinin oluşturulması','İşveren',AC,'Gerektiğinde',[2,8]), i('Acil durum ekiplerinin araç ve gereçlerinin kontrolü','İşveren',AC,'Gerektiğinde',A), i('Acil durum kapılarının, işaret ve levhalarının kontrolü','İşveren',SI,'Gerektiğinde',A), i('Yangın söndürme ekipman işaretlerinin kontrolü','İşveren',YG,'Gerektiğinde',A),
+    g('6. Sağlık'),
+    i('Sağlık muayenelerinin yaptırılması (işe giriş)','İşveren',K+' md.15','İşe girişte',A), i('Sağlık muayenelerinin yaptırılması (işe dönüş)','İşveren',K+' md.15','Çalışmaya başlamadan',A), i('Periyodik muayenelerin yapılması','İşveren',K+' md.15','Tehlike sınıfına göre',A), i('İlkyardım malzemelerinin kontrolü','İşveren',BN+' Ek-I','Gerektiğinde',A), i('Engelli personel sağlık kontrolleri','İşveren',K+' md.10','Gerektiğinde',A), i('Duş ve tuvaletlerin kontrolü ve temizliği','İşveren',BN+' Ek-I','Gerektiğinde',A),
+    g('7. Kimyasallar ve KKD'),
+    i('Kimyasal madde envanterinin oluşturulması','İşveren',KM,'Gerektiğinde',[1]), i('Güvenlik bilgi formlarının temini ve ilgili yerlere asılması','İşveren',KM,'Gerektiğinde',[1]), i('KKD ihtiyaç tespiti ve listesi','İşveren',KD+' md.6, 7','Gerektiğinde',[1]), i('KKD bakım ve kontrol kayıtları, talimatları','İşveren',KD+' md.6','Gerektiğinde',[1]),
+    g('8. Talimatlar, planlar, yayınlar'),
+    i('İSG politikasının yazılması ve yayınlanması','İşveren',K,'',[2]), i('İş ekipmanı kullanım, bakım ve güvenlik talimatları','İşveren',EK+' md.10','Gerektiğinde',[3]), i('İş talimatları ve prosedürlerin yapılması, kontrolü','İşveren',K,'Gerektiğinde',[3]), i('Bakım ve onarım iş planı ve tedbirlerin planlanması','İşveren',EK+' Ek-III','Gerektiğinde',[1,4,7,10]), i('İSG panosunun oluşturulması','İşveren',K,'Gerektiğinde',[8]), i('Genel ikaz ve uyarı levha ve işaretlerinin tespiti, asılması','İşveren',SI,'Sürekli',A),
+    g('9. Sözleşmeler ve sertifikalar'),
+    i('İlkyardımcı listesi ve sertifikaları','İşveren',K,'Sürekli',A), i('Yangın müdahale eğitim sertifikaları ve listesi','İşveren',AC+' md.11','Sürekli',A), i('Tahliye ve kurtarma eğitim sertifikası ve listesi','İşveren',AC+' md.11','Sürekli',A), i('İş güvenliği uzmanı ve işyeri hekimi sözleşmeleri','İşveren',K+' md.5','Sürekli',A)];
+  var HZC={az:['AZ TEHLİKELİ','Temel eğitim süresi en az 8 saat; tekrar 3 yılda bir'],te:['TEHLİKELİ','Temel eğitim süresi en az 12 saat; tekrar 2 yılda bir'],ct:['ÇOK TEHLİKELİ','Temel eğitim süresi en az 16 saat; tekrar yılda bir']};
+  var KEY='isg-plan-v2';
+  function load(){ var d=lsGet(KEY); return (d&&typeof d==='object')?d:{}; }
+  var st=null;
+  function fid(){ var f=F(); return f&&f.id||'x'; }
+  function cur(){ var all=load(); st=all[fid()]; if(!st) st={type:'egt',scope:'ozet',year:String(new Date().getFullYear()),hz:'az',f:{},rows:{}}; return st; }
+  function save(){ var all=load(); all[fid()]=st; lsSet(KEY,all); }
+  function rowsOf(){ var k=st.type+'-'+(st.scope==='kap'?'kap':'ozet'); if(!st.rows[k]) st.rows[k]=JSON.parse(JSON.stringify(P[k])); return st.rows[k]; }
+  function resetRows(){ var k=st.type+'-'+(st.scope==='kap'?'kap':'ozet'); delete st.rows[k]; save(); }
+  cur();
+  var p=el('div','panel'); p.appendChild(el('h2',null,'Yıllık eğitim ve çalışma planı'));
+  p.appendChild(el('p','hint','Planın türünü seçin, bilgileri yazın, PDF veya Excel olarak indirin. Konular, sorumlular ve yasal dayanaklar hazır gelir; aylara dokunarak değiştirebilirsiniz. Firma adı ve logoları seçili firmadan alınır.'));
+  var g1=el('div','fields roomy'); p.appendChild(g1);
+  function sel(label,opts,get,set){ var l=el('label','field'); l.appendChild(el('span',null,label)); var s=document.createElement('select'); opts.forEach(function(o){ var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; s.appendChild(op); }); l.appendChild(s); s.addEventListener('change',function(){ set(s.value); save(); refresh(); }); g1.appendChild(l); s._get=get; return s; }
+  function inp(parent,label,key,type,ph){ var l=el('label','field'); l.appendChild(el('span',null,label)); var i2=document.createElement('input'); i2.type=type||'text'; if(ph) i2.placeholder=ph; i2.addEventListener('input',function(){ st.f[key]=i2.value; save(); }); l.appendChild(i2); parent.appendChild(l); i2._key=key; return i2; }
+  var sType=sel('Plan türü',[['egt','Yıllık eğitim planı'],['cal','Yıllık çalışma planı']],function(){return st.type;},function(v){ st.type=v; });
+  var sScope=sel('Kapsam',[['ozet','Özet (kısa, 3-19 konu)'],['kap','Kapsamlı (yönetmelik konularının tamamı)']],function(){return st.scope;},function(v){ st.scope=v; });
+  var sHz=sel('Tehlike sınıfı',[['az','Az tehlikeli'],['te','Tehlikeli'],['ct','Çok tehlikeli']],function(){return st.hz;},function(v){ st.hz=v; });
+  var yl=el('label','field'); yl.appendChild(el('span',null,'Yıl')); var sYear=document.createElement('input'); sYear.type='number'; sYear.min='2020'; sYear.max='2100'; sYear.addEventListener('input',function(){ st.year=sYear.value; save(); }); yl.appendChild(sYear); g1.appendChild(yl);
+  var g2=el('div','fields roomy'); p.appendChild(g2);
+  var fKod=inp(g2,'Doküman kodu','kod'), fHaz=inp(g2,'Hazırlayan','haz'), fYay=inp(g2,'Yayın tarihi','yay','date'), fRevN=inp(g2,'Revizyon no','rn'), fRevT=inp(g2,'Revizyon tarihi','rt','date');
+  var dd=el('details','dpanel'); dd.appendChild(el('summary',null,'İşyeri bilgileri (isteğe bağlı; yazılanlar planda görünür)')); var db=el('div','dbody'), dg=el('div','fields'); db.appendChild(dg); dd.appendChild(db); p.appendChild(dd);
+  var fUnv=inp(dg,'İşyeri ünvanı (boşsa seçili firma)','unv'), fIsv=inp(dg,'İşveren / işveren vekili','isv'), fSgk=inp(dg,'SGK sicil no','sgk'), fNace=inp(dg,'NACE kodu','nace'), fAdr=inp(dg,'İşyeri adresi','adr'), fKt=inp(dg,'İSG kurul tarihi','kt','date'), fKn=inp(dg,'İSG kurul no','kn');
+  var ed=el('details','dpanel'), edSum=el('summary',null,'Konuları ve ayları düzenle'); ed.appendChild(edSum); var edb=el('div','dbody'); ed.appendChild(edb); p.appendChild(ed);
+  var edhint=el('p','hint','Aya dokunarak işaretleyin veya kaldırın. Metinleri değiştirebilir, satır silebilir veya ekleyebilirsiniz.'); edb.appendChild(edhint);
+  var list=el('div'); edb.appendChild(list);
+  var ba=el('div','row-actions'), bRow=el('button','btn','Konu ekle'), bGrp=el('button','btn','Başlık ekle'), bRes=el('button','btn','Varsayılana dön'); [bRow,bGrp,bRes].forEach(function(b){ b.type='button'; ba.appendChild(b); }); edb.appendChild(ba);
+  var act=el('div','row-actions'), bPdf=el('button','btn primary','Plan (PDF)'), bXls=el('button','btn','Plan (Excel)'); [bPdf,bXls].forEach(function(b){ b.type='button'; act.appendChild(b); }); p.appendChild(act);
+  var note=el('p','hint',''); p.appendChild(note); root.appendChild(p);
+  function tiny(inpEl,ph,v,cb){ inpEl.placeholder=ph; inpEl.value=v||''; inpEl.setAttribute('aria-label',ph); inpEl.addEventListener('input',function(){ cb(inpEl.value); save(); }); return inpEl; }
+  function drawList(){
+    list.textContent=''; var rows=rowsOf(); edSum.textContent='Konuları ve ayları düzenle ('+rows.length+' satır)';
+    rows.forEach(function(r,ix){
+      var c=el('div'); c.style.cssText='border:1px solid var(--line);border-radius:8px;padding:8px;margin:6px 0;background:'+(r.g?'var(--surface)':'transparent');
+      var top=el('div','row-actions'); var ni=document.createElement('input'); ni.style.flex='1 1 200px'; tiny(ni,r.g?'Başlık':'Konu',r.n,function(v){ r.n=v; }); if(r.g) ni.style.fontWeight='700'; top.appendChild(ni);
+      var del=el('button','btn','Sil'); del.type='button'; del.addEventListener('click',function(){ rows.splice(ix,1); save(); drawList(); }); top.appendChild(del); c.appendChild(top);
+      if(!r.g){ var ch=el('div'); ch.style.cssText='display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:6px 0'; MO.forEach(function(mn,mi){ var b=el('button','btn',mn.slice(0,3)); b.type='button'; b.style.cssText='padding:6px 0;min-height:36px;font-size:13px'; function paint(){ var on=r.m.indexOf(mi+1)>=0; b.style.background=on?'var(--accent)':''; b.style.color=on?'#fff':''; b.setAttribute('aria-pressed',on); } paint(); b.addEventListener('click',function(){ var k=r.m.indexOf(mi+1); if(k>=0) r.m.splice(k,1); else r.m.push(mi+1); save(); paint(); }); ch.appendChild(b); }); c.appendChild(ch); }
+      var dt=el('div','fields'); [['Sorumlu','s'],['Yasal dayanak','y'],[st.type==='egt'?'Süre':'Periyot','d']].forEach(function(a){ var i2=document.createElement('input'); tiny(i2,a[0],r[a[1]],function(v){ r[a[1]]=v; }); dt.appendChild(i2); }); c.appendChild(dt);
+      list.appendChild(c); });
+  }
+  bRow.addEventListener('click',function(){ rowsOf().push({n:'',s:'',y:'',d:'',m:[]}); save(); drawList(); });
+  bGrp.addEventListener('click',function(){ rowsOf().push({g:1,n:'',s:'',y:'',d:'',m:[]}); save(); drawList(); });
+  bRes.addEventListener('click',function(){ if(!confirm('Bu planın satırları varsayılana döner. Emin misiniz?')) return; resetRows(); drawList(); });
+  function refresh(){ cur(); sType.value=st.type; sScope.value=st.scope; sHz.value=st.hz; sYear.value=st.year; [fKod,fHaz,fYay,fRevN,fRevT,fUnv,fIsv,fSgk,fNace,fAdr,fKt,fKn].forEach(function(x){ x.value=st.f[x._key]||''; }); drawList();
+    note.textContent=st.type==='egt'?('Planda yazacak not: '+HZC[st.hz][0]+' işyeri; '+HZC[st.hz][1]+' (Çalışanların İSG Eğitimlerinin Usul ve Esasları Hakkında Yönetmelik). Konu ve ay seçimlerini İSG uzmanınız onaylamalıdır.'):'Konu, periyot ve yasal dayanakları işyerinize göre İSG uzmanınız onaylamalıdır.'; }
+  var fs=document.getElementById('firm-sel'); if(fs) fs.addEventListener('change',function(){ setTimeout(refresh,0); });
+  refresh();
+  /* ---- ortak veri ---- */
+  function meta(){ var f=F()||{}, t=st.type==='egt'?'YILLIK EĞİTİM PLANI':'YILLIK ÇALIŞMA PLANI'; var firm=(st.f.unv||f.name||'').toLocaleUpperCase('tr'); return {firm:firm, title:'İŞ SAĞLIĞI VE GÜVENLİĞİ '+(st.year||'')+' YILI '+t, th:st.type==='egt'?'EĞİTİM KONUSU':'İŞİN KONUSU', dh:st.type==='egt'?'SÜRE':'PERİYOT'}; }
+  function ds(v){ var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(v||''); return m?m[3]+'.'+m[2]+'.'+m[1]:(v||''); }
+  function infoLines(){ var o=[], h=HZC[st.hz], f=st.f; if(f.isv) o.push('İşveren / işveren vekili: '+f.isv); if(f.sgk) o.push('SGK sicil no: '+f.sgk); if(f.adr) o.push('Adres: '+f.adr); o.push('Tehlike sınıfı: '+h[0]+(f.nace?'  /  NACE: '+f.nace:'')); if(st.type==='egt') o.push(h[1]); if(f.kt||f.kn) o.push('İSG kurul tarihi: '+ds(f.kt)+'   İSG kurul no: '+(f.kn||'')); return o; }
+  function logoK(){ var o=F()&&F().logos&&F().logos.kurum; if(!o||o.mode==='none') return ''; if(o.mode==='img'&&o.data) return o.data; return LOGO_TEKSEN; }
+  function logoF(){ var o=F()&&F().logos&&F().logos.firma; return (o&&o.mode==='img'&&o.data)?o.data:''; }
+  function loadImg(src){ return new Promise(function(ok){ if(!src) return ok(null); var im=new Image(); im.onload=function(){ ok(im); }; im.onerror=function(){ ok(null); }; im.src=src; }); }
+  function fname(ext){ var f=(meta().firm||'FİRMA').replace(/[\\\/:*?"<>|_]/g,' ').replace(/\s+/g,' ').trim(); return f+' '+(st.type==='egt'?'YILLIK EĞİTİM PLANI':'YILLIK ÇALIŞMA PLANI')+' '+(st.year||'')+'.'+ext; }
+  /* ---- PDF ---- */
+  async function buildPdf(){
+    cur(); var rows=rowsOf().filter(function(r){ return (r.n||'').trim(); }), M=meta(), W=1754,H=1240, LM=40, TW=W-80, FS='Arial, Helvetica, sans-serif';
+    var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d');
+    var cols=[48,330,200,270,90]; var mw=Math.floor((TW-cols.reduce(function(a,b){return a+b;},0))/12); var cw=cols.concat(Array(12).fill(mw)); var tw=cw.reduce(function(a,b){return a+b;},0);
+    function wrap(t,font,w){ ctx.font=font; var out=[],line=''; String(t||'').split(/\s+/).filter(Boolean).forEach(function(x){ var tt=line?line+' '+x:x; if(ctx.measureText(tt).width>w&&line){ out.push(line); line=x; } else line=tt; }); if(line) out.push(line); return out; }
+    var fN='19px '+FS, fG='bold 19px '+FS, fS='17px '+FS, fY='italic 15px '+FS;
+    var lens=[]; var no=0;
+    rows.forEach(function(r){ if(!r.g) no++; var a=wrap(r.n,r.g?fG:fN,cw[1]-16), b=wrap(r.s,fS,cw[2]-14), c=wrap(r.y,fY,cw[3]-14), d=wrap(r.d,fS,cw[4]-10); var n=Math.max(a.length*25,b.length*22,c.length*19,d.length*22); r._h=Math.max(46,n+18); r._no=r.g?'':String(no); r._L=[a,b,c,d]; });
+    var il=infoLines(), HEAD=118, infoH=il.length*26+8;
+    var FOOT=150, pages=[], curp=[], y=0, first=true;
+    function top(){ return 30+HEAD+(pages.length===0?infoH+14:16)+46; }
+    y=top();
+    rows.forEach(function(r){ if(y+r._h>H-FOOT-20 && curp.length){ pages.push(curp); curp=[]; y=top(); } curp.push(r); y+=r._h; });
+    if(curp.length||!pages.length) pages.push(curp);
+    var li=await loadImg(logoK()), lf=await loadImg(logoF()), out=[];
+    for(var pi=0;pi<pages.length;pi++){
+      ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.textBaseline='middle';
+      var hx=LM, hy=30, c1=300, c3=380, c2=TW-c1-c3; ctx.lineWidth=3; ctx.strokeRect(hx,hy,TW,HEAD); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(hx+c1,hy); ctx.lineTo(hx+c1,hy+HEAD); ctx.moveTo(hx+c1+c2,hy); ctx.lineTo(hx+c1+c2,hy+HEAD); ctx.stroke();
+      var lw=lf&&li?(c1-30)/2:c1-30; var lx=hx+15; [li,lf].forEach(function(im){ if(!im) return; var r=Math.min(lw/im.naturalWidth,(HEAD-24)/im.naturalHeight); ctx.drawImage(im,lx+(lw-im.naturalWidth*r)/2,hy+(HEAD-im.naturalHeight*r)/2,im.naturalWidth*r,im.naturalHeight*r); lx+=lw; });
+      ctx.textAlign='center'; ctx.font='bold 25px '+FS; var tl=wrap(M.firm,'bold 25px '+FS,c2-30).concat(wrap(M.title,'bold 25px '+FS,c2-30)); var th=tl.length*32; tl.forEach(function(l,k){ ctx.fillText(l,hx+c1+c2/2,hy+HEAD/2-th/2+16+k*32); }); ctx.textAlign='left';
+      var inf=[['Doküman Kodu',st.f.kod],['Hazırlayan',st.f.haz],['Yayın Tarihi',ds(st.f.yay)]]; if(st.f.rn||st.f.rt){ inf.push(['Revizyon No / Tarihi',(st.f.rn||'')+(st.f.rt?'  /  '+ds(st.f.rt):'')]); } var rh=HEAD/inf.length;
+      inf.forEach(function(a,k){ var ry=hy+k*rh; if(k){ ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2,ry); ctx.lineTo(hx+TW,ry); ctx.stroke(); } ctx.font='bold 19px '+FS; ctx.fillText(a[0],hx+c1+c2+10,ry+rh/2); ctx.font='19px '+FS; ctx.textAlign='center'; ctx.fillText(a[1]||'',hx+c1+c2+185+(c3-185)/2,ry+rh/2); ctx.textAlign='left'; });
+      ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2+175,hy); ctx.lineTo(hx+c1+c2+175,hy+HEAD); ctx.stroke();
+      var y2=hy+HEAD+14;
+      if(pi===0){ ctx.font='19px '+FS; il.forEach(function(t,k){ ctx.fillText(t,LM+10,y2+14+k*26); }); y2+=infoH; }
+      y2+=2;
+      /* tablo başlığı */
+      var hh=46, x=LM; ctx.fillStyle='#eef2f7'; ctx.fillRect(LM,y2,tw,hh); ctx.fillStyle='#000'; ctx.lineWidth=2; ctx.strokeRect(LM,y2,tw,hh);
+      var hd=['No',M.th,'SORUMLU','YÖNETMELİK / KANUN',M.dh].concat(MO.map(function(m){ return m.length>5?m.slice(0,3)+'.':m; }));
+      hd.forEach(function(t,k){ ctx.font='bold '+(k<5?17:15)+'px '+FS; ctx.textAlign='center'; ctx.fillText(t,x+cw[k]/2,y2+hh/2); x+=cw[k]; if(k<hd.length-1){ ctx.beginPath(); ctx.moveTo(x,y2); ctx.lineTo(x,y2+hh); ctx.stroke(); } }); ctx.textAlign='left';
+      var yy=y2+hh;
+      pages[pi].forEach(function(r){
+        if(r.g){ ctx.fillStyle='#f3f4f6'; ctx.fillRect(LM,yy,tw,r._h); ctx.fillStyle='#000'; }
+        ctx.lineWidth=1.5; ctx.strokeRect(LM,yy,tw,r._h); var xx=LM;
+        for(var k=0;k<cw.length;k++){ if(k>0){ ctx.beginPath(); ctx.moveTo(xx,yy); ctx.lineTo(xx,yy+r._h); ctx.stroke(); }
+          if(k===0){ ctx.font=fN; ctx.textAlign='center'; ctx.fillText(r._no,xx+cw[0]/2,yy+r._h/2); ctx.textAlign='left'; }
+          else if(k<=4){ var L=r._L[k-1], f=k===1?(r.g?fG:fN):(k===3?fY:fS), lh=k===1?25:(k===3?19:22), t0=yy+r._h/2-(L.length-1)*lh/2; ctx.font=f; L.forEach(function(l,j){ ctx.fillText(l,xx+(k===1?10:7),t0+j*lh); }); }
+          else if(!r.g && r.m.indexOf(k-4)>=0){ var cx=xx+cw[k]/2, cy=yy+r._h/2; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx-3,cy+8); ctx.lineTo(cx+11,cy-9); ctx.stroke(); ctx.lineWidth=1.5; }
+          xx+=cw[k]; }
+        yy+=r._h; });
+      /* alt bilgi */
+      var fy=H-FOOT+10, bw=TW/3; ctx.lineWidth=1.5; ctx.font='bold 18px '+FS; ctx.fillText('HAZIRLAYAN VE ONAYLAYANLAR;',LM+10,fy+12);
+      ['İş Sağlığı ve Güvenliği Uzmanı','İşyeri Hekimi','İşveren veya İşveren Vekili'].forEach(function(t,k){ ctx.strokeRect(LM+k*bw,fy+30,bw,96); ctx.font='17px '+FS; ctx.fillText(t,LM+k*bw+10,fy+46); });
+      ctx.font='17px '+FS; ctx.textAlign='right'; ctx.fillText('Sayfa '+(pi+1)+' / '+pages.length,W-LM,fy+12); ctx.textAlign='left';
+      out.push({wPt:841.92,hPt:595.32,jw:W,jh:H,jpeg:await PdfGen.toJpeg(cv)});
+    }
+    return PdfGen.pdfBlob(out);
+  }
+  bPdf.addEventListener('click',async function(){ try{ cur(); setStatus('PDF hazırlanıyor...'); await offer(fname('pdf'),await buildPdf()); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
+  /* ---- Excel ---- */
+  function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function colL(n){ var s=''; n++; while(n>0){ var m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=Math.floor((n-1)/26); } return s; }
+  async function buildXlsx(){
+    cur(); var rows=rowsOf().filter(function(r){ return (r.n||'').trim(); }), M=meta(), cells=[], merges=[], R=1;
+    function row(arr,style,h){ var x='<row r="'+R+'"'+(h?' ht="'+h+'" customHeight="1"':'')+'>'; arr.forEach(function(v,k){ if(v===null||v===undefined) return; var s=Array.isArray(v)?v[1]:style, t=Array.isArray(v)?v[0]:v; x+='<c r="'+colL(k)+R+'" s="'+s+'" t="inlineStr"><is><t xml:space="preserve">'+esc(t)+'</t></is></c>'; }); cells.push(x+'</row>'); R++; }
+    row([M.firm+' - '+M.title],3,30); merges.push('A1:Q1');
+    row([['Doküman Kodu',1],[st.f.kod||'',1]].length?['Doküman Kodu: '+(st.f.kod||'')+'   Hazırlayan: '+(st.f.haz||'')+'   Yayın Tarihi: '+ds(st.f.yay)+(st.f.rn?'   Revizyon No: '+st.f.rn:'')+(st.f.rt?'   Revizyon Tarihi: '+ds(st.f.rt):'')]:[],0); merges.push('A2:Q2');
+    infoLines().forEach(function(t){ row([t],0); merges.push('A'+(R-1)+':Q'+(R-1)); });
+    R++; row(['No',M.th,'SORUMLU','YÖNETMELİK / KANUN',M.dh].concat(MO),2,32);
+    var no=0; rows.forEach(function(r){ if(!r.g) no++; var a=[r.g?'':String(no),[r.n,r.g?2:1],r.s,r.y,r.d]; var ms=[]; for(var k=1;k<=12;k++) ms.push(!r.g&&r.m.indexOf(k)>=0?['X',4]:''); var h=Math.max(22,Math.ceil(Math.max(r.n.length/38,(r.y||'').length/32,(r.s||'').length/24))*16); row(a.map(function(v,k){ return Array.isArray(v)?v:[v,r.g?2:1]; }).concat(ms.map(function(v){ return Array.isArray(v)?v:['',r.g?2:4]; })),1,h); });
+    R++; row(['HAZIRLAYAN VE ONAYLAYANLAR;'],0); row([['İş Sağlığı ve Güvenliği Uzmanı',1],null,null,['İşyeri Hekimi',1],null,null,['İşveren veya İşveren Vekili',1]],1,60);
+    var sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><cols><col min="1" max="1" width="6" customWidth="1"/><col min="2" max="2" width="46" customWidth="1"/><col min="3" max="3" width="26" customWidth="1"/><col min="4" max="4" width="40" customWidth="1"/><col min="5" max="5" width="12" customWidth="1"/><col min="6" max="17" width="8" customWidth="1"/></cols><sheetData>'+cells.join('')+'</sheetData><mergeCells count="'+merges.length+'">'+merges.map(function(m){ return '<mergeCell ref="'+m+'"/>'; }).join('')+'</mergeCells><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+    var styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="10"/><name val="Arial"/></font><font><b/><sz val="10"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEEF2F7"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color auto="1"/></left><right style="thin"><color auto="1"/></right><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf><xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf></cellXfs></styleSheet>';
+    var z=new JSZip(); z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>');
+    z.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+    z.file('xl/workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="'+(st.type==='egt'?'Yıllık Eğitim Planı':'Yıllık Çalışma Planı')+'" sheetId="1" r:id="rId1"/></sheets></workbook>');
+    z.file('xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+    z.file('xl/styles.xml',styles); z.file('xl/worksheets/sheet1.xml',sheet);
+    return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+  bXls.addEventListener('click',async function(){ try{ cur(); setStatus('Excel hazırlanıyor...'); await offer(fname('xlsx'),await buildXlsx()); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
+})();
+
   /* ---------- sekmeler ---------- */
-  var tabs=['risk','cert','req','firm','stamp','katilim','acilrehber','afis','sinav','ocr','rep'];
-  var GRP=[['Belgeler',['risk','cert','req']],['Eğitim',['katilim','acilrehber','afis','sinav']],['Ayarlar',['firm','stamp','ocr']],['Sayılar',['rep']]];
+  var tabs=['risk','cert','req','plan','firm','stamp','katilim','acilrehber','afis','sinav','ocr','rep'];
+  var GRP=[['Belgeler',['risk','cert','req','plan']],['Eğitim',['katilim','acilrehber','afis','sinav']],['Ayarlar',['firm','stamp','ocr']],['Sayılar',['rep']]];
   var gbox=document.getElementById('groups'), gbtn=GRP.map(function(g){ var b=document.createElement('button'); b.type='button'; b.textContent=g[0]; b.addEventListener('click',function(){ var cur=null; try{ cur=localStorage.getItem('isg-tab-'+g[0]); }catch(e){} show(g[1].indexOf(cur)>=0?cur:g[1][0]); }); gbox.appendChild(b); return b; });
   function grpSync(n){ GRP.forEach(function(g,i){ var on=g[1].indexOf(n)>=0; gbtn[i].setAttribute('aria-pressed',on?'true':'false'); g[1].forEach(function(t){ document.getElementById('tab-'+t).hidden=!on||g[1].length<2; }); if(on){ try{ localStorage.setItem('isg-tab-'+g[0],n); }catch(e){} document.querySelector('.tabs').style.display=g[1].length<2?'none':''; } }); }
   function show(n){ tabs.forEach(function(t){ var on=t===n; document.getElementById('tab-'+t).setAttribute('aria-selected',on?'true':'false'); document.getElementById('p-'+t).hidden=!on; }); grpSync(n); try{ localStorage.setItem('isg-tab',n); }catch(e){} if(n==='rep') renderReport(); if(n==='firm') doPreview(); }
