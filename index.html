@@ -179,7 +179,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk değerlendirmesi, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 44 · 01.11.2026</strong></p>
+    <p class="lede">Risk değerlendirmesi, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 45 · 01.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -2658,7 +2658,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   var edhint=el('p','hint','Aya dokunarak işaretleyin veya kaldırın. Metinleri değiştirebilir, satır silebilir veya ekleyebilirsiniz.'); edb.appendChild(edhint);
   var list=el('div'); edb.appendChild(list);
   var ba=el('div','row-actions'), bRow=el('button','btn','Konu ekle'), bGrp=el('button','btn','Başlık ekle'), bRes=el('button','btn','Varsayılana dön'); [bRow,bGrp,bRes].forEach(function(b){ b.type='button'; ba.appendChild(b); }); edb.appendChild(ba);
-  var act=el('div','row-actions'), bPdf=el('button','btn primary','Plan (PDF)'), bXls=el('button','btn','Plan (Excel)'); [bPdf,bXls].forEach(function(b){ b.type='button'; act.appendChild(b); }); p.appendChild(act);
+  var act=el('div','row-actions'), bPdf=el('button','btn primary','Plan (PDF)'), bXls=el('button','btn','Plan (Excel)'), bDoc=el('button','btn','Plan (Word)'); [bPdf,bDoc,bXls].forEach(function(b){ b.type='button'; act.appendChild(b); }); p.appendChild(act);
   var note=el('p','hint',''); p.appendChild(note); root.appendChild(p);
   function tiny(inpEl,ph,v,cb){ inpEl.placeholder=ph; inpEl.value=v||''; inpEl.setAttribute('aria-label',ph); inpEl.addEventListener('input',function(){ cb(inpEl.value); save(); }); return inpEl; }
   function drawList(){
@@ -2690,8 +2690,8 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   async function buildPdf(){
     cur(); var rows=rowsOf().filter(function(r){ return (r.n||'').trim(); }), M=meta(), W=1754,H=1240, LM=40, TW=W-80, FS='Arial, Helvetica, sans-serif';
     var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d');
-    var cols=[48,330,200,270,90]; var mw=Math.floor((TW-cols.reduce(function(a,b){return a+b;},0))/12); var cw=cols.concat(Array(12).fill(mw)); var tw=cw.reduce(function(a,b){return a+b;},0);
-    function wrap(t,font,w){ ctx.font=font; var out=[],line=''; String(t||'').split(/\s+/).filter(Boolean).forEach(function(x){ var tt=line?line+' '+x:x; if(ctx.measureText(tt).width>w&&line){ out.push(line); line=x; } else line=tt; }); if(line) out.push(line); return out; }
+    var cols=[48,320,190,265,127]; var mw=Math.floor((TW-cols.reduce(function(a,b){return a+b;},0))/12); var cw=cols.concat(Array(12).fill(mw)); var tw=cw.reduce(function(a,b){return a+b;},0);
+    function wrap(t,font,w){ ctx.font=font; var out=[],line=''; String(t||'').split(/\s+/).filter(Boolean).forEach(function(x){ while(ctx.measureText(x).width>w && x.length>1){ var k=x.length-1; while(k>1&&ctx.measureText(x.slice(0,k)).width>w) k--; if(line){ out.push(line); line=''; } out.push(x.slice(0,k)); x=x.slice(k); } var tt=line?line+' '+x:x; if(ctx.measureText(tt).width>w&&line){ out.push(line); line=x; } else line=tt; }); if(line) out.push(line); return out; }
     var fN='19px '+FS, fG='bold 19px '+FS, fS='17px '+FS, fY='italic 15px '+FS;
     var lens=[]; var no=0;
     rows.forEach(function(r){ if(!r.g) no++; var a=wrap(r.n,r.g?fG:fN,cw[1]-16), b=wrap(r.s,fS,cw[2]-14), c=wrap(r.y,fY,cw[3]-14), d=wrap(r.d,fS,cw[4]-10); var n=Math.max(a.length*25,b.length*22,c.length*19,d.length*22); r._h=Math.max(46,n+18); r._no=r.g?'':String(no); r._L=[a,b,c,d]; });
@@ -2704,12 +2704,12 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     var li=await loadImg(logoK()), lf=await loadImg(logoF()), out=[];
     for(var pi=0;pi<pages.length;pi++){
       ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H); ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.textBaseline='middle';
-      var hx=LM, hy=30, c1=300, c3=380, c2=TW-c1-c3; ctx.lineWidth=3; ctx.strokeRect(hx,hy,TW,HEAD); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(hx+c1,hy); ctx.lineTo(hx+c1,hy+HEAD); ctx.moveTo(hx+c1+c2,hy); ctx.lineTo(hx+c1+c2,hy+HEAD); ctx.stroke();
+      var hx=LM, hy=30, c1=300, c3=450, c2=TW-c1-c3; ctx.lineWidth=3; ctx.strokeRect(hx,hy,TW,HEAD); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(hx+c1,hy); ctx.lineTo(hx+c1,hy+HEAD); ctx.moveTo(hx+c1+c2,hy); ctx.lineTo(hx+c1+c2,hy+HEAD); ctx.stroke();
       var lw=lf&&li?(c1-30)/2:c1-30; var lx=hx+15; [li,lf].forEach(function(im){ if(!im) return; var r=Math.min(lw/im.naturalWidth,(HEAD-24)/im.naturalHeight); ctx.drawImage(im,lx+(lw-im.naturalWidth*r)/2,hy+(HEAD-im.naturalHeight*r)/2,im.naturalWidth*r,im.naturalHeight*r); lx+=lw; });
       ctx.textAlign='center'; ctx.font='bold 25px '+FS; var tl=wrap(M.firm,'bold 25px '+FS,c2-30).concat(wrap(M.title,'bold 25px '+FS,c2-30)); var th=tl.length*32; tl.forEach(function(l,k){ ctx.fillText(l,hx+c1+c2/2,hy+HEAD/2-th/2+16+k*32); }); ctx.textAlign='left';
       var inf=[['Doküman Kodu',st.f.kod],['Hazırlayan',st.f.haz],['Yayın Tarihi',ds(st.f.yay)]]; if(st.f.rn||st.f.rt){ inf.push(['Revizyon No / Tarihi',(st.f.rn||'')+(st.f.rt?'  /  '+ds(st.f.rt):'')]); } var rh=HEAD/inf.length;
-      inf.forEach(function(a,k){ var ry=hy+k*rh; if(k){ ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2,ry); ctx.lineTo(hx+TW,ry); ctx.stroke(); } ctx.font='bold 19px '+FS; ctx.fillText(a[0],hx+c1+c2+10,ry+rh/2); ctx.font='19px '+FS; ctx.textAlign='center'; ctx.fillText(a[1]||'',hx+c1+c2+185+(c3-185)/2,ry+rh/2); ctx.textAlign='left'; });
-      ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2+175,hy); ctx.lineTo(hx+c1+c2+175,hy+HEAD); ctx.stroke();
+      inf.forEach(function(a,k){ var ry=hy+k*rh; if(k){ ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2,ry); ctx.lineTo(hx+TW,ry); ctx.stroke(); } ctx.font='bold 19px '+FS; ctx.fillText(a[0],hx+c1+c2+10,ry+rh/2); ctx.font='19px '+FS; ctx.textAlign='center'; ctx.fillText(a[1]||'',hx+c1+c2+190+(c3-190)/2,ry+rh/2); ctx.textAlign='left'; });
+      ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(hx+c1+c2+180,hy); ctx.lineTo(hx+c1+c2+180,hy+HEAD); ctx.stroke();
       var y2=hy+HEAD+14;
       if(pi===0){ ctx.font='19px '+FS; il.forEach(function(t,k){ ctx.fillText(t,LM+10,y2+14+k*26); }); y2+=infoH; }
       y2+=2;
@@ -2758,6 +2758,42 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   }
   bXls.addEventListener('click',async function(){ try{ cur(); setStatus('Excel hazırlanıyor...'); await offer(fname('xlsx'),await buildXlsx()); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
+  /* ---- Word ---- */
+  function wx(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function wr(t,o){ o=o||{}; return '<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/>'+(o.b?'<w:b/>':'')+(o.i?'<w:i/>':'')+'<w:sz w:val="'+(o.sz||18)+'"/></w:rPr><w:t xml:space="preserve">'+wx(t)+'</w:t></w:r>'; }
+  function wp(t,o){ o=o||{}; var runs=Array.isArray(t)?t.join(''):(t===''?'':wr(t,o)); return '<w:p><w:pPr>'+(o.tab?'<w:tabs><w:tab w:val="right" w:pos="15700"/></w:tabs>':'')+'<w:spacing w:before="'+(o.sb||0)+'" w:after="'+(o.sa||0)+'"/><w:jc w:val="'+(o.jc||'left')+'"/></w:pPr>'+runs+'</w:p>'; }
+  function wc(w,inner,o){ o=o||{}; return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(o.span?'<w:gridSpan w:val="'+o.span+'"/>':'')+(o.vm?'<w:vMerge'+(o.vm==='r'?' w:val="restart"':'')+'/>':'')+(o.fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+o.fill+'"/>':'')+'<w:vAlign w:val="'+(o.va||'center')+'"/></w:tcPr>'+(inner||wp(''))+'</w:tc>'; }
+  function wtbl(grid,rows,o){ o=o||{}; var tw=grid.reduce(function(a,b){return a+b;},0); return '<w:tbl><w:tblPr><w:tblW w:w="'+tw+'" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:top w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:left w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:bottom w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:right w:val="single" w:sz="6" w:space="0" w:color="000000"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000"/></w:tblBorders><w:tblCellMar><w:left w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+grid.map(function(g){ return '<w:gridCol w:w="'+g+'"/>'; }).join('')+'</w:tblGrid>'+rows.join('')+'</w:tbl>'; }
+  function wrow(cells,o){ o=o||{}; return '<w:tr><w:trPr><w:cantSplit/>'+(o.h?'<w:trHeight w:val="'+o.h+'"/>':'')+(o.hdr?'<w:tblHeader/>':'')+'</w:trPr>'+cells.join('')+'</w:tr>'; }
+  function dataBytes(u){ var m=/^data:image\/(png|jpe?g);base64,(.*)$/i.exec(u||''); if(!m) return null; var b=atob(m[2]), a=new Uint8Array(b.length); for(var k=0;k<b.length;k++) a[k]=b.charCodeAt(k); return {ext:m[1].toLowerCase()==='png'?'png':'jpeg',bytes:a}; }
+  function wdraw(rid,cx,cy,id){ return '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:docPr id="'+id+'" name="Logo'+id+'"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="'+id+'" name="Logo'+id+'"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+rid+'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>'; }
+  async function buildDocx(){
+    cur(); var rows=rowsOf().filter(function(r){ return (r.n||'').trim(); }), M=meta(), NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+    var z=new JSZip(), imgs=[], hrels='', used={png:0,jpeg:0}, logoRuns=[];
+    var srcs=[logoK(),logoF()].filter(Boolean);
+    for(var si=0;si<srcs.length;si++){ var db=dataBytes(srcs[si]); if(!db) continue; var im=await loadImg(srcs[si]); if(!im) continue; var n=si+1, name='logo'+n+'.'+(db.ext==='png'?'png':'jpg'); z.file('word/media/'+name,db.bytes); used[db.ext]=1; hrels+='<Relationship Id="rIdL'+n+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+name+'"/>'; var maxW=srcs.length>1?1250000:2500000, maxH=560000, r=Math.min(maxW/im.naturalWidth,maxH/im.naturalHeight); logoRuns.push(wdraw('rIdL'+n,Math.round(im.naturalWidth*r),Math.round(im.naturalHeight*r),n)); }
+    var inf=[['Doküman Kodu',st.f.kod||''],['Hazırlayan',st.f.haz||''],['Yayın Tarihi',ds(st.f.yay)]]; if(st.f.rn||st.f.rt) inf.push(['Revizyon No / Tarihi',(st.f.rn||'')+(st.f.rt?' / '+ds(st.f.rt):'')]);
+    var hg=[2900,8100,1900,2800], hrows=inf.map(function(a,k){ var cells=[]; if(k===0){ cells.push(wc(hg[0],wp(logoRuns.length?logoRuns:'',{jc:'center'}),{vm:'r'})); cells.push(wc(hg[1],wp(M.firm,{b:1,sz:24,jc:'center'})+wp(M.title,{b:1,sz:24,jc:'center'}),{vm:'r'})); } else { cells.push(wc(hg[0],'',{vm:'c'})); cells.push(wc(hg[1],'',{vm:'c'})); } cells.push(wc(hg[2],wp(a[0],{b:1,sz:18}))); cells.push(wc(hg[3],wp(a[1],{sz:18,jc:'center'}))); return wrow(cells,{h:inf.length>3?380:480}); });
+    var header='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:hdr '+NS+'>'+wtbl(hg,hrows)+wp('')+'</w:hdr>';
+    var fg=[5235,5235,5234];
+    var footer='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr '+NS+'>'+wp([wr('HAZIRLAYAN VE ONAYLAYANLAR;',{b:1,sz:18}),'<w:r><w:tab/></w:r>',wr('Sayfa ',{sz:16}),'<w:fldSimple w:instr=" PAGE "><w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>',wr(' / ',{sz:16}),'<w:fldSimple w:instr=" NUMPAGES "><w:r><w:rPr><w:sz w:val="16"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>'],{tab:1})+wtbl(fg,[wrow(['İş Sağlığı ve Güvenliği Uzmanı','İşyeri Hekimi','İşveren veya İşveren Vekili'].map(function(t,k){ return wc(fg[k],wp(t,{sz:17}),{va:'top'}); }),{h:1150})])+'</w:ftr>';
+    var grid=[480,2750,1800,2500,1040]; for(var k=0;k<12;k++) grid.push(594);
+    var th=['No',M.th,'SORUMLU','YÖNETMELİK / KANUN',M.dh].concat(MO.map(function(m){ return m.slice(0,3); }));
+    var body='';
+    var il=infoLines(); il.forEach(function(t){ body+=wp(t,{sz:18,sa:20}); }); body+=wp('',{sa:60});
+    var trs=[wrow(th.map(function(t,k){ return wc(grid[k],wp(t,{b:1,sz:k<5?17:15,jc:'center'}),{fill:'EEF2F7'}); }),{hdr:1,h:440})], no=0;
+    rows.forEach(function(r){ if(!r.g) no++; var f=r.g?'F3F4F6':null, cs=[wc(grid[0],wp(r.g?'':String(no),{sz:18,jc:'center'}),{fill:f}),wc(grid[1],wp(r.n,{b:r.g?1:0,sz:18}),{fill:f}),wc(grid[2],wp(r.s,{sz:16}),{fill:f}),wc(grid[3],wp(r.y,{i:1,sz:15}),{fill:f}),wc(grid[4],wp(r.d,{sz:16}),{fill:f})]; for(var m=1;m<=12;m++) cs.push(wc(grid[4+m],wp(!r.g&&r.m.indexOf(m)>=0?'✔':'',{sz:22,jc:'center',b:1}),{fill:f})); trs.push(wrow(cs,{h:430})); });
+    body+=wtbl(grid,trs);
+    var doc='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document '+NS+'><w:body>'+body+'<w:sectPr><w:headerReference w:type="default" r:id="rIdH"/><w:footerReference w:type="default" r:id="rIdF"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="2300" w:right="567" w:bottom="2200" w:left="567" w:header="400" w:footer="300" w:gutter="0"/></w:sectPr></w:body></w:document>';
+    z.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="jpg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>');
+    z.file('_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+    z.file('word/_rels/document.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdH" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rIdF" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rIdS" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+    z.file('word/_rels/header1.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+hrels+'</Relationships>');
+    z.file('word/styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="18"/><w:lang w:val="tr-TR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults></w:styles>');
+    z.file('word/header1.xml',header); z.file('word/footer1.xml',footer); z.file('word/document.xml',doc);
+    return z.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  }
+  bDoc.addEventListener('click',async function(){ try{ cur(); setStatus('Word hazırlanıyor...'); await offer(fname('docx'),await buildDocx()); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
 })();
 
   /* ---------- sekmeler ---------- */
