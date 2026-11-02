@@ -179,7 +179,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk değerlendirmesi, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 59 · 02.11.2026</strong></p>
+    <p class="lede">Risk değerlendirmesi, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 60 · 02.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -2709,7 +2709,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
     gx(i('Temel İSG Eğitimi','İSG Uzmanı / İşveren / İşyeri Hekimi',U+' md.13','{tt}',EV),'İşyeri','Tüm çalışanlar','İş kazası ve meslek hastalığı risklerinden korunma bilincinin artırılması'),
     gx(i('Risk Değerlendirme Ekip Eğitimi','İSG Uzmanı / İşveren',RD,'Ekip değişikliğinde',[1]),'İşyeri','Risk değerlendirme ekibi','Risk değerlendirme ekibinin yetkinliğinin sağlanması'),
     gx(i('Acil Durum Destek Ekibi Eğitimi','İSG Uzmanı / İşveren',AC+' / '+YG,'Ekip değişikliğinde',[1,4,7,10]),'İşyeri','Acil durum destek ekipleri','Ekiplerin görev ve müdahale yeterliliğinin sağlanması'),
-    gx(g('İşbaşı (işe başlama) eğitimi (çalışan fiilen çalışmaya başlamadan önce)','Mağaza müdürü / amir',U+' md.7','En az 2 saat'),'İşyeri','Yeni işe başlayan çalışanlar','İşe ve işyerine uyumun, temel risklerin bilinmesinin sağlanması'),
+    gx(i('İşbaşı (işe başlama) eğitimi (çalışan fiilen çalışmaya başlamadan önce)','Mağaza müdürü / amir',U+' md.7','En az 2 saat',A),'İşyeri','Yeni işe başlayan çalışanlar','İşe ve işyerine uyumun, temel risklerin bilinmesinin sağlanması'),
     gx(i('Sertifikalı ilkyardımcı eğitimi ve sertifika yenileme (sertifika 3 yıl geçerli)','Yetkili eğitim kurumu','İlkyardım Yönetmeliği','3 yılda 1',[]),'Yetkili eğitim kurumu','İlkyardımcı olarak görevlendirilen çalışanlar','Yeterli sayıda sertifikalı ilkyardımcının sürekli bulunması'),
     gx(i('Yüksekte çalışma eğitimi (ilgili birimler)','İSG Uzmanı / İşveren',U,'İlgili çalışanlara',[10]),'İşyeri','Yüksekte çalışan personel','Düşme risklerinin ve güvenli çalışma yöntemlerinin bilinmesi'),
     gx(i('İş kazası geçiren / meslek hastalığına yakalanan çalışana ilave eğitim','İSG Uzmanı / İşyeri Hekimi',U,'Olay sonrası',[]),'İşyeri','İş kazası geçiren / meslek hastalığına yakalanan çalışanlar','Olayın nedenlerinin ve korunma yollarının anlatılması')];
@@ -2717,7 +2717,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   P['egt-kap']=[
     i('İSG eğitim planları ve kayıtlarının hazırlanması','İSG Uzmanı / İşyeri Hekimi',U+' md.11','',A),
     vzr(i('Temel İSG eğitiminin tekrarı (süresi gelen çalışanlar)','İSG Uzmanı / İşyeri Hekimi',U+' md.14','{tk}, en az 8 saat',[])),
-    gx(g('İşe başlama eğitimi (çalışan fiilen çalışmaya başlamadan önce)','Mağaza müdürü / amir',U+' md.7','En az 2 saat'),'İşyeri','Yeni işe başlayan çalışanlar','İşe ve işyerine uyumun, temel risklerin bilinmesinin sağlanması'),
+    gx(i('İşe başlama eğitimi (çalışan fiilen çalışmaya başlamadan önce)','Mağaza müdürü / amir',U+' md.7','En az 2 saat',A),'İşyeri','Yeni işe başlayan çalışanlar','İşe ve işyerine uyumun, temel risklerin bilinmesinin sağlanması'),
     i('Çalışma mevzuatı ile ilgili bilgiler','','','',A), i('Çalışanların yasal hak ve sorumlulukları','','','',A), i('İşyeri temizliği ve düzeni','','','',A), i('İş kazası ve meslek hastalığından doğan hukuki sonuçlar','','','',A), i('İşyeri genel İSG kuralları','','','',A), i('Yapılan işe özgü genel bilgi ve kurallar','','','',A), i('Kullanılacak ekipman tanıtımı ve alınacak güvenlik tedbirleri','','','',A),
     i('Çalışan temsilcisi eğitimi','İGU / İYH',K+' md.20','Seçim sonrası',[2]),
     g('1. Genel konular (tüm çalışanlara)',EGU,U,'{gs}'),
@@ -2786,7 +2786,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   var st=null, ov=null, fo=null;
   function FF(){ return fo||F(); }
   function fid(){ var f=F(); return f&&f.id||'x'; }
-  function cur(){ if(ov){ st=ov; return st; } var all=load(); st=all[fid()]; if(!st) st={type:'egt',scope:'ozet',year:String(new Date().getFullYear()),hz:'az',emp:'lt',xc:'0',vz:'b',ps:'1',f:{},rows:{},rv:4}; if(st.rv!==4){ if(!st.ed) st.rows={}; st.rv=4; } if(!st.vz) st.vz='b'; if(!st.ps) st.ps='1'; if(!st.emp) st.emp='lt'; if(!st.xc) st.xc='0'; return st; }
+  function cur(){ if(ov){ st=ov; return st; } var all=load(); st=all[fid()]; if(!st) st={type:'egt',scope:'ozet',year:String(new Date().getFullYear()),hz:'az',emp:'lt',xc:'0',vz:'b',ps:'1',f:{},rows:{},rv:5}; if(st.rv!==5){ if(!st.ed) st.rows={}; st.rv=5; } if(!st.vz) st.vz='b'; if(!st.ps) st.ps='1'; if(!st.emp) st.emp='lt'; if(!st.xc) st.xc='0'; return st; }
   function save(){ var all=load(); all[fid()]=st; lsSet(KEY,all); }
   function tok(s){ return String(s==null?'':s).replace(/\{(\w+)\}/g,function(x,k){ return TK[k]?TK[k][st.hz]:x; }); }
   function effM(r){ if(r.mu) return r.m; var m=r.vz?visits():((r.mh)?(r.mh[st.hz]||r.m):r.m); if(st.type==='egt'&&!r.g&&!r.vz&&(st.vz!=='a'||+st.ps>1)&&m.length<12) m=snap(m); if(!r.g&&!r.vz) m=clipS(m); return m; }
