@@ -1,6 +1,24 @@
 <!doctype html><html lang="tr"><head><script>window.__PWA=true;</script><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Kerem Sertifika</title>
+/* --- Sürüm 68: kompakt başlık, firma çubuğu ve dokunma alanları --- */
 <meta name="claude:viewport-fit-sides" content="cover"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1d4ed8"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes">
+.firmbar select{min-width:0}
+.tabs button{min-height:44px}
+.btn.quiet{min-height:36px}
+@media (max-width:520px){
+  body{padding-top:12px}
+  header{margin-bottom:8px}
+  h1{margin-bottom:2px}
+  .lede{font-size:13.5px;line-height:1.4}
+  .strip{padding:6px 10px;gap:2px 12px;font-size:13px;margin-bottom:10px}
+  .firmbar{gap:6px;margin-bottom:8px}
+  .firmbar label{display:none}
+  .firmbar .btn{padding:8px 10px;font-size:13.5px}
+  .panel .hint,.paste .hint{font-size:12.5px;line-height:1.4}
+}
+@media (pointer:coarse){ .btn,.groups button{min-height:42px} input[type=checkbox]{width:20px;height:20px} }
+</style></head><body>
+<title>Kerem Sertifika</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 
 <style>
 :root{
@@ -179,12 +197,12 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk değerlendirmesi, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. Şablonlar aynen kalır, yalnızca değişen alanlar yazılır. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 67 · 03.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 68 · 04.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
 
-  <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni firma</button> <button type="button" class="btn" id="firm-edit" title="Seçili firmanın bilgilerini ve logosunu düzenle">Firma bilgileri / logo</button></div>
+  <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button> <button type="button" class="btn" id="firm-edit" title="Seçili firmanın bilgilerini ve logosunu düzenle">Bilgiler / logo</button></div>
 
   <div class="navwrap"><div class="groups" id="groups" role="group" aria-label="Ana bölümler"></div>
   <div class="tabs" role="tablist" aria-label="Bölümler">
@@ -1227,8 +1245,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function gvRefresh(){ var f=F(), seen={}, l=[]; [f.gorev].concat(f.gv||[]).forEach(function(x){ x=(x||'').trim(); if(x && !seen[x.toLocaleLowerCase('tr')]){ seen[x.toLocaleLowerCase('tr')]=1; l.push(x); } }); gvDl.textContent=''; l.forEach(function(x){ var o=document.createElement('option'); o.value=x; gvDl.appendChild(o); }); document.querySelectorAll('#p-cert input[id$="-gorev"]').forEach(function(i){ i.setAttribute('list','dl-gv'); }); }
   function gvAdd(v){ v=(v||'').trim(); if(!v) return; var f=F(); f.gv=f.gv||[]; var k=v.toLocaleLowerCase('tr'); if(f.gorev && f.gorev.trim().toLocaleLowerCase('tr')===k) return; if(f.gv.some(function(x){ return x.toLocaleLowerCase('tr')===k; })) return; f.gv.push(v); saveFirms(); gvRefresh(); }
   window.__gvAdd=gvAdd;
-  function renderFirmBar(){ firmSel.textContent=''; FM.list.forEach(function(f){ var o=document.createElement('option'); o.value=f.id; o.textContent=f.name||'(adsız firma)'; o.selected=f.id===FM.cur; firmSel.appendChild(o); }); }
-  firmSel.addEventListener('change', function(){ FM.cur=firmSel.value; saveFirms(); onFirmChanged(); setStatus('Firma: '+(F().name||'(adsız)')+'. Siz değiştirene kadar bu firma seçili kalır.','ok'); });
+  function renderFirmBar(){ firmSel.textContent=''; FM.list.forEach(function(f){ var o=document.createElement('option'); o.value=f.id; o.textContent=f.name||'(firma adı girilmemiş)'; o.selected=f.id===FM.cur; firmSel.appendChild(o); }); }
+  firmSel.addEventListener('change', function(){ FM.cur=firmSel.value; saveFirms(); onFirmChanged(); setStatus('Firma: '+(F().name||'(adı girilmemiş)')+'. Siz değiştirene kadar bu firma seçili kalır.','ok'); });
   function openFirmTab(){ var t=document.getElementById('tab-firm'); if(t) t.click(); }
   document.getElementById('firm-add').addEventListener('click', function(){ var nf=newFirm({name:''}); FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); openFirmTab(); setTimeout(function(){ var i=firmRoot.querySelector('input'); if(i) i.focus(); },50); setStatus('Yeni firma eklendi. Ünvanını, logosunu ve bilgilerini girin.','ok'); });
   document.getElementById('firm-edit').addEventListener('click', openFirmTab);
@@ -1428,7 +1446,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       catch(e){ setStatus(e.message||'Form okunamadı.','bad'); }
     });
     if(reqItems.length){
-      p.appendChild(el('p','hint','Dosya: '+reqName+' · Seçili firma: '+(F().name||'(adsız)')));
+      p.appendChild(el('p','hint','Dosya: '+reqName+' · Seçili firma: '+(F().name||'(adı girilmemiş)')));
       var dl=el('label','field'); dl.appendChild(el('span',null,'Belge tarihi (formda tarih yoksa bugün)')); var di=document.createElement('input'); di.type='date'; di.value=reqDate; di.addEventListener('input', function(){ reqDate=di.value; }); dl.appendChild(di); p.appendChild(dl);
       p.appendChild(chkRow('İSG sertifikalarına "Çalıştığı proje" satırını da bas (proje adı formdan alınır)', reqProje, function(v){ reqProje=v; }));
       var lst=el('ol','rows');
@@ -2842,7 +2860,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   function sel(label,opts,get,set){ var l=el('label','field'); l.appendChild(el('span',null,label)); var s=document.createElement('select'); opts.forEach(function(o){ var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; s.appendChild(op); }); l.appendChild(s); s.addEventListener('change',function(){ set(s.value); save(); refresh(); }); g1.appendChild(l); s._get=get; return s; }
   function inp(parent,label,key,type,ph){ var l=el('label','field'); l.appendChild(el('span',null,label)); var i2=document.createElement('input'); i2.type=type||'text'; if(ph) i2.placeholder=ph; i2.addEventListener('input',function(){ st.f[key]=i2.value; save(); }); l.appendChild(i2); parent.appendChild(l); i2._key=key; return i2; }
   var sType=sel('Plan türü',[['egt','Yıllık eğitim planı'],['cal','Yıllık çalışma planı']],function(){return st.type;},function(v){ st.type=v; });
-  var sScope=sel('Kapsam',[['ozet','Özet (kısa, 3-19 konu)'],['kap','Kapsamlı (yönetmelik konularının tamamı)']],function(){return st.scope;},function(v){ st.scope=v; });
+  var sScope=sel('Kapsam',[['ozet','Özet (kısa)'],['kap','Kapsamlı (yönetmelik konularının tamamı)']],function(){return st.scope;},function(v){ st.scope=v; });
   var sHz=sel('Tehlike sınıfı',[['az','Az tehlikeli'],['te','Tehlikeli'],['ct','Çok tehlikeli']],function(){return st.hz;},function(v){ st.hz=v; st.hzs=1; });
   var sEmp=sel('Çalışan sayısı (İSG Kurulu kurulması)',[['lt','50\'den az (kurul yok)'],['ge','50 ve üzeri (kurul var)']],function(){return st.emp;},function(v){ st.emp=v; });
   var sVz=sel('Firma ziyaret sıklığı (planlı aylar buna göre)',[['a','Aylık'],['b','2 ayda bir'],['c','3 ayda bir']],function(){return st.vz;},function(v){ st.vz=v; });
