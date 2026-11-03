@@ -197,7 +197,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 68 · 04.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 69 · 04.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -1245,10 +1245,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function gvRefresh(){ var f=F(), seen={}, l=[]; [f.gorev].concat(f.gv||[]).forEach(function(x){ x=(x||'').trim(); if(x && !seen[x.toLocaleLowerCase('tr')]){ seen[x.toLocaleLowerCase('tr')]=1; l.push(x); } }); gvDl.textContent=''; l.forEach(function(x){ var o=document.createElement('option'); o.value=x; gvDl.appendChild(o); }); document.querySelectorAll('#p-cert input[id$="-gorev"]').forEach(function(i){ i.setAttribute('list','dl-gv'); }); }
   function gvAdd(v){ v=(v||'').trim(); if(!v) return; var f=F(); f.gv=f.gv||[]; var k=v.toLocaleLowerCase('tr'); if(f.gorev && f.gorev.trim().toLocaleLowerCase('tr')===k) return; if(f.gv.some(function(x){ return x.toLocaleLowerCase('tr')===k; })) return; f.gv.push(v); saveFirms(); gvRefresh(); }
   window.__gvAdd=gvAdd;
-  function renderFirmBar(){ firmSel.textContent=''; FM.list.forEach(function(f){ var o=document.createElement('option'); o.value=f.id; o.textContent=f.name||'(firma adı girilmemiş)'; o.selected=f.id===FM.cur; firmSel.appendChild(o); }); }
-  firmSel.addEventListener('change', function(){ FM.cur=firmSel.value; saveFirms(); onFirmChanged(); setStatus('Firma: '+(F().name||'(adı girilmemiş)')+'. Siz değiştirene kadar bu firma seçili kalır.','ok'); });
+  function firmLabel(f){ if(f.name) return f.name; var n=0,k=0; FM.list.forEach(function(x){ if(!x.name){ n++; if(x.id===f.id) k=n; } }); return '(adsız firma'+(n>1?' '+k:'')+')'; }
+  function firmBlank(f){ return !f.name && !(f.gorev||'').trim() && !(f.gv&&f.gv.length) && !(f.sb&&f.sb.length) && !(f.ek&&f.ek.length) && !(f.logos&&((f.logos.firma&&f.logos.firma.data)||(f.logos.kurum&&f.logos.kurum.data))) && !JSON.stringify(f.info||{}).replace(/[{}\":,]/g,'').trim(); }
+  function renderFirmBar(){ firmSel.textContent=''; FM.list.forEach(function(f){ var o=document.createElement('option'); o.value=f.id; o.textContent=firmLabel(f); o.selected=f.id===FM.cur; firmSel.appendChild(o); }); }
+  firmSel.addEventListener('change', function(){ FM.cur=firmSel.value; saveFirms(); onFirmChanged(); setStatus('Firma: '+firmLabel(F())+'. Siz değiştirene kadar bu firma seçili kalır.','ok'); });
   function openFirmTab(){ var t=document.getElementById('tab-firm'); if(t) t.click(); }
-  document.getElementById('firm-add').addEventListener('click', function(){ var nf=newFirm({name:''}); FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); openFirmTab(); setTimeout(function(){ var i=firmRoot.querySelector('input'); if(i) i.focus(); },50); setStatus('Yeni firma eklendi. Ünvanını, logosunu ve bilgilerini girin.','ok'); });
+  document.getElementById('firm-add').addEventListener('click', function(){ var cf=F(); var nf=(cf&&firmBlank(cf))?cf:newFirm({name:''}); if(nf!==cf) FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); openFirmTab(); setTimeout(function(){ var i=firmRoot.querySelector('input'); if(i) i.focus(); },50); setStatus('Yeni firma eklendi. Ünvanını, logosunu ve bilgilerini girin.','ok'); });
   document.getElementById('firm-edit').addEventListener('click', openFirmTab);
   var fdeb=null, pvT=null;
   function prevSoon(){ clearTimeout(pvT); pvT=setTimeout(doPreview,500); }
@@ -1298,6 +1300,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   function renderFirmTab(){
     var f=F(); firmRoot.textContent='';
+    var pl0=el('div','panel'); pl0.appendChild(el('h2',null,'Kayıtlı firmalar ('+FM.list.length+')'));
+    pl0.appendChild(el('p','hint','Bu cihazda kayıtlı tüm firmalar. Firmaya tıklayınca seçilir; her firmanın bilgileri, logosu ve kayıtları ayrı tutulur.'));
+    var ul=el('div'); ul.style.cssText='display:flex;flex-direction:column;gap:6px';
+    FM.list.forEach(function(x){
+      var r=el('div'); r.style.cssText='display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;'+(x.id===FM.cur?'border-color:#1d4ed8;background:rgba(29,78,216,.08)':'');
+      var t=el('button','btn quiet',firmLabel(x)+(x.id===FM.cur?'  ✓ seçili':'')); t.type='button'; t.style.cssText='flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      t.addEventListener('click', function(){ if(x.id===FM.cur) return; FM.cur=x.id; saveFirms(); onFirmChanged(); setStatus('Firma: '+firmLabel(x)+'.','ok'); });
+      r.appendChild(t);
+      if(FM.list.length>1){ var d=el('button','btn quiet','Sil'); d.type='button'; var arm=false;
+        d.addEventListener('click', function(){ if(!arm){ arm=true; d.textContent='Emin misiniz?'; setTimeout(function(){ arm=false; d.textContent='Sil'; },3500); return; } FM.list=FM.list.filter(function(y){return y.id!==x.id;}); if(FM.cur===x.id) FM.cur=FM.list[0].id; saveFirms(); onFirmChanged(); setStatus('Firma silindi.'); });
+        r.appendChild(d); }
+      ul.appendChild(r); });
+    pl0.appendChild(ul); firmRoot.appendChild(pl0);
     var p1=el('div','panel'); p1.appendChild(el('h2',null,'Firma bilgileri'));
     p1.appendChild(el('p','hint','Seçili firmaya aittir. Ünvan değişirse burayı güncelleyin; sonraki belgelere yansır, indirdiklerinize dokunmaz. İşveren imzası da firmaya özeldir (İmza / Kaşe sekmesi).'));
     var g=el('div','fields roomy');
@@ -1309,7 +1324,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     g.appendChild(txtField('Geçerlilik süresi', function(){return f.gecerlilik;}, function(v){ f.gecerlilik=v; refreshDocs(); }));
     p1.appendChild(g);
     var a1=el('div','row-actions');
-    var bn=el('button','btn primary','Yeni firma ekle'); bn.type='button'; bn.addEventListener('click', function(){ var nf=newFirm({name:''}); FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); var i=firmRoot.querySelector('input'); if(i){ i.focus(); i.select(); } setStatus('Yeni firma eklendi. Ünvanını, logosunu ve diğer bilgilerini girin; firma seçildiğinde kayıtları otomatik gelir.','ok'); });
+    var bn=el('button','btn primary','Yeni firma ekle'); bn.type='button'; bn.addEventListener('click', function(){ var nf=firmBlank(f)?f:newFirm({name:''}); if(nf!==f) FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); var i=firmRoot.querySelector('input'); if(i){ i.focus(); i.select(); } setStatus('Yeni firma eklendi. Ünvanını, logosunu ve diğer bilgilerini girin; firma seçildiğinde kayıtları otomatik gelir.','ok'); });
     var bc=el('button','btn','Bu firmanın kopyasını oluştur'); bc.type='button'; bc.addEventListener('click', function(){ var nf=JSON.parse(JSON.stringify(f)); nf.id=uid(); nf.name=(f.name||'Firma')+' (kopya)'; FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); setStatus('Kopya oluşturuldu.','ok'); });
     var bd=el('button','btn quiet','Bu firmayı sil'); bd.type='button'; bd.disabled=FM.list.length<2; var armed=false;
     bd.addEventListener('click', function(){ if(!armed){ armed=true; bd.textContent='Emin misiniz? Tekrar basın'; setTimeout(function(){ armed=false; bd.textContent='Bu firmayı sil'; },4000); return; } FM.list=FM.list.filter(function(x){return x.id!==f.id;}); FM.cur=FM.list[0].id; saveFirms(); onFirmChanged(); setStatus('Firma silindi.'); });
@@ -1446,7 +1461,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       catch(e){ setStatus(e.message||'Form okunamadı.','bad'); }
     });
     if(reqItems.length){
-      p.appendChild(el('p','hint','Dosya: '+reqName+' · Seçili firma: '+(F().name||'(adı girilmemiş)')));
+      p.appendChild(el('p','hint','Dosya: '+reqName+' · Seçili firma: '+firmLabel(F())));
       var dl=el('label','field'); dl.appendChild(el('span',null,'Belge tarihi (formda tarih yoksa bugün)')); var di=document.createElement('input'); di.type='date'; di.value=reqDate; di.addEventListener('input', function(){ reqDate=di.value; }); dl.appendChild(di); p.appendChild(dl);
       p.appendChild(chkRow('İSG sertifikalarına "Çalıştığı proje" satırını da bas (proje adı formdan alınır)', reqProje, function(v){ reqProje=v; }));
       var lst=el('ol','rows');
