@@ -197,7 +197,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 69 · 04.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 70 · 04.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -883,6 +883,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   loadFirms();
   function F(){ return FM.list.filter(function(f){return f.id===FM.cur;})[0]; }
+  function removeFirm(id){ FM.list=FM.list.filter(function(y){return y.id!==id;});
+    if(!FM.list.length){ var nf=newFirm({name:''}); FM.list=[nf]; FM.cur=nf.id; var d0=lsGet('cert-defaults-v1'); if(d0){ d0.isyeri=''; d0.gorev=''; lsSet('cert-defaults-v1',d0); } }
+    else if(FM.cur===id) FM.cur=FM.list[0].id; }
   function saveFirms(){ if(!lsSet(FKEY,FM)) setStatus('Firma bilgileri cihaza kaydedilemedi (depolama dolu olabilir).','bad'); }
   function saveLG(){ lsSet(LOGO_KEY,LG); }
   function stampObj(key){ return key==='isveren' ? F().isv : stamps[key]; }
@@ -1308,8 +1311,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var t=el('button','btn quiet',firmLabel(x)+(x.id===FM.cur?'  ✓ seçili':'')); t.type='button'; t.style.cssText='flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
       t.addEventListener('click', function(){ if(x.id===FM.cur) return; FM.cur=x.id; saveFirms(); onFirmChanged(); setStatus('Firma: '+firmLabel(x)+'.','ok'); });
       r.appendChild(t);
-      if(FM.list.length>1){ var d=el('button','btn quiet','Sil'); d.type='button'; var arm=false;
-        d.addEventListener('click', function(){ if(!arm){ arm=true; d.textContent='Emin misiniz?'; setTimeout(function(){ arm=false; d.textContent='Sil'; },3500); return; } FM.list=FM.list.filter(function(y){return y.id!==x.id;}); if(FM.cur===x.id) FM.cur=FM.list[0].id; saveFirms(); onFirmChanged(); setStatus('Firma silindi.'); });
+      { var d=el('button','btn quiet',FM.list.length>1?'Sil':'Sil / sıfırla'); d.type='button'; var arm=false;
+        d.addEventListener('click', function(){ if(!arm){ arm=true; d.textContent='Emin misiniz?'; setTimeout(function(){ arm=false; d.textContent=FM.list.length>1?'Sil':'Sil / sıfırla'; },3500); return; } removeFirm(x.id); saveFirms(); onFirmChanged(); setStatus('Firma silindi.'); });
         r.appendChild(d); }
       ul.appendChild(r); });
     pl0.appendChild(ul); firmRoot.appendChild(pl0);
@@ -1326,8 +1329,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var a1=el('div','row-actions');
     var bn=el('button','btn primary','Yeni firma ekle'); bn.type='button'; bn.addEventListener('click', function(){ var nf=firmBlank(f)?f:newFirm({name:''}); if(nf!==f) FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); var i=firmRoot.querySelector('input'); if(i){ i.focus(); i.select(); } setStatus('Yeni firma eklendi. Ünvanını, logosunu ve diğer bilgilerini girin; firma seçildiğinde kayıtları otomatik gelir.','ok'); });
     var bc=el('button','btn','Bu firmanın kopyasını oluştur'); bc.type='button'; bc.addEventListener('click', function(){ var nf=JSON.parse(JSON.stringify(f)); nf.id=uid(); nf.name=(f.name||'Firma')+' (kopya)'; FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); setStatus('Kopya oluşturuldu.','ok'); });
-    var bd=el('button','btn quiet','Bu firmayı sil'); bd.type='button'; bd.disabled=FM.list.length<2; var armed=false;
-    bd.addEventListener('click', function(){ if(!armed){ armed=true; bd.textContent='Emin misiniz? Tekrar basın'; setTimeout(function(){ armed=false; bd.textContent='Bu firmayı sil'; },4000); return; } FM.list=FM.list.filter(function(x){return x.id!==f.id;}); FM.cur=FM.list[0].id; saveFirms(); onFirmChanged(); setStatus('Firma silindi.'); });
+    var bd=el('button','btn quiet','Bu firmayı sil'); bd.type='button'; var armed=false; if(FM.list.length<2) bd.textContent='Bu firmayı sil / sıfırla';
+    bd.addEventListener('click', function(){ if(!armed){ armed=true; bd.textContent='Emin misiniz? Tekrar basın'; setTimeout(function(){ armed=false; bd.textContent=FM.list.length<2?'Bu firmayı sil / sıfırla':'Bu firmayı sil'; },4000); return; } removeFirm(f.id); saveFirms(); onFirmChanged(); setStatus('Firma silindi.'); });
     a1.appendChild(bn); a1.appendChild(bc); a1.appendChild(bd); p1.appendChild(a1); firmRoot.appendChild(p1);
     var pS=el('div','panel'); pS.appendChild(el('h2',null,'Şubeler (bu firmaya bağlı)')); pS.appendChild(el('p','hint','Her satıra bir şube yazın (virgülle de ayırabilirsiniz). Yazdıklarınız Yıllık plan sekmesinde şube olarak seçilir ve toplu çıkarmada firmanın tüm şubeleri tek tıkla eklenir. Şubesi olmayan firmada boş bırakın.')); var sbTa=document.createElement('textarea'); sbTa.rows=5; sbTa.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; sbTa.placeholder='Atlaspark AVM\nCanpark AVM\nMetropol AVM'; sbTa.setAttribute('aria-label','Şubeler'); sbTa.value=(f.sb||[]).join('\n'); sbTa.addEventListener('input',function(){ f.sb=sbTa.value.split(/\n|,|;/).map(function(x){ return x.trim(); }).filter(Boolean); saveFirms(); }); pS.appendChild(sbTa);
     var sbBox=el('div'); pS.appendChild(sbBox);
