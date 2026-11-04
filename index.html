@@ -257,7 +257,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 78 · 04.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 79 · 04.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -303,13 +303,14 @@ details.dpanel[open]>summary{margin-bottom:10px}
   <section id="p-rep" role="tabpanel" aria-labelledby="tab-rep" hidden>
     <div class="panel">
       <h2>Aylık sayılar</h2>
-      <p class="hint">Belge tarihine göre ay ay sayılır. Aynı plaka (ya da kişi) ve aynı tarih için tekrar indirme sayıyı artırmaz. Sayaç yalnızca bu cihazda tutulur.</p>
+      <p class="hint">Belge tarihine göre ay ay sayılır. Sayılar firma bazında tutulur: üstteki seçimden tek bir firmaya bakabilir, aşağıdaki tablodan firmaları karşılaştırabilirsiniz. Aynı firmada aynı plaka (ya da kişi) ve aynı tarih için tekrar indirme sayıyı artırmaz. Sayaç yalnızca bu cihazda tutulur.</p>
       <div class="tablewrap"><table class="rep" id="rep-table"></table></div>
       <div class="row-actions">
         <button class="btn" id="rep-csv" type="button">CSV indir</button>
         <button class="btn quiet" id="rep-clear" type="button">Sayaçları sıfırla</button>
       </div>
     </div>
+    <div class="panel"><h2 id="rep-fh">Firmalara göre</h2><div class="tablewrap"><table class="rep" id="rep-firms"></table></div></div>
     <div class="panel"><h2 id="rep-dt2">Günlük sayılar</h2><div class="detail" id="rep-days"></div></div>
     <div class="panel"><h2 id="rep-dt">Ayrıntı</h2><div class="detail" id="rep-detail"></div></div>
   </section>
@@ -876,23 +877,38 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   /* ---------- aylık sayaç ---------- */
   var LOG_KEY='isg-log-v1', logDb=lsGet(LOG_KEY)||{};
   hooks.log=function(){ logDb=lsGet(LOG_KEY)||{}; renderStrip(); renderReport(); };
+  function recGroup(o){ if(o.fid) return o.fid; var nm=(o.f||'').trim(); if(nm){ var m=FM.list.filter(function(f){ return (f.name||'').trim()===nm; })[0]; if(m) return m.id; return 'n:'+nm.toLocaleLowerCase('tr'); } return 'n:'; }
+  function groupLabel(g,o){ var f=FM.list.filter(function(x){ return x.id===g; })[0]; if(f) return firmLabel(f); return (o&&o.f)?o.f:'(firma belirtilmemiş)'; }
   function recordDoc(type, key, iso, label){
-    if(!iso) return; var k=type+'|'+key+'|'+iso;
-    if(!logDb[k]){ logDb[k]={t:type,d:iso,n:label,f:(F().name||''),ts:Date.now()}; lsSet(LOG_KEY,logDb); renderStrip(); renderReport(); }
+    if(!iso) return; var cf=F(), k=type+'|'+key+'|'+iso+'|'+cf.id, old=type+'|'+key+'|'+iso;
+    if(logDb[k]) return; if(logDb[old] && recGroup(logDb[old])===cf.id) return;
+    logDb[k]={t:type,d:iso,n:label,f:(cf.name||''),fid:cf.id,ts:Date.now()}; lsSet(LOG_KEY,logDb); renderStrip(); renderReport();
   }
-  function monthsAgg(){
-    var m={}; Object.keys(logDb).forEach(function(k){ var o=logDb[k], ym=o.d.slice(0,7); (m[ym]=m[ym]||{risk:0,cert:0,items:[]}); m[ym][o.t]++; m[ym].items.push(o); });
+  function monthsAgg(pred){
+    var m={}; Object.keys(logDb).forEach(function(k){ var o=logDb[k]; if(pred && !pred(o)) return; var ym=o.d.slice(0,7); (m[ym]=m[ym]||{risk:0,cert:0,items:[]}); m[ym][o.t]++; m[ym].items.push(o); });
     return m;
   }
   function monthName(ym){ var p=ym.split('-'); return MONTHS[+p[1]-1]+' '+p[0]; }
   function renderStrip(){
-    var s=document.getElementById('strip'); s.textContent=''; var ym=todayIso().slice(0,7), a=monthsAgg()[ym]||{risk:0,cert:0};
-    var b=el('b',null,monthName(ym)); s.appendChild(b);
-    s.appendChild(el('span',null,'Risk (RD): '+a.risk)); s.appendChild(el('span',null,'İSG: '+a.cert)); var sy=el('span','m'); sy.id='sync'; sy.textContent=S.syncText||''; s.appendChild(sy);
+    var s=document.getElementById('strip'); s.textContent=''; var ym=todayIso().slice(0,7), cf=F(), cur=cf&&!firmBlank(cf)?cf:null;
+    var a=monthsAgg(function(o){ return !!cur && recGroup(o)===cur.id; })[ym]||{risk:0,cert:0};
+    var all=monthsAgg()[ym]||{risk:0,cert:0};
+    s.appendChild(el('b',null,monthName(ym)+(cur?' · '+firmLabel(cur):'')));
+    s.appendChild(el('span',null,'Risk (RD): '+a.risk)); s.appendChild(el('span',null,'İSG: '+a.cert));
+    if(all.risk+all.cert>a.risk+a.cert){ var t=el('span','m','Tüm firmalar: Risk '+all.risk+' · İSG '+all.cert); s.appendChild(t); }
+    var sy=el('span','m'); sy.id='sync'; sy.textContent=S.syncText||''; s.appendChild(sy);
   }
-  var repSel=null;
+  var repSel=null, repFirm='all', repFirmSel=null;
+  function repPred(){ return repFirm==='all'?null:function(o){ return recGroup(o)===repFirm; }; }
   function renderReport(){
-    var t=document.getElementById('rep-table'); t.textContent=''; var a=monthsAgg(), keys=Object.keys(a).sort().reverse();
+    var t=document.getElementById('rep-table');
+    if(!repFirmSel){ repFirmSel=document.createElement('select'); repFirmSel.setAttribute('aria-label','Firma'); var w=el('label','field'); w.appendChild(el('span',null,'Firma')); w.appendChild(repFirmSel); w.style.maxWidth='420px'; t.parentNode.parentNode.insertBefore(w,t.parentNode); repFirmSel.addEventListener('change', function(){ repFirm=repFirmSel.value; repSel=null; renderReport(); }); }
+    var gs={}, order=[]; Object.keys(logDb).forEach(function(k){ var o=logDb[k], g=recGroup(o); if(!gs[g]){ gs[g]=groupLabel(g,o); order.push(g); } });
+    FM.list.forEach(function(f){ if(!firmBlank(f) && !gs[f.id]){ gs[f.id]=firmLabel(f); order.push(f.id); } });
+    order.sort(function(x,y){ return String(gs[x]).localeCompare(String(gs[y]),'tr'); });
+    if(repFirm!=='all' && !gs[repFirm]) repFirm='all';
+    repFirmSel.textContent=''; [['all','Tüm firmalar']].concat(order.map(function(g){ return [g,gs[g]]; })).forEach(function(m){ var o=document.createElement('option'); o.value=m[0]; o.textContent=m[1]; o.selected=m[0]===repFirm; repFirmSel.appendChild(o); });
+    t.textContent=''; var a=monthsAgg(repPred()), keys=Object.keys(a).sort().reverse();
     var th=el('thead'), tr=el('tr'); ['Ay','Risk değerlendirmesi','Temel İSG belgesi','Toplam'].forEach(function(h,i){ var c=el('th',i?'n':null,h); tr.appendChild(c); }); th.appendChild(tr); t.appendChild(th);
     var tb=el('tbody'), tr0=0, tc0=0;
     if(!keys.length){ var r=el('tr'); var c=el('td',null,'Henüz kayıt yok. Bir belge indirdiğinizde burada görünür.'); c.colSpan=4; r.appendChild(c); tb.appendChild(r); }
@@ -904,6 +920,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
     t.appendChild(tb);
     if(keys.length){ var tf=el('tfoot'), r2=el('tr'); r2.appendChild(el('td',null,'Genel toplam')); r2.appendChild(el('td','n',String(tr0))); r2.appendChild(el('td','n',String(tc0))); r2.appendChild(el('td','n',String(tr0+tc0))); tf.appendChild(r2); t.appendChild(tf); }
+    /* firmalara göre dağılım (seçili ay) */
+    var ft=document.getElementById('rep-firms'), fh=document.getElementById('rep-fh'); ft.textContent='';
+    var byF={}; Object.keys(logDb).forEach(function(k){ var o=logDb[k]; if(repSel && o.d.slice(0,7)!==repSel) return; var g=recGroup(o); (byF[g]=byF[g]||{risk:0,cert:0})[o.t]++; });
+    fh.textContent='Firmalara göre'+(repSel?': '+monthName(repSel):'');
+    var fth=el('thead'), ftr=el('tr'); ['Firma','Risk','İSG','Toplam'].forEach(function(h,i){ ftr.appendChild(el('th',i?'n':null,h)); }); fth.appendChild(ftr); ft.appendChild(fth);
+    var ftb=el('tbody'); var fk=Object.keys(byF).sort(function(x,y){ return String(gs[x]||'').localeCompare(String(gs[y]||''),'tr'); });
+    if(!fk.length){ var er=el('tr'), ec=el('td',null,'Kayıt yok.'); ec.colSpan=4; er.appendChild(ec); ftb.appendChild(er); }
+    fk.forEach(function(g){ var q=byF[g], r=el('tr', g===repFirm?'sel':null); r.appendChild(el('td',null,gs[g]||groupLabel(g))); r.appendChild(el('td','n',String(q.risk))); r.appendChild(el('td','n',String(q.cert))); r.appendChild(el('td','n',String(q.risk+q.cert))); r.addEventListener('click', function(){ repFirm=g; renderReport(); }); ftb.appendChild(r); });
+    ft.appendChild(ftb);
+    clrBtn.textContent=clrArmed?'Emin misiniz? Tekrar basın':(repFirm==='all'?'Tüm sayaçları sıfırla':'Bu firmanın sayaçlarını sıfırla');
     var dd=document.getElementById('rep-days'); dd.textContent='';
     if(repSel){
       var days={}; a[repSel].items.forEach(function(o){ var q=days[o.d]=days[o.d]||{risk:0,cert:0}; q[o.t]++; });
@@ -912,7 +938,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     document.getElementById('rep-dt2').textContent= repSel ? 'Günlük sayılar: '+monthName(repSel) : 'Günlük sayılar';
     var d=document.getElementById('rep-detail'); d.textContent='';
     document.getElementById('rep-dt').textContent= repSel ? 'Ayrıntı: '+monthName(repSel) : 'Ayrıntı'; document.getElementById('rep-dt2').parentNode.style.display=repSel?'':'none'; document.getElementById('rep-dt').parentNode.style.display=repSel?'':'none';
-    if(repSel){ a[repSel].items.sort(function(x,y){ return x.d<y.d?-1:x.d>y.d?1:0; }).forEach(function(o){ var r=el('div'); r.appendChild(el('span',null,(o.t==='risk'?'Risk · ':'İSG · ')+o.n+(o.f?' · '+o.f:''))); r.appendChild(el('span',null,o.d.split('-').reverse().join('.'))); d.appendChild(r); }); }
+    if(repSel){ a[repSel].items.sort(function(x,y){ return x.d<y.d?-1:x.d>y.d?1:0; }).forEach(function(o){ var r=el('div'); r.appendChild(el('span',null,(o.t==='risk'?'Risk · ':'İSG · ')+o.n+(repFirm==='all'?' · '+(gs[recGroup(o)]||o.f||''):''))); r.appendChild(el('span',null,o.d.split('-').reverse().join('.'))); d.appendChild(r); }); }
   }
   document.getElementById('rep-csv').addEventListener('click', async function(){
     var rows=['Ay;Tür;Ad/Plaka;Tarih;Firma'], keys=Object.keys(logDb).map(function(k){return logDb[k]}).sort(function(a,b){return a.d<b.d?-1:1;});
@@ -921,8 +947,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   });
   var clrArmed=false, clrBtn=document.getElementById('rep-clear');
   clrBtn.addEventListener('click', function(){
-    if(!clrArmed){ clrArmed=true; clrBtn.textContent='Emin misiniz? Tekrar basın'; setTimeout(function(){ clrArmed=false; clrBtn.textContent='Sayaçları sıfırla'; },4000); return; }
-    logDb={}; lsDel(LOG_KEY); clrArmed=false; clrBtn.textContent='Sayaçları sıfırla'; renderStrip(); renderReport(); setStatus('Sayaçlar sıfırlandı.');
+    if(!clrArmed){ clrArmed=true; clrBtn.textContent='Emin misiniz? Tekrar basın'; setTimeout(function(){ clrArmed=false; renderReport(); },4000); return; }
+    clrArmed=false;
+    if(repFirm==='all'){ logDb={}; lsDel(LOG_KEY); } else { Object.keys(logDb).forEach(function(k){ if(recGroup(logDb[k])===repFirm) delete logDb[k]; }); lsSet(LOG_KEY,logDb); }
+    renderStrip(); renderReport(); setStatus(repFirm==='all'?'Tüm sayaçlar sıfırlandı.':'Bu firmanın sayaçları sıfırlandı.');
   });
 
   /* ---------- firmalar ---------- */
@@ -1660,7 +1688,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     setStatus('Yedek geri yüklendi, sayfa yenileniyor…','ok'); setTimeout(function(){ location.reload(); },700);
   }
   var __pvFirm=''; window.__firmName=function(){ return (F().name||''); };
-  function onFirmChanged(){ gvRefresh(); var __nm=F().name||''; (window.__firmFns||[]).forEach(function(fn){ try{ fn(__nm,__pvFirm); }catch(e){} }); __pvFirm=__nm; renderFirmBar(); renderFirmTab(); renderStamps(); renderOutPanel(); refreshDocs(); doPreview(); }
+  function onFirmChanged(){ gvRefresh(); var __nm=F().name||''; (window.__firmFns||[]).forEach(function(fn){ try{ fn(__nm,__pvFirm); }catch(e){} }); __pvFirm=__nm; renderFirmBar(); renderFirmTab(); renderStamps(); renderOutPanel(); refreshDocs(); doPreview(); renderStrip(); renderReport(); }
   renderFirmBar(); renderFirmTab();
   hooks.firms=function(){ loadFirms(); onFirmChanged(); };
   hooks.logos=function(){ LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; LG.projeOn=!!LG.projeOn; LG.hs=(LG.hs&&typeof LG.hs==='object')?LG.hs:{}; renderOutPanel(); refreshDocs(); };
