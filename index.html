@@ -70,6 +70,22 @@ body:has(dialog[open]){overflow:hidden}
 .logoname{flex:1;min-width:0;padding:5px 8px}
 .logopend{margin-top:10px;padding:10px;border:1px dashed var(--accent);border-radius:8px;display:grid;gap:8px;background:var(--surface)}
 .logopend img{max-height:70px;max-width:100%;object-fit:contain;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/10px 10px;border-radius:4px;justify-self:start}
+
+/* --- Sürüm 80: ana sayfa --- */
+#groups,.navwrap .tabs{display:none!important}
+.navwrap{margin-bottom:8px;padding:6px 0}
+.pagebar{display:flex;gap:8px;align-items:center}
+.pagebar select{flex:1;min-width:0}
+body.inner .lede{display:none}
+.gh0{font-size:18px;margin:6px 0 4px}
+h3.gh{margin:14px 0 6px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.tile{display:grid;gap:2px;text-align:left;padding:14px;min-height:80px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);cursor:pointer;font:inherit}
+.tile:hover{border-color:var(--accent)}
+.tile b{font-size:16px}
+.tile span{font-size:13px;color:var(--muted);line-height:1.35}
+#p-home .strip{margin-top:18px}
+@media (max-width:520px){.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:12px;min-height:84px}.tile b{font-size:15px}.tile span{font-size:12px}}
 @media (min-width:1100px){
  body.cw #p-cert{display:grid;grid-template-columns:minmax(0,1fr) 440px;column-gap:20px;align-items:start}
  body.cw #p-cert>*{grid-column:1}
@@ -257,14 +273,12 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 79 · 04.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 80 · 04.11.2026</strong></p>
   </header>
-
-  <div class="strip" id="strip" aria-live="polite"></div>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
 
-  <div class="navwrap"><div class="groups" id="groups" role="group" aria-label="Ana bölümler"></div>
+  <div class="navwrap" id="navwrap" hidden><div class="pagebar"><button type="button" class="btn primary" id="home-btn">← Ana sayfa</button><select id="page-sel" aria-label="Sayfa seç"></select></div><div class="groups" id="groups" role="group" aria-label="Ana bölümler"></div>
   <div class="tabs" role="tablist" aria-label="Bölümler">
     <button role="tab" id="tab-risk" aria-selected="true" aria-controls="p-risk" type="button">Risk (RD)</button>
     <button role="tab" id="tab-cert" aria-selected="false" aria-controls="p-cert" type="button">İSG belgesi</button>
@@ -279,6 +293,18 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-ocr" aria-selected="false" aria-controls="p-ocr" type="button">Yazı biçimi</button>
     <button role="tab" id="tab-rep" aria-selected="false" aria-controls="p-rep" type="button">Aylık sayılar</button>
   </div></div>
+
+  <section id="p-home" aria-label="Ana sayfa">
+    <h2 class="gh0">Ne yapmak istiyorsunuz?</h2>
+    <div id="home-tiles"></div>
+    <div class="strip" id="strip" aria-live="polite"></div>
+    <details>
+      <summary>Bilgi ve ipuçları</summary>
+      <p><strong>Firma:</strong> üstteki listeden çalışılan firmayı seçin, siz değiştirene kadar seçili kalır. Ünvan, logo ve ek satırlar Firma sekmesindedir.</p>
+      <p><strong>Veriler:</strong> girilen bilgiler, görseller ve sayaçlar yalnızca bu tarayıcıda saklanır, sunucuya gönderilmez. Firma sekmesindeki Yedek bölümünden yedek alabilirsiniz.</p>
+      <p><strong>Çıktılar:</strong> PDF, örnek PDF'lerinizin birebir görünümüdür; yalnızca değişen alanlar yeniden yazılır. Excel/Word çıktısı şablon dosyasını doldurur.</p>
+    </details>
+  </section>
 
   <section id="p-risk" role="tabpanel" aria-labelledby="tab-risk"></section>
   <section id="p-cert" role="tabpanel" aria-labelledby="tab-cert" hidden></section>
@@ -316,12 +342,6 @@ details.dpanel[open]>summary{margin-bottom:10px}
   </section>
 
   <section class="after" aria-label="Bilgi">
-    <details>
-      <summary>Bilgi ve ipuçları</summary>
-      <p><strong>Firma:</strong> üstteki listeden çalışılan firmayı seçin, siz değiştirene kadar seçili kalır. Ünvan, logo ve ek satırlar Firma sekmesindedir.</p>
-      <p><strong>Veriler:</strong> girilen bilgiler, görseller ve sayaçlar yalnızca bu tarayıcıda saklanır, sunucuya gönderilmez. Firma sekmesindeki Yedek bölümünden yedek alabilirsiniz.</p>
-      <p><strong>Çıktılar:</strong> PDF, örnek PDF'lerinizin birebir görünümüdür; yalnızca değişen alanlar yeniden yazılır. Excel/Word çıktısı şablon dosyasını doldurur.</p>
-    </details>
     <p class="status" id="status" role="status" aria-live="polite"></p>
   </section>
 </div>
@@ -3364,9 +3384,22 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   var GRP=[['Belgeler',['risk','cert','req','plan']],['Eğitim',['katilim','acilrehber','afis','sinav']],['Ayarlar',['firm','stamp','ocr']],['Sayılar',['rep']]];
   var gbox=document.getElementById('groups'), gbtn=GRP.map(function(g){ var b=document.createElement('button'); b.type='button'; b.textContent=g[0]; b.addEventListener('click',function(){ var cur=null; try{ cur=localStorage.getItem('isg-tab-'+g[0]); }catch(e){} show(g[1].indexOf(cur)>=0?cur:g[1][0]); }); gbox.appendChild(b); return b; });
   function grpSync(n){ GRP.forEach(function(g,i){ var on=g[1].indexOf(n)>=0; gbtn[i].setAttribute('aria-pressed',on?'true':'false'); g[1].forEach(function(t){ document.getElementById('tab-'+t).hidden=!on||g[1].length<2; }); if(on){ try{ localStorage.setItem('isg-tab-'+g[0],n); }catch(e){} document.querySelector('.tabs').style.display=g[1].length<2?'none':''; } }); }
-  function show(n){ tabs.forEach(function(t){ var on=t===n; document.getElementById('tab-'+t).setAttribute('aria-selected',on?'true':'false'); document.getElementById('p-'+t).hidden=!on; }); grpSync(n); try{ localStorage.setItem('isg-tab',n); }catch(e){} if(n==='rep') renderReport(); if(n==='firm') doPreview(); }
+  var TT={risk:['Risk değerlendirmesi','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['İSG belgesi','Temel İSG eğitim belgesi (sertifika) hazırla'],req:['Talep formu','Firma talep formunu (Excel) aktar'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Katılım formu, sınav ve sertifika aktarımı'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar','Firma listesi, bilgiler, logolar, şubeler, yedek'],stamp:['İmza / Kaşe','İmza ve kaşe görselleri'],ocr:['Yazı biçimi','Yazıyı düzenli biçime çevir'],rep:['Aylık sayılar','Firma bazında belge sayıları']};
+  var homeEl=document.getElementById('p-home'), navwrap=document.getElementById('navwrap'), pageSel=document.getElementById('page-sel'), innerPushed=false;
+  (function(){ var box=document.getElementById('home-tiles');
+    GRP.forEach(function(g){ box.appendChild(el('h3','gh',g[0])); var tl=el('div','tiles');
+      g[1].forEach(function(t){ var b=el('button','tile'); b.type='button'; b.appendChild(el('b',null,TT[t][0])); b.appendChild(el('span',null,TT[t][1])); b.addEventListener('click', function(){ show(t); }); tl.appendChild(b); });
+      box.appendChild(tl);
+      var og=document.createElement('optgroup'); og.label=g[0]; g[1].forEach(function(t){ var o=document.createElement('option'); o.value=t; o.textContent=TT[t][0]; og.appendChild(o); }); pageSel.appendChild(og); }); })();
+  pageSel.addEventListener('change', function(){ show(pageSel.value); });
+  function showHome(){ tabs.forEach(function(t){ document.getElementById('tab-'+t).setAttribute('aria-selected','false'); document.getElementById('p-'+t).hidden=true; }); homeEl.hidden=false; navwrap.hidden=true; document.body.classList.remove('inner'); document.body.classList.remove('cw'); try{ localStorage.setItem('isg-tab','home'); }catch(e){} window.scrollTo(0,0); renderStrip(); }
+  document.getElementById('home-btn').addEventListener('click', function(){ if(innerPushed){ try{ history.back(); }catch(e){} setTimeout(function(){ if(homeEl.hidden){ innerPushed=false; showHome(); } },150); } else showHome(); });
+  window.addEventListener('popstate', function(){ innerPushed=false; if(homeEl.hidden) showHome(); });
+  document.querySelector('header h1').style.cursor='pointer'; document.querySelector('header h1').addEventListener('click', function(){ if(!homeEl.hidden) return; document.getElementById('home-btn').click(); });
+  function show(n){ var was=homeEl.hidden; homeEl.hidden=true; navwrap.hidden=false; document.body.classList.add('inner'); pageSel.value=n; if(!innerPushed){ try{ history.pushState({inner:1},''); innerPushed=true; }catch(e){} }
+    tabs.forEach(function(t){ var on=t===n; document.getElementById('tab-'+t).setAttribute('aria-selected',on?'true':'false'); document.getElementById('p-'+t).hidden=!on; }); grpSync(n); try{ localStorage.setItem('isg-tab',n); }catch(e){} if(n==='rep') renderReport(); if(n==='firm') doPreview(); if(was) window.scrollTo(0,0); }
   tabs.forEach(function(t){ document.getElementById('tab-'+t).addEventListener('click', function(){ show(t); }); });
-  var st=null; try{ st=localStorage.getItem('isg-tab'); }catch(e){} show(st && tabs.indexOf(st)>=0 ? st : 'risk');
+  showHome();
   renderStrip(); renderReport();
 
   /* ---------- çevrimdışı çalışma (servis çalışanı) ---------- */
