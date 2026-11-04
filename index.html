@@ -46,6 +46,17 @@ body.cw .wrap{max-width:1380px}
 .qadd textarea{width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit;min-height:110px}
 .cprev{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:16px}
 .cprev>summary{font-weight:600;cursor:pointer;margin-bottom:6px}
+
+.showrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.showrow .chk{flex:1 1 260px}
+.showrow select{flex:1 1 220px;min-width:0}
+.cp-thumb{display:block;width:100%;padding:0;border:1px dashed var(--line);border-radius:6px;background:var(--surface);cursor:zoom-in;color:var(--muted);min-height:60px}
+.cp-thumb img{display:block;width:100%;height:auto;border-radius:6px}
+.pdlg{width:min(1100px,98vw)}
+.pdbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.pdinfo{margin-left:auto;font-size:13px;color:var(--muted)}
+.pdbody{text-align:center}
+.pdbody img{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px}
 @media (min-width:1100px){
  body.cw #p-cert{display:grid;grid-template-columns:minmax(0,1fr) 440px;column-gap:20px;align-items:start}
  body.cw #p-cert>*{grid-column:1}
@@ -233,7 +244,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 74 · 04.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 75 · 04.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -906,7 +917,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function emptySt(){ return {items:[],rotate:'sira'}; }
   function newFirm(o){ return Object.assign({id:uid(),name:'',kurum:CertCore.DEF.kurum,gorev:'',sure:CertCore.DEF.sure,gecerlilik:CertCore.DEF.gecerlilik,logos:{firma:{mode:'none'},kurum:{mode:'tpl'}},ek:[],pl:'Çalıştığı Proje',ps:' projesinde çalışmaktadır',isv:emptySt()}, o||{}); }
   function loadFirms(){
-    var raw=lsGet(FKEY); LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; LG.projeOn=!!LG.projeOn;
+    var raw=lsGet(FKEY); LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; LG.projeOn=!!LG.projeOn; LG.hs=(LG.hs&&typeof LG.hs==='object')?LG.hs:{};
     if(!raw || !Array.isArray(raw.list) || !raw.list.length){ /* eski sürümden aktar (kaydedilmez; ilk değişiklikte kaydedilir) */
       var d0=lsGet('cert-defaults-v1')||{};
       var f=newFirm({id:'f1',name:d0.isyeri||'',kurum:d0.kurum||CertCore.DEF.kurum,gorev:d0.gorev||'',sure:d0.sure||CertCore.DEF.sure,gecerlilik:d0.gecerlilik||CertCore.DEF.gecerlilik});
@@ -1053,7 +1064,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var root=document.getElementById(cfg.panel), rows=[], seq=0, saveTimer=null;
     var bar=el('section','bar');
     var addBtn=el('button','btn primary',cfg.addLabel); addBtn.type='button'; bar.appendChild(addBtn);
-    var pasteBtn=el('button','btn',"Excel'den yapıştır"); pasteBtn.type='button'; bar.appendChild(pasteBtn);
+    var pasteBtn=el('button','btn',"Excel'den yapıştır"); pasteBtn.type='button'; bar.appendChild(pasteBtn); if(cfg.noPaste) pasteBtn.style.display='none';
     var dt=el('details','tools'); dt.appendChild(el('summary',null,'Toplu işlemler (tarih, listeyi temizle)'));
     var tools=el('div','tools-body'), dl=el('label','field'); dl.appendChild(el('span',null,'Tüm satırların tarihi (yeni satırlar bugünün tarihini alır)'));
     var commonDate=document.createElement('input'); commonDate.type='date'; commonDate.value=todayIso(); dl.appendChild(commonDate); tools.appendChild(dl);
@@ -1218,6 +1229,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     return {data:cv.toDataURL('image/png'), w:w, h:h};
   }
+  function hideSt(k,r){ return !!(LG.noSign||r.nosign||(LG.hs&&LG.hs[k])); }
   function noSign(r){ return !!(LG.noSign||r.nosign); }
   function noLogo(r){ return !!(LG.noLogo||r.nologo); }
   function logoSel(r,key){ var o=F().logos[key]; if(noLogo(r)||o.mode==='none') return 'none'; if(o.mode==='img'&&o.data) return 'img'; return 'tpl'; }
@@ -1234,7 +1246,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(QS.firm!==FM.cur) QS={firm:FM.cur,sel:'',ad:'',gorev:'',proje:'',isim:'',tarih:'',auto:true};
     if(QS.auto) QS.tarih=todayIso();
     var sabl=f.sabl=f.sabl||[];
-    quick.textContent=''; quick.appendChild(el('h2',null,'Hızlı ve toplu ekleme'));
+    quick.textContent=''; quick.appendChild(el('h2',null,'Toplu yazma ve kayıtlı listeler'));
     quick.appendChild(el('p','hint','Adları (her satıra bir ad soyad) yazın veya yapıştırın; görev ve tarih tümüne uygulanır. Tarih kendiliğinden bugün gelir. Sık kullandığınız görev, proje ve isim listesini “Kayıt” olarak saklayın: sonra seçip yalnızca isim ve tarihi değiştirmeniz yeter.'));
     var g=el('div','fields roomy');
     var w1=el('label','field'); w1.appendChild(el('span',null,'Kayıtlı'));
@@ -1250,7 +1262,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     g.appendChild(qf('Çalıştığı proje (isteğe bağlı)','proje','text','Boşsa ek satır eklenmez'));
     g.appendChild(qf('Veriliş tarihi (otomatik: bugün)','tarih','date'));
     quick.appendChild(g);
-    var tl=el('label','field'); tl.appendChild(el('span',null,'İsimler (her satıra bir ad soyad; isterseniz Excel’den yapıştırın)'));
+    var tl=el('label','field'); tl.appendChild(el('span',null,'Toplu yazma alanı: her satıra bir kişi. Excel’den yapıştırabilirsiniz (sütunlar: ad soyad, tarih, görev, proje)'));
     var ta=document.createElement('textarea'); ta.rows=6; ta.spellcheck=false; ta.value=QS.isim||''; ta.placeholder='Ahmet Yılmaz\nAyşe Demir\nMehmet Kaya'; tl.appendChild(ta); quick.appendChild(tl);
     var act=el('div','row-actions'), ab=el('button','btn primary','Listeye ekle'), sv=el('button','btn','Kaydet'); ab.type=sv.type='button';
     function lines(){ return QS.isim.split(/\r?\n/).filter(function(x){ return x.trim(); }); }
@@ -1272,25 +1284,40 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     quick.appendChild(act);
   }
   var certActive=null, cpT=null, cpTok=0, cpUrl=null;
-  var cprev=el('details','cprev'); cprev.open=window.innerWidth>=1100;
-  cprev.appendChild(el('summary',null,'Önizleme (sertifika)'));
-  var cpAct=el('div','row-actions'), cpNext=el('button','btn sm','Başka imza örneği'); cpNext.type='button'; cpAct.appendChild(cpNext);
-  var cpBox=el('div','prevbox'), cpCap=el('p','hint'); cprev.appendChild(cpAct); cprev.appendChild(cpBox); cprev.appendChild(cpCap);
+  var cprev=el('details','cprev'); cprev.open=true; cprev.appendChild(el('summary',null,'Önizleme'));
+  var cpThumb=el('button','cp-thumb','Önizleme hazırlanıyor…'); cpThumb.type='button'; cpThumb.title='Büyük önizlemeyi aç';
+  var cpCap=el('p','hint'), cpOpen=el('button','btn primary','Önizlemeyi ayrı pencerede aç'); cpOpen.type='button';
+  cprev.appendChild(cpThumb); cprev.appendChild(cpCap); cprev.appendChild(cpOpen);
+  var pd=document.createElement('dialog'); pd.className='fdlg pdlg';
+  var pdH=el('div','fdlg-h'), pdX=el('button','btn primary','Kapat'); pdX.type='button'; pdH.appendChild(el('strong',null,'Sertifika önizlemesi')); pdH.appendChild(pdX);
+  var pdBar=el('div','pdbar'), pdPrev=el('button','btn sm','◀ Önceki kişi'), pdNext=el('button','btn sm','Sonraki kişi ▶'), pdSig=el('button','btn sm','Başka imza örneği'), pdTab=el('button','btn sm','Yeni sekmede aç'), pdInfo=el('span','pdinfo');
+  [pdPrev,pdNext,pdSig,pdTab].forEach(function(b){ b.type='button'; pdBar.appendChild(b); }); pdBar.appendChild(pdInfo);
+  var pdBody=el('div','fdlg-b pdbody'), pdImg=document.createElement('img'); pdImg.alt='Sertifika önizlemesi'; pdBody.appendChild(pdImg);
+  pd.appendChild(pdH); pd.appendChild(pdBar); pd.appendChild(pdBody); document.body.appendChild(pd);
+  pdX.addEventListener('click', function(){ pd.close(); }); pd.addEventListener('click', function(e){ if(e.target===pd) pd.close(); });
+  function certRows(){ return certList?certList.rows():[]; }
+  function curRow(){ var rs=certRows(); return (certActive&&rs.indexOf(certActive)>=0)?certActive:rs[0]; }
+  function shiftRow(d){ var rs=certRows(), i=rs.indexOf(curRow())+d; if(i<0||i>=rs.length) return; certActive=rs[i]; certPrev(); }
+  pdPrev.addEventListener('click', function(){ shiftRow(-1); }); pdNext.addEventListener('click', function(){ shiftRow(1); });
+  pdSig.addEventListener('click', function(){ prevIx++; certPrev(); });
+  pdTab.addEventListener('click', function(){ if(cpUrl) window.open(cpUrl,'_blank'); });
+  function openBig(){ if(!pd.open) pd.showModal(); certPrev(); }
+  cpThumb.addEventListener('click', openBig); cpOpen.addEventListener('click', openBig);
   function schedCertPrev(){ clearTimeout(cpT); cpT=setTimeout(certPrev,350); }
   async function certPrev(){
-    var pc=document.getElementById('p-cert'); if(pc.hidden||!cprev.open||!certList) return;
-    var rs=certList.rows(), r=(certActive&&rs.indexOf(certActive)>=0)?certActive:rs[0]; if(!r) return;
-    var tok=++cpTok;
+    var pc=document.getElementById('p-cert'); if(pc.hidden||!certList) return; if(!cprev.open&&!pd.open) return;
+    var rs=certRows(), r=curRow(); if(!r) return; var tok=++cpTok;
     try{
       var r2=Object.assign({},r,{ad:r.ad||'Ad Soyad'}), st={}, n=1;
-      ['uzman','hekim','isveren'].forEach(function(k){ n=Math.max(n,cands(k).length); st[k]=noSign(r2)?{kind:'none'}:pdfStamp(peek(k)); });
+      ['uzman','hekim','isveren'].forEach(function(k){ n=Math.max(n,cands(k).length); st[k]=hideSt(k,r2)?{kind:'none'}:pdfStamp(peek(k)); });
       var blob=await PdfGen.certPreview(CertCore.check(withD(r2)).texts, st, logoPdf(r2)); if(tok!==cpTok) return;
       if(cpUrl) URL.revokeObjectURL(cpUrl); cpUrl=URL.createObjectURL(blob);
-      cpBox.textContent=''; var im=document.createElement('img'); im.src=cpUrl; im.alt='Sertifika önizlemesi'; cpBox.appendChild(im);
-      cpCap.textContent='Gösterilen: '+(r.ad||'(isim girilmedi)')+' · '+(rs.indexOf(r)+1)+'/'+rs.length+'. kişi · imza örneği '+((prevIx%n)+1)+'/'+n+(noSign(r2)?' · imzasız çıktı':'')+'. Siz yazdıkça yenilenir.';
-    }catch(e){ if(tok===cpTok) cpBox.textContent='Önizleme hazırlanamadı.'; }
+      var im=document.createElement('img'); im.src=cpUrl; im.alt='Sertifika önizlemesi'; cpThumb.textContent=''; cpThumb.appendChild(im); pdImg.src=cpUrl;
+      var i=rs.indexOf(r), who=(r.ad||'(isim girilmedi)');
+      cpCap.textContent=who+' · '+(i+1)+'/'+rs.length+'. kişi. Büyütmek için görsele dokunun.';
+      pdInfo.textContent=who+' · '+(i+1)+'/'+rs.length+' · imza örneği '+((prevIx%n)+1)+'/'+n; pdPrev.disabled=i<1; pdNext.disabled=i>=rs.length-1;
+    }catch(e){ if(tok===cpTok) cpThumb.textContent='Önizleme hazırlanamadı.'; }
   }
-  cpNext.addEventListener('click', function(){ prevIx++; certPrev(); });
   cprev.addEventListener('toggle', schedCertPrev);
   (function(){ var pc=document.getElementById('p-cert'); try{ new MutationObserver(function(){ var show=!pc.hidden; document.body.classList.toggle('cw',show); if(show){ var f=F(); QSday(); schedCertPrev(); } }).observe(pc,{attributes:true,attributeFilter:['hidden']}); }catch(e){} })();
   function QSday(){ if(QS.auto && QS.tarih!==todayIso()){ renderQuick(); } }
@@ -1308,16 +1335,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     g0.appendChild(fx('Eğitimi veren kurum','kurum'));
     var gw=fx('Varsayılan bölüm / görev','gorev'); gw.querySelector('input').setAttribute('list','dl-gv'); g0.appendChild(gw);
     g0.appendChild(fx('Eğitim süresi','sure')); g0.appendChild(fx('Geçerlilik süresi','gecerlilik'));
-    [['firma','Firma logosu (sol üst)','Şablondaki logo (Akkurtlar)'],['kurum','Eğitim kurumu logosu (sağ üst)','Şablondaki logo (Teksen)']].forEach(function(m){
-      var o=f0.logos[m[0]]||{}, w=el('label','field'); w.appendChild(el('span',null,m[1])); var sl=document.createElement('select');
-      [['tpl',m[2]],['img','Yüklediğim logo'+(o.data?'':' (yüklenmemiş)')],['none','Logo yok']].forEach(function(x){ var op=document.createElement('option'); op.value=x[0]; op.textContent=x[1]; if(x[0]==='img'&&!o.data) op.disabled=true; sl.appendChild(op); });
-      sl.value=o.mode||'tpl'; sl.addEventListener('change', function(){ o.mode=sl.value; saveFirms(); refreshDocs(); }); w.appendChild(sl); g0.appendChild(w); });
     b.appendChild(g0);
     var gb=el('div','row-actions'); var b1=el('button','btn','Logo yükle, şube, ek satırlar…'); b1.type='button'; b1.addEventListener('click', function(){ if(window.__openFirmEditor) window.__openFirmEditor(); }); var b2=el('button','btn','İmza / kaşe ayarları'); b2.type='button'; b2.addEventListener('click', function(){ document.getElementById('tab-stamp').click(); }); gb.appendChild(b1); gb.appendChild(b2); b.appendChild(gb);
-    b.appendChild(el('h3',null,'2. Çıktı seçenekleri (tüm sertifikalar için)'));
-    b.appendChild(chkRow('İmzasız / kaşesiz çıkar (uzman, hekim, işveren)', LG.noSign, function(v){ LG.noSign=v; saveLG(); refreshDocs(); }));
-    b.appendChild(chkRow('Logosuz çıkar (iki logo da basılmaz)', LG.noLogo, function(v){ LG.noLogo=v; saveLG(); refreshDocs(); }));
-    b.appendChild(chkRow('"Çalıştığı proje" satırını bas (proje alanı doluysa)', LG.projeOn, function(v){ LG.projeOn=v; saveLG(); refreshDocs(); }));
+    b.appendChild(el('h3',null,'2. Sertifikada gösterilecekler (işaretli olanlar basılır)'));
+    if(LG.noSign){ LG.noSign=false; ['uzman','hekim','isveren'].forEach(function(k){ LG.hs[k]=true; }); saveLG(); }
+    if(LG.noLogo){ LG.noLogo=false; ['firma','kurum'].forEach(function(k){ var o=f0.logos[k]; if(o&&o.mode!=='none'){ o.prev=o.mode; o.mode='none'; } }); saveLG(); saveFirms(); }
+    [['firma','Firma logosu (sol üst)','Şablondaki logo (Akkurtlar)'],['kurum','Eğitimi veren kurum logosu (sağ üst)','Şablondaki logo (Teksen)']].forEach(function(m){
+      var o=f0.logos[m[0]]; if(!o) return; var row=el('div','showrow');
+      row.appendChild(chkRow(m[1], o.mode!=='none', function(v){ if(v){ o.mode=(o.prev&&o.prev!=='none')?o.prev:(o.data?'img':'tpl'); } else { if(o.mode!=='none') o.prev=o.mode; o.mode='none'; } saveFirms(); refreshDocs(); renderOutPanel(); }));
+      if(o.mode!=='none'){ var sl=document.createElement('select'); sl.setAttribute('aria-label',m[1]+' kaynağı');
+        [['tpl',m[2]],['img','Yüklediğim logo'+(o.data?'':' (yüklenmemiş)')]].forEach(function(x){ var op=document.createElement('option'); op.value=x[0]; op.textContent=x[1]; if(x[0]==='img'&&!o.data) op.disabled=true; sl.appendChild(op); });
+        sl.value=o.mode; sl.addEventListener('change', function(){ o.mode=sl.value; saveFirms(); refreshDocs(); }); row.appendChild(sl); }
+      b.appendChild(row); });
+    [['uzman','İş güvenliği uzmanı imza / kaşe'],['hekim','İşyeri hekimi imza / kaşe'],['isveren','İşveren / vekili imza / kaşe']].forEach(function(m){
+      var row=el('div','showrow'); row.appendChild(chkRow(m[1], !LG.hs[m[0]], function(v){ LG.hs[m[0]]=!v; saveLG(); refreshDocs(); })); b.appendChild(row); });
+    (function(){ var row=el('div','showrow'); row.appendChild(chkRow('"Çalıştığı proje" satırı (proje alanı doluysa)', LG.projeOn, function(v){ LG.projeOn=v; saveLG(); refreshDocs(); })); b.appendChild(row); })();
+    b.appendChild(el('p','hint','Hangi imza / kaşe örneğinin kullanılacağı İmza / Kaşe sekmesinde seçilir.'));
     renderQuick();
     b.appendChild(el('p','hint','Bazı kişiler için farklı olması gerekiyorsa, o kişinin satırındaki "Bu kişiye özel seçenekler" bölümünü kullanın (genel ayarın yerine geçer). Proje satırı siz izin vermedikçe çıkmaz. Logo yükleme, şube ve ek satırlar firma penceresinde, imza ve kaşe İmza / Kaşe sekmesindedir.'));
   }
@@ -1327,7 +1360,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   try{ new MutationObserver(function(){ document.querySelectorAll('#p-cert input[id$="-gorev"]').forEach(function(i){ if(i.getAttribute('list')!=='dl-gv') i.setAttribute('list','dl-gv'); }); }).observe(document.getElementById('p-cert'),{childList:true,subtree:true}); }catch(e){}
   var certBytes=null;
   certList=makeList({
-    panel:'p-cert', store:'cert-olusturucu-v1', zipName:'isg-belgeleri', dupSep:' ', addLabel:'Kişi ekle', onActive:function(r){ certActive=r; schedCertPrev(); }, onRefresh:function(r){ if(!certActive||r===certActive||r===null) schedCertPrev(); },
+    panel:'p-cert', store:'cert-olusturucu-v1', zipName:'isg-belgeleri', dupSep:' ', addLabel:'Kişi ekle', noPaste:true, onActive:function(r){ certActive=r; schedCertPrev(); }, onRefresh:function(r){ if(!certActive||r===certActive||r===null) schedCertPrev(); },
     dateLabel:'Tümüne uygulanacak tarih (yeni kişiler bugünün tarihini alır)', extra:outPanel,
     core:{check:function(r){ var c=CertCore.check(withD(r)); return {problems:c.problems,notes:[],texts:c.texts}; }},
     pastePlaceholder:'Ad soyad  [Tab]  Veriliş tarihi  [Tab]  Görev  [Tab]  Çalıştığı proje',
@@ -1350,8 +1383,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     preview:function(t){ return 'Adı soyadı: '+t.ad+'\nVeriliş tarihi: '+t.tarih+' (Geçerlilik Süresi: '+t.gecerlilik+')\nBölüm/Görev: '+t.gorev+'\nEğitimin süresi: '+t.sure+'\nİşyeri: '+t.isyeri+'\nEğitimi veren kurum: '+t.kurum+(t.ek&&t.ek.length?'\n'+t.ek.map(function(e){ return e.l+': '+e.v; }).join('\n'):''); },
     fileName:function(r){ return CertCore.fileName(r.ad).replace(/\.docx$/,''); },
     formats:[
-      {id:'docx',label:'Word',ext:'.docx',build:function(r){ if(!certBytes) certBytes=b64bytes(CERT_B64); var st={}; ['uzman','hekim','isveren'].forEach(function(k){ st[k]=noSign(r)?null:certStampParam(pick(k,r),k); }); return CertCore.fill(certBytes, withD(r), st, JSZip, logoWord(r)); }},
-      {id:'pdf',label:'PDF',ext:'.pdf',build:function(r){ var st={}; ['uzman','hekim','isveren'].forEach(function(k){ st[k]=noSign(r)?{kind:'none'}:pdfStamp(pick(k,r)); }); return PdfGen.cert(CertCore.check(withD(r)).texts, st, logoPdf(r)); }}
+      {id:'docx',label:'Word',ext:'.docx',build:function(r){ if(!certBytes) certBytes=b64bytes(CERT_B64); var st={}; ['uzman','hekim','isveren'].forEach(function(k){ st[k]=hideSt(k,r)?null:certStampParam(pick(k,r),k); }); return CertCore.fill(certBytes, withD(r), st, JSZip, logoWord(r)); }},
+      {id:'pdf',label:'PDF',ext:'.pdf',build:function(r){ var st={}; ['uzman','hekim','isveren'].forEach(function(k){ st[k]=hideSt(k,r)?{kind:'none'}:pdfStamp(pick(k,r)); }); return PdfGen.cert(CertCore.check(withD(r)).texts, st, logoPdf(r)); }}
     ],
     record:function(r){ var t=CertCore.check(withD(r)).texts; recordDoc('cert', t.ad, CertCore.toIso(r.tarih), t.ad); try{ if(window.__gvAdd) window.__gvAdd(r.gorev); }catch(e){} },
     parseLine:function(c,def){ if(/^(ad|ad soyad|adı soyadı)$/i.test((c[0]||'').trim())) return null; var d=CertCore.toIso(c[1]||''); return {ad:(c[0]||'').trim(),tarih:d||def,gorev:(c[2]||'').trim(),proje:(c[3]||'').trim()}; }
@@ -1417,7 +1450,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       ['uzman','hekim','isveren'].forEach(function(k){ n=Math.max(n,cands(k).length); });
       if(prevKind==='cert'){
         var r={ad:'Örnek Ad Soyad',tarih:todayIso(),gorev:'',proje:'Örnek Proje',projeon:true}, st={};
-        ['uzman','hekim','isveren'].forEach(function(k){ st[k]=LG.noSign?{kind:'none'}:pdfStamp(peek(k)); });
+        ['uzman','hekim','isveren'].forEach(function(k){ st[k]=(LG.noSign||(LG.hs&&LG.hs[k]))?{kind:'none'}:pdfStamp(peek(k)); });
         blob=await PdfGen.certPreview(CertCore.check(withD(r)).texts, st, logoPdf(r));
       } else {
         var rt=RiskCore.check(rr({plaka:'34 ABC 123',surucu:'Örnek Sürücü',tarih:todayIso()})).texts;
@@ -1589,7 +1622,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function onFirmChanged(){ gvRefresh(); var __nm=F().name||''; (window.__firmFns||[]).forEach(function(fn){ try{ fn(__nm,__pvFirm); }catch(e){} }); __pvFirm=__nm; renderFirmBar(); renderFirmTab(); renderStamps(); renderOutPanel(); refreshDocs(); doPreview(); }
   renderFirmBar(); renderFirmTab();
   hooks.firms=function(){ loadFirms(); onFirmChanged(); };
-  hooks.logos=function(){ LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; LG.projeOn=!!LG.projeOn; renderOutPanel(); refreshDocs(); };
+  hooks.logos=function(){ LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; LG.projeOn=!!LG.projeOn; LG.hs=(LG.hs&&typeof LG.hs==='object')?LG.hs:{}; renderOutPanel(); refreshDocs(); };
 
   /* ---------- talep formu (Excel) ---------- */
   var reqRoot=document.getElementById('p-req'), reqItems=[], reqDate=todayIso(), reqName='', reqProje=false;
