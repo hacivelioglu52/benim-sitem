@@ -84,8 +84,10 @@ h3.gh{margin:14px 0 6px;font-size:13px;letter-spacing:.04em;text-transform:upper
 .tile:hover{border-color:var(--accent)}
 .tile b{font-size:16px}
 .tile span{font-size:13px;color:var(--muted);line-height:1.35}
-#p-home .strip{margin-top:18px}
+#p-rep .strip{margin-bottom:12px}
 @media (max-width:520px){.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:12px;min-height:84px}.tile b{font-size:15px}.tile span{font-size:12px}}
+
+@media (max-width:700px){ input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]),select{min-height:42px;font-size:16px} textarea{font-size:16px} .tile{min-height:76px} }
 @media (min-width:1100px){
  body.cw #p-cert{display:grid;grid-template-columns:minmax(0,1fr) 440px;column-gap:20px;align-items:start}
  body.cw #p-cert>*{grid-column:1}
@@ -273,7 +275,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 80 · 04.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 81 · 04.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -297,13 +299,6 @@ details.dpanel[open]>summary{margin-bottom:10px}
   <section id="p-home" aria-label="Ana sayfa">
     <h2 class="gh0">Ne yapmak istiyorsunuz?</h2>
     <div id="home-tiles"></div>
-    <div class="strip" id="strip" aria-live="polite"></div>
-    <details>
-      <summary>Bilgi ve ipuçları</summary>
-      <p><strong>Firma:</strong> üstteki listeden çalışılan firmayı seçin, siz değiştirene kadar seçili kalır. Ünvan, logo ve ek satırlar Firma sekmesindedir.</p>
-      <p><strong>Veriler:</strong> girilen bilgiler, görseller ve sayaçlar yalnızca bu tarayıcıda saklanır, sunucuya gönderilmez. Firma sekmesindeki Yedek bölümünden yedek alabilirsiniz.</p>
-      <p><strong>Çıktılar:</strong> PDF, örnek PDF'lerinizin birebir görünümüdür; yalnızca değişen alanlar yeniden yazılır. Excel/Word çıktısı şablon dosyasını doldurur.</p>
-    </details>
   </section>
 
   <section id="p-risk" role="tabpanel" aria-labelledby="tab-risk"></section>
@@ -327,6 +322,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
   <section id="p-sinav" role="tabpanel" aria-labelledby="tab-sinav" hidden></section>
   <section id="p-ocr" role="tabpanel" aria-labelledby="tab-ocr" hidden></section>
   <section id="p-rep" role="tabpanel" aria-labelledby="tab-rep" hidden>
+    <div class="strip" id="strip" aria-live="polite"></div>
     <div class="panel">
       <h2>Aylık sayılar</h2>
       <p class="hint">Belge tarihine göre ay ay sayılır. Sayılar firma bazında tutulur: üstteki seçimden tek bir firmaya bakabilir, aşağıdaki tablodan firmaları karşılaştırabilirsiniz. Aynı firmada aynı plaka (ya da kişi) ve aynı tarih için tekrar indirme sayıyı artırmaz. Sayaç yalnızca bu cihazda tutulur.</p>
@@ -3392,11 +3388,11 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
       box.appendChild(tl);
       var og=document.createElement('optgroup'); og.label=g[0]; g[1].forEach(function(t){ var o=document.createElement('option'); o.value=t; o.textContent=TT[t][0]; og.appendChild(o); }); pageSel.appendChild(og); }); })();
   pageSel.addEventListener('change', function(){ show(pageSel.value); });
-  function showHome(){ tabs.forEach(function(t){ document.getElementById('tab-'+t).setAttribute('aria-selected','false'); document.getElementById('p-'+t).hidden=true; }); homeEl.hidden=false; navwrap.hidden=true; document.body.classList.remove('inner'); document.body.classList.remove('cw'); try{ localStorage.setItem('isg-tab','home'); }catch(e){} window.scrollTo(0,0); renderStrip(); }
+  function showHome(){ tabs.forEach(function(t){ document.getElementById('tab-'+t).setAttribute('aria-selected','false'); document.getElementById('p-'+t).hidden=true; }); homeEl.hidden=false; navwrap.hidden=true; document.getElementById('firm-bar').hidden=true; document.body.classList.remove('inner'); document.body.classList.remove('cw'); try{ localStorage.setItem('isg-tab','home'); }catch(e){} window.scrollTo(0,0); renderStrip(); }
   document.getElementById('home-btn').addEventListener('click', function(){ if(innerPushed){ try{ history.back(); }catch(e){} setTimeout(function(){ if(homeEl.hidden){ innerPushed=false; showHome(); } },150); } else showHome(); });
   window.addEventListener('popstate', function(){ innerPushed=false; if(homeEl.hidden) showHome(); });
   document.querySelector('header h1').style.cursor='pointer'; document.querySelector('header h1').addEventListener('click', function(){ if(!homeEl.hidden) return; document.getElementById('home-btn').click(); });
-  function show(n){ var was=homeEl.hidden; homeEl.hidden=true; navwrap.hidden=false; document.body.classList.add('inner'); pageSel.value=n; if(!innerPushed){ try{ history.pushState({inner:1},''); innerPushed=true; }catch(e){} }
+  function show(n){ var was=homeEl.hidden; homeEl.hidden=true; navwrap.hidden=false; document.getElementById('firm-bar').hidden=false; document.body.classList.add('inner'); pageSel.value=n; if(!innerPushed){ try{ history.pushState({inner:1},''); innerPushed=true; }catch(e){} }
     tabs.forEach(function(t){ var on=t===n; document.getElementById('tab-'+t).setAttribute('aria-selected',on?'true':'false'); document.getElementById('p-'+t).hidden=!on; }); grpSync(n); try{ localStorage.setItem('isg-tab',n); }catch(e){} if(n==='rep') renderReport(); if(n==='firm') doPreview(); if(was) window.scrollTo(0,0); }
   tabs.forEach(function(t){ document.getElementById('tab-'+t).addEventListener('click', function(){ show(t); }); });
   showHome();
