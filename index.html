@@ -61,6 +61,11 @@ body:has(dialog[open]){overflow:hidden}
 .pdinfo{margin-left:auto;font-size:13px;color:var(--muted)}
 .pdbody{display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0;padding:8px}
 .pdbody img{width:100%;height:100%;object-fit:contain;background:#fff}
+
+.logolist{display:flex;flex-direction:column;gap:6px}
+.logoopt{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.logoopt label{flex:1;display:flex;gap:8px;align-items:center;min-width:0}
+.logoopt img{height:40px;max-width:96px;object-fit:contain;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/10px 10px;border-radius:4px;cursor:zoom-in}
 @media (min-width:1100px){
  body.cw #p-cert{display:grid;grid-template-columns:minmax(0,1fr) 440px;column-gap:20px;align-items:start}
  body.cw #p-cert>*{grid-column:1}
@@ -248,7 +253,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 76 · 04.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 77 · 04.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -1238,6 +1243,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function hideSt(k,r){ return !!(LG.noSign||r.nosign||(LG.hs&&LG.hs[k])); }
   function noSign(r){ return !!(LG.noSign||r.nosign); }
   function noLogo(r){ return !!(LG.noLogo||r.nologo); }
+  function tplLabel(k){ return k==='firma'?'Akkurtlar (hazır logo)':'Teksen (hazır logo)'; }
+  function logoItems(o){ if(!o.list){ o.list=[]; if(o.data){ var id=uid(); o.list.push({id:id,data:o.data,w:o.w,h:o.h}); o.sel=id; } } return o.list; }
+  function logoName(k,f,i){ return (k==='firma'?(f.name||'Firma'):(f.kurum||'Kurum'))+' '+(i+1); }
+  function logoPick(o,id){ var it=logoItems(o).filter(function(x){ return x.id===id; })[0]; if(it){ o.sel=id; o.data=it.data; o.w=it.w; o.h=it.h; o.mode='img'; } }
   function logoSel(r,key){ var o=F().logos[key]; if(noLogo(r)||o.mode==='none') return 'none'; if(o.mode==='img'&&o.data) return 'img'; return 'tpl'; }
   function logoWord(r){ var out={}; ['firma','kurum'].forEach(function(k){ var t=logoSel(r,k), o=F().logos[k]; out[k]= t==='none' ? null : t==='img' ? {png:dataUrlToBytes(o.data),w:o.w,h:o.h} : undefined; }); return out; }
   function logoPdf(r){ var out={}; ['firma','kurum'].forEach(function(k){ var t=logoSel(r,k); out[k]={kind:t,data:t==='img'?F().logos[k].data:null}; }); return out; }
@@ -1347,9 +1356,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     [['firma','Firma logosu (sol üst)','Şablondaki logo (Akkurtlar)'],['kurum','Eğitimi veren kurum logosu (sağ üst)','Şablondaki logo (Teksen)']].forEach(function(m){
       var o=f0.logos[m[0]]; if(!o) return; var row=el('div','showrow');
       row.appendChild(chkRow(m[1], o.mode!=='none', function(v){ if(v){ o.mode=(o.prev&&o.prev!=='none')?o.prev:(o.data?'img':'tpl'); } else { if(o.mode!=='none') o.prev=o.mode; o.mode='none'; } saveFirms(); refreshDocs(); renderOutPanel(); }));
-      if(o.mode!=='none'){ var sl=document.createElement('select'); sl.setAttribute('aria-label',m[1]+' kaynağı');
-        [['tpl',m[2]],['img','Yüklediğim logo'+(o.data?'':' (yüklenmemiş)')]].forEach(function(x){ var op=document.createElement('option'); op.value=x[0]; op.textContent=x[1]; if(x[0]==='img'&&!o.data) op.disabled=true; sl.appendChild(op); });
-        sl.value=o.mode; sl.addEventListener('change', function(){ o.mode=sl.value; saveFirms(); refreshDocs(); }); row.appendChild(sl); }
+      if(o.mode!=='none'){ var sl=document.createElement('select'); sl.setAttribute('aria-label',m[1]+' kaynağı'); var its=logoItems(o);
+        var op0=document.createElement('option'); op0.value='tpl'; op0.textContent=tplLabel(m[0]); sl.appendChild(op0);
+        its.forEach(function(it,ix){ var op=document.createElement('option'); op.value=it.id; op.textContent=logoName(m[0],f0,ix); sl.appendChild(op); });
+        sl.value=o.mode==='img'?(o.sel||'tpl'):'tpl'; sl.addEventListener('change', function(){ if(sl.value==='tpl') o.mode='tpl'; else logoPick(o,sl.value); saveFirms(); refreshDocs(); }); row.appendChild(sl); }
       chips.appendChild(row); });
     [['uzman','İş güvenliği uzmanı imza / kaşe'],['hekim','İşyeri hekimi imza / kaşe'],['isveren','İşveren / vekili imza / kaşe']].forEach(function(m){
       var row=el('div','showrow'); row.appendChild(chkRow(m[1], !LG.hs[m[0]], function(v){ LG.hs[m[0]]=!v; saveLG(); refreshDocs(); })); chips.appendChild(row); });
@@ -1425,19 +1435,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function txtField(label,get,set,ph){ var w=el('label','field'); w.appendChild(el('span',null,label)); var i=document.createElement('input'); i.type='text'; i.value=get()||''; i.autocomplete='off'; if(ph) i.placeholder=ph; i.addEventListener('input', function(){ set(i.value); fsave(); }); w.appendChild(i); return w; }
   function dp(title,open){ var d=el('details','dpanel'), b=el('div','dbody'); if(open) d.open=true; Node.prototype.appendChild.call(d,el('summary',null,title)); Node.prototype.appendChild.call(d,b); d.appendChild=function(n){ return b.appendChild(n); }; return d; }
   function renderLogoCard(slot){
-    var f=F(), o=f.logos[slot.key], card=el('div','stamp'); card.appendChild(el('h2',null,slot.title)); card.appendChild(el('p','hint',slot.hint));
-    var view=el('div','view'); if(o.data){ var g=document.createElement('img'); g.src=o.data; g.alt='Yüklenen logo'; g.addEventListener('click', function(){ zoom(g.src); }); view.appendChild(g); } else view.textContent='Yüklenen logo yok'; card.appendChild(view);
-    var seg=el('div','seg'); [['tpl',slot.tpl],['img','Yüklediğim logo'],['none','Logo yok']].forEach(function(m){
-      var l=el('label'), r=document.createElement('input'); r.type='radio'; r.name='logo-'+slot.key; r.value=m[0]; r.checked=o.mode===m[0];
-      r.addEventListener('change', function(){ o.mode=m[0]; saveFirms(); doPreview(); }); l.appendChild(r); l.appendChild(document.createTextNode(m[1])); seg.appendChild(l);
-    }); card.appendChild(seg);
+    var f=F(), o=f.logos[slot.key], items=logoItems(o), card=el('div','stamp'); card.appendChild(el('h2',null,slot.title)); card.appendChild(el('p','hint',slot.hint));
+    var lst=el('div','logolist');
+    function after(msg){ saveFirms(); renderFirmTab(); renderOutPanel(); refreshDocs(); doPreview(); if(msg) setStatus(msg,'ok'); }
+    function opt(checked,label,onpick,thumb,onDel){
+      var row=el('div','logoopt'), l=el('label'), r=document.createElement('input'); r.type='radio'; r.name='logo-'+slot.key; r.checked=checked;
+      r.addEventListener('change', function(){ onpick(); saveFirms(); renderOutPanel(); refreshDocs(); doPreview(); });
+      l.appendChild(r); if(thumb){ var im=document.createElement('img'); im.src=thumb; im.alt=label; im.addEventListener('click', function(e){ e.preventDefault(); zoom(thumb); }); l.appendChild(im); }
+      l.appendChild(el('span',null,label)); row.appendChild(l);
+      if(onDel){ var d=el('button','btn quiet sm','Sil'); d.type='button'; d.addEventListener('click', onDel); row.appendChild(d); }
+      lst.appendChild(row); }
+    opt(o.mode==='tpl', tplLabel(slot.key), function(){ o.mode='tpl'; });
+    items.forEach(function(it,ix){ opt(o.mode==='img'&&o.sel===it.id, logoName(slot.key,f,ix), function(){ logoPick(o,it.id); }, it.data, function(){
+      o.list=items.filter(function(x){ return x.id!==it.id; }); if(o.sel===it.id){ var nx=o.list[0]; if(nx) logoPick(o,nx.id); else { o.sel=null; o.data=null; o.w=o.h=0; if(o.mode==='img') o.mode='tpl'; } } after('Logo silindi.'); }); });
+    opt(o.mode==='none', 'Logo yok', function(){ o.mode='none'; });
+    card.appendChild(lst);
     var file=document.createElement('input'); file.type='file'; file.accept='image/*'; file.id='logo-file-'+slot.key;
-    var acts=el('div','row-actions'), b1=el('button','btn primary',o.data?'Logoyu değiştir':'Logo yükle'); b1.type='button'; b1.addEventListener('click', function(){ file.click(); }); acts.appendChild(b1);
-    if(o.data){ var b2=el('button','btn quiet','Yüklenen logoyu sil'); b2.type='button'; b2.addEventListener('click', function(){ o.data=null; o.w=o.h=0; if(o.mode==='img') o.mode='tpl'; saveFirms(); renderFirmTab(); doPreview(); setStatus('Logo silindi.'); }); acts.appendChild(b2); }
+    var acts=el('div','row-actions'), b1=el('button','btn primary','Logo ekle'); b1.type='button'; b1.addEventListener('click', function(){ file.click(); }); acts.appendChild(b1);
     card.appendChild(acts); card.appendChild(file);
     file.addEventListener('change', async function(){
       var fl=file.files&&file.files[0]; file.value=''; if(!fl) return;
-      try{ var im=await loadImage(fl), out=processLogo(im); o.data=out.data; o.w=out.w; o.h=out.h; o.mode='img'; saveFirms(); renderFirmTab(); doPreview(); setStatus('Logo eklendi ve seçildi.','ok'); }
+      try{ var im=await loadImage(fl), out=processLogo(im); var id=uid(); items.push({id:id,data:out.data,w:out.w,h:out.h}); logoPick(o,id); after('Logo eklendi ve seçildi: '+logoName(slot.key,f,items.length-1)); }
       catch(e){ setStatus(e.message||'Logo işlenemedi.','bad'); }
     });
     return card;
