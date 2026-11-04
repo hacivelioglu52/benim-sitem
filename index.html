@@ -197,7 +197,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 70 · 04.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 71 · 04.11.2026</strong></p>
   </header>
 
   <div class="strip" id="strip" aria-live="polite"></div>
@@ -1250,8 +1250,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   window.__gvAdd=gvAdd;
   function firmLabel(f){ if(f.name) return f.name; var n=0,k=0; FM.list.forEach(function(x){ if(!x.name){ n++; if(x.id===f.id) k=n; } }); return '(adsız firma'+(n>1?' '+k:'')+')'; }
   function firmBlank(f){ return !f.name && !(f.gorev||'').trim() && !(f.gv&&f.gv.length) && !(f.sb&&f.sb.length) && !(f.ek&&f.ek.length) && !(f.logos&&((f.logos.firma&&f.logos.firma.data)||(f.logos.kurum&&f.logos.kurum.data))) && !JSON.stringify(f.info||{}).replace(/[{}\":,]/g,'').trim(); }
-  function renderFirmBar(){ firmSel.textContent=''; FM.list.forEach(function(f){ var o=document.createElement('option'); o.value=f.id; o.textContent=firmLabel(f); o.selected=f.id===FM.cur; firmSel.appendChild(o); }); }
-  firmSel.addEventListener('change', function(){ FM.cur=firmSel.value; saveFirms(); onFirmChanged(); setStatus('Firma: '+firmLabel(F())+'. Siz değiştirene kadar bu firma seçili kalır.','ok'); });
+  function renderFirmBar(){ firmSel.textContent=''; var cf=F(), named=FM.list.filter(function(f){return f.name;}).length;
+    var ph=document.createElement('option'); ph.value=''; ph.textContent=named?'— Kayıtlı firmalardan seçin —':'— Firma yok: “+ Yeni” ile ekleyin —'; ph.selected=!!(cf&&firmBlank(cf)); firmSel.appendChild(ph);
+    FM.list.forEach(function(f){ if(firmBlank(f)) return; var o=document.createElement('option'); o.value=f.id; o.textContent=firmLabel(f); o.selected=f.id===FM.cur; firmSel.appendChild(o); }); }
+  firmSel.addEventListener('change', function(){ if(!firmSel.value){ renderFirmBar(); return; } FM.cur=firmSel.value; saveFirms(); onFirmChanged(); setStatus('Firma: '+firmLabel(F())+'. Siz değiştirene kadar bu firma seçili kalır.','ok'); });
   function openFirmTab(){ var t=document.getElementById('tab-firm'); if(t) t.click(); }
   document.getElementById('firm-add').addEventListener('click', function(){ var cf=F(); var nf=(cf&&firmBlank(cf))?cf:newFirm({name:''}); if(nf!==cf) FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); openFirmTab(); setTimeout(function(){ var i=firmRoot.querySelector('input'); if(i) i.focus(); },50); setStatus('Yeni firma eklendi. Ünvanını, logosunu ve bilgilerini girin.','ok'); });
   document.getElementById('firm-edit').addEventListener('click', openFirmTab);
