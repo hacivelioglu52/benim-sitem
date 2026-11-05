@@ -107,6 +107,12 @@ h3.gh{margin:14px 0 6px;font-size:13px;letter-spacing:.04em;text-transform:upper
  .hzbox .hlogos,.hzbox .hsigs{grid-template-columns:1fr}
  .hzbox .hr2 input[type=date]{width:100%}
 }
+.hzbox .hlogo-prev{display:flex;gap:10px;align-items:center;min-height:50px;font-size:13.5px}
+.hzbox .hlogo-prev img{max-height:46px;max-width:150px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff;padding:2px}
+.hfl{display:flex;flex-direction:column;gap:6px}
+.hfi{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 12px;min-height:48px;font-size:14.5px;cursor:pointer}
+.hfi:hover{border-color:var(--accent)}
+.hfi img{max-height:36px;max-width:110px;object-fit:contain;background:#fff;border-radius:4px}
 @media (min-width:1100px){
  body.cw #p-cert{display:grid;grid-template-columns:minmax(0,1fr) 500px;column-gap:20px;align-items:start}
  body.cw #p-cert>*{grid-column:1}
@@ -294,7 +300,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 84 · 05.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 86 · 05.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -1329,6 +1335,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function logoSel(r,key){ var o=F().logos[key]; if(noLogo(r)||o.mode==='none') return 'none'; if(o.mode==='img'&&o.data) return 'img'; return 'tpl'; }
   function logoEff(r,k){ var o=F().logos[k], ov=(r.ov||{})['logo'+(k==='firma'?'F':'K')];
     if(ov==='none') return {t:'none'}; if(ov==='tpl') return {t:'tpl'};
+    if(k==='firma' && ov==='up' && (r.ov||{}).logoUp){ var u=r.ov.logoUp; return {t:'img',data:u.data,w:u.w,h:u.h}; }
+    if(k==='firma' && ov && ov.indexOf('x:')===0){ var pp=ov.split(':'), ff=FM.list.filter(function(x){ return x.id===pp[1]; })[0]; if(ff){ if(pp[2]==='tpl') return {t:'tpl'}; var i2=logoItems(ff.logos.firma).filter(function(x){ return x.id===pp[2]; })[0]; if(i2) return {t:'img',data:i2.data,w:i2.w,h:i2.h}; } }
     if(ov){ var it=logoItems(o).filter(function(x){ return x.id===ov; })[0]; if(it) return {t:'img',data:it.data,w:it.w,h:it.h}; }
     var t=logoSel(r,k); return t==='img'?{t:'img',data:o.data,w:o.w,h:o.h}:{t:t}; }
   function logoWord(r){ var out={}; ['firma','kurum'].forEach(function(k){ var e=logoEff(r,k); out[k]= e.t==='none' ? null : e.t==='img' ? {png:dataUrlToBytes(e.data),w:e.w,h:e.h} : undefined; }); return out; }
@@ -1489,6 +1497,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 
   /* ---------- sertifika hazırla (tek kişilik, listeye yazmadan) ---------- */
+  /* firma logosu seçimi (sertifika hazırla) */
+  var hzFd=document.createElement('dialog'); hzFd.className='fdlg'; var hzFdB=el('div','fdlg-b'); hzFdB.style.cssText='padding:12px;overflow:auto';
+  (function(){ var h=el('div','fdlg-h'), x=el('button','btn','Kapat'); x.type='button'; x.addEventListener('click', function(){ hzFd.close(); }); h.appendChild(el('strong',null,'Hangi firmanın logosu?')); h.appendChild(x); hzFd.appendChild(h); hzFd.appendChild(hzFdB); document.body.appendChild(hzFd); hzFd.addEventListener('click', function(e){ if(e.target===hzFd) hzFd.close(); }); })();
+  function hzFirmPick(){
+    hzFdB.textContent=''; var qi=document.createElement('input'); qi.type='search'; qi.placeholder='Firma ara'; qi.setAttribute('aria-label','Firma ara'); qi.style.cssText='width:100%;margin-bottom:10px'; hzFdB.appendChild(qi);
+    var box=el('div','hfl'); hzFdB.appendChild(box);
+    function pick(v){ hzOv().logoF=v; hzFd.close(); renderHz(); certActive=HZ; clearTimeout(cpT); cpT=setTimeout(certPrev,0); }
+    function build(){ box.textContent=''; var qs=qi.value.trim().toLocaleLowerCase('tr'), n=0;
+      FM.list.forEach(function(ff){ var its=logoItems(ff.logos.firma); if(!its.length) return; var lab=firmLabel(ff); if(qs && lab.toLocaleLowerCase('tr').indexOf(qs)<0) return;
+        its.forEach(function(it,ix){ n++; var b=el('button','hfi'); b.type='button'; var im=document.createElement('img'); im.src=it.data; im.alt=''; b.appendChild(im); b.appendChild(el('span',null,lab+(its.length>1?' · '+logoName('firma',ff,ix):'')+(ff.id===FM.cur?' (seçili firma)':''))); b.addEventListener('click', function(){ pick('x:'+ff.id+':'+it.id); }); box.appendChild(b); }); });
+      var t=el('button','hfi'); t.type='button'; t.appendChild(el('span',null,tplLabel('firma'))); t.addEventListener('click', function(){ pick('tpl'); }); box.appendChild(t);
+      if(!n) box.insertBefore(el('p','hint','Logosu yüklenmiş firma bulunamadı. Firma sayfasından logo yükleyebilir ya da buradaki “Logo yükle” düğmesini kullanabilirsiniz.'), box.firstChild); }
+    qi.addEventListener('input', build); build(); hzFd.showModal();
+  }
+
   var hzBox=el('section','panel hzbox');
   function hzOv(){ HZ.ov=HZ.ov||{}; return HZ.ov; }
   function hzClean(){ var o={}; Object.keys(hzOv()).forEach(function(k){ if(HZ.ov[k]) o[k]=HZ.ov[k]; }); return o; }
@@ -1504,21 +1527,37 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     function ch(r,opts,get,set){ var box=el('div','hchips'); opts.forEach(function(o){ var b=el('button','hch',o[1]); b.type='button'; b.setAttribute('aria-pressed',(get()||'')===o[0]?'true':'false'); b.addEventListener('click', function(){ set(o[0]); Array.prototype.forEach.call(box.children,function(x,ix){ x.setAttribute('aria-pressed',opts[ix][0]===o[0]?'true':'false'); }); touch(true); }); box.appendChild(b); }); r.appendChild(box); }
     /* sertifikadaki sıra: logolar, kişi, tarih, görev, süre, tür, şekil, işyeri, kurum, imzalar */
     var lr=el('div','hlogos'); hzBox.appendChild(lr);
-    [['firma','F','Firma logosu (sol üst)'],['kurum','K','Eğitim kurumu logosu (sağ üst)']].forEach(function(m){
+    (function(){
+      var c=el('div','hcol'); c.appendChild(el('span',null,'Firma logosu (sol üst)'));
+      var e=logoEff(hzRow(),'firma'), v=ov.logoF||'', nm='';
+      if(e.t==='none') nm='Logo basılmayacak'; else if(v==='up') nm='Yüklediğiniz logo'; else if(v.indexOf('x:')===0){ var pp=v.split(':'), ff=FM.list.filter(function(x){return x.id===pp[1];})[0]; nm=ff?firmLabel(ff):''; if(ff&&pp[2]!=='tpl'){ var li=logoItems(ff.logos.firma); for(var q=0;q<li.length;q++) if(li[q].id===pp[2]&&li.length>1) nm+=' · '+logoName('firma',ff,q); } else if(pp[2]==='tpl') nm=tplLabel('firma'); }
+      else if(v==='tpl') nm=tplLabel('firma'); else nm=e.t==='img'?firmLabel(f)+' logosu':tplLabel('firma');
+      var pv=el('div','hlogo-prev'); if(e.t==='img'){ var im=document.createElement('img'); im.src=e.data; im.alt=''; pv.appendChild(im); } pv.appendChild(el('span',null,nm)); c.appendChild(pv);
+      var bx=el('div','hchips'), b1=el('button','hch','Firma seç…'), b2=el('button','hch','Logo yükle'), b3=el('button','hch','Basma'), fi=document.createElement('input');
+      fi.type='file'; fi.accept='image/*'; fi.hidden=true; [b1,b2,b3].forEach(function(b){ b.type='button'; bx.appendChild(b); });
+      b3.setAttribute('aria-pressed',v==='none'?'true':'false'); b2.setAttribute('aria-pressed',v==='up'?'true':'false'); b1.setAttribute('aria-pressed',(v.indexOf('x:')===0)?'true':'false');
+      b1.addEventListener('click', hzFirmPick); b2.addEventListener('click', function(){ fi.click(); });
+      b3.addEventListener('click', function(){ ov.logoF=(v==='none')?'':'none'; renderHz(); touch(true); });
+      fi.addEventListener('change', async function(){ var fl=fi.files&&fi.files[0]; fi.value=''; if(!fl) return; try{ var im2=await loadImage(fl), out=processLogo(im2); ov.logoUp={data:out.data,w:out.w,h:out.h}; ov.logoF='up'; renderHz(); touch(true); }catch(err){ setStatus(err.message||'Logo okunamadı.','bad'); } });
+      c.appendChild(bx); c.appendChild(fi);
+      if(v){ var rs=el('button','btn quiet','Ayardaki logoya dön'); rs.type='button'; rs.addEventListener('click', function(){ ov.logoF=''; renderHz(); touch(true); }); c.appendChild(rs); }
+      lr.appendChild(c);
+    })();
+    (function(){ var m=['kurum','K','Eğitim kurumu logosu (sağ üst)'];
       var o=f.logos[m[0]], opts=[['','Otomatik'],['none','Basma'],['tpl',tplLabel(m[0])]]; logoItems(o).forEach(function(it,ix){ opts.push([it.id,logoName(m[0],f,ix)]); });
-      var c=el('div','hcol'); c.appendChild(el('span',null,m[2])); ch(c,opts,function(){return ov['logo'+m[1]];},function(v){ov['logo'+m[1]]=v;}); lr.appendChild(c); });
+      var c=el('div','hcol'); c.appendChild(el('span',null,m[2])); ch(c,opts,function(){return ov['logo'+m[1]];},function(v){ov['logo'+m[1]]=v;}); lr.appendChild(c); })();
     tx('Katılımcının adı soyadı',function(){return HZ.ad;},function(v){HZ.ad=v;},{ph:'Ad Soyad'});
     var rt=tx('Veriliş tarihi',function(){return HZ.tarih;},function(v){HZ.tarih=v;},{type:'date'});
-    var gi=document.createElement('input'); gi.type='text'; gi.placeholder='Geçerlilik: '+(f.gecerlilik||'3 yıl'); gi.value=ov.gecerlilik||''; gi.autocomplete='off'; gi.setAttribute('aria-label','Geçerlilik süresi'); gi.addEventListener('input', function(){ ov.gecerlilik=gi.value; touch(); }); rt.appendChild(gi); rt.classList.add('hr2');
-    tx('Bölüm / görev',function(){return HZ.gorev;},function(v){HZ.gorev=v;},{ph:f.gorev||'Firma ayarındaki görev',list:'dl-gv'});
-    tx('Eğitimin süresi',function(){return ov.sure;},function(v){ov.sure=v;},{ph:f.sure||'8 Saat'});
+    var gi=document.createElement('input'); gi.type='text'; gi.placeholder='Geçerlilik süresi (örn. 3 yıl)'; gi.value=ov.gecerlilik||''; gi.autocomplete='off'; gi.setAttribute('aria-label','Geçerlilik süresi'); gi.addEventListener('input', function(){ ov.gecerlilik=gi.value; touch(); }); rt.appendChild(gi); rt.classList.add('hr2');
+    tx('Bölüm / görev',function(){return HZ.gorev;},function(v){HZ.gorev=v;},{ph:'Bölüm / görev',list:'dl-gv'});
+    tx('Eğitimin süresi',function(){return ov.sure;},function(v){ov.sure=v;},{ph:'Eğitimin süresi (örn. 8 Saat)'});
     ch(row('Eğitim türü'),[['','İşaretlenmesin'],['ilk','İlk defa verilen'],['tekrar','Tekrar verilen']],function(){return ov.tur;},function(v){ov.tur=v;});
     ch(row('Eğitimin şekli'),[['','Örgün (yüz yüze)'],['uzaktan','Uzaktan']],function(){return ov.sekil;},function(v){ov.sekil=v;});
-    tx('Çalışanın eğitim aldığı işyerinin ünvanı',function(){return ov.isyeri;},function(v){ov.isyeri=v;},{ph:f.name||'Firma ünvanı'});
+    tx('Çalışanın eğitim aldığı işyerinin ünvanı',function(){return ov.isyeri;},function(v){ov.isyeri=v;},{ph:'Çalışanın eğitim aldığı işyerinin ünvanı'});
     tx('Eğitimi veren kurum ünvanı',function(){return ov.kurum;},function(v){ov.kurum=v;},{ph:f.kurum||'Kurum ünvanı'});
     var sr=el('div','hsigs'); hzBox.appendChild(sr);
     [['uzman','U','Eğitmen (iş güvenliği uzmanı)'],['hekim','H','Eğitmen (işyeri hekimi)'],['isveren','I','İşveren / işveren vekili']].forEach(function(m){
-      var opts=[['','Otomatik'],['none','Basma']]; cands(m[0]).forEach(function(c,ix){ opts.push([c.id,c.kind==='template'?'Hazır kaşe':'İmza '+(ix+1)]); });
+      var opts=[['','Bas'],['none','Basma']];
       var c=el('div','hcol'); c.appendChild(el('span',null,m[2])); ch(c,opts,function(){return ov['st'+m[1]];},function(v){ov['st'+m[1]]=v;}); sr.appendChild(c); });
     var act=el('div','row-actions');
     certList.cfg.formats.forEach(function(fm,ix){ var b=el('button','btn'+(ix?'':' primary'),fm.label+' indir'); b.type='button'; b.addEventListener('click', async function(){
