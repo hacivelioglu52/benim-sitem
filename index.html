@@ -312,7 +312,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 89 · 06.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 90 · 06.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -1305,8 +1305,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     pasteHint:'Sütun sırası: Plaka, Ruhsat sahibi, Sürücü, Tarih. Sürücü boşsa boş kalır, ruhsat sahibi boşsa seçili firma yazılır, tarih boşsa bugünün tarihi kullanılır.',
     fields:[
       {key:'plaka',label:'Araç plaka',cls:'plate-in',placeholder:'Plaka',req:true},
-      {key:'sahip',label:'Ruhsat sahibinin adı soyadı / iş yeri adı',placeholder:'Boşsa seçili firma yazılır',req:true},
-      {key:'surucu',label:'Sürücü adı',placeholder:'Boşsa boş kalır',req:true},
+      {key:'sahip',label:'Ruhsat sahibinin adı soyadı / iş yeri adı',placeholder:'Ruhsat sahibinin adı soyadı / iş yeri adı',req:true},
+      {key:'surucu',label:'Sürücü adı',placeholder:'Sürücü adı',req:true},
       {key:'tarih',label:'Gerçekleştirilme tarihi',type:'date'}
     ],
     example:{example:true},
@@ -3533,7 +3533,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   /* ---------- risk değerlendirmesi: kayıtlı firma Akkurtlar, başka firma yalnızca onayla ---------- */
   var rdBar=el('div','rdbar'), rdPrevFirm=null, rdTemp=false;
   function rdAkk(){ return FM.list.filter(function(x){ return /AKKURT/i.test(x.name||''); })[0]||null; }
-  function rdPh(){ var f=F(); document.querySelectorAll('#p-risk input[id$="-sahip"]').forEach(function(i){ i.placeholder=f?firmLabel(f):''; }); }
+  function rdPh(){ document.querySelectorAll('#p-risk input[id$="-sahip"]').forEach(function(i){ i.placeholder='Ruhsat sahibinin adı soyadı / iş yeri adı'; }); }
   function rdSet(id,temp){ if(FM.cur!==id){ FM.cur=id; saveFirms(); onFirmChanged(); } rdTemp=temp; rdRender(); }
   function rdRender(){
     var f=F(); rdBar.textContent=''; if(!f) return; var akk=rdAkk();
