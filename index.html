@@ -312,7 +312,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 94 · 06.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 95 · 06.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -1198,7 +1198,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var tools=el('div','tools-body'), dl=el('label','field'); dl.appendChild(el('span',null,'Tüm satırların tarihi (yeni satırlar bugünün tarihini alır)'));
     var commonDate=document.createElement('input'); commonDate.type='date'; commonDate.value=todayIso(); dl.appendChild(commonDate); tools.appendChild(dl);
     var applyBtn=el('button','btn','Tümüne uygula'); applyBtn.type='button'; tools.appendChild(applyBtn);
-    dt.appendChild(tools); bar.appendChild(dt);
     root.appendChild(bar);
     if(cfg.extra) root.appendChild(cfg.extra);
     var paste=el('section','paste'); paste.hidden=true;
@@ -1209,7 +1208,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var rowsEl=el('ol','rows'); root.appendChild(rowsEl);
     var foot=el('div','footer-bar'); root.appendChild(foot);
     var zipBtns={}; cfg.formats.forEach(function(f,i){ var b=el('button','btn'+(i===0?' primary':''),'Hepsi ZIP · '+f.label); b.type='button'; b.addEventListener('click', function(){ downloadZip(f); }); zipBtns[f.id]=b; foot.appendChild(b); });
-    var clr=el('button','btn quiet','Listeyi temizle'); clr.type='button'; tools.appendChild(clr);
+    var clr=el('button','btn quiet','Listeyi temizle'); clr.type='button'; bar.appendChild(clr);
 
     function newRow(v){ seq++; var o={id:cfg.panel+'-r'+seq, tarih:todayIso(), example:false}; cfg.fields.forEach(function(f){ if(f.key!=='tarih') o[f.key]=''; }); (cfg.extraKeys||[]).forEach(function(k){ o[k]=false; }); return Object.assign(o, v||{}); }
     function save(){
