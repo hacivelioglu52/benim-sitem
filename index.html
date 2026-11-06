@@ -312,7 +312,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 95 · 06.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 97 · 06.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -345,8 +345,8 @@ details.dpanel[open]>summary{margin-bottom:10px}
 
   <section id="p-stamp" role="tabpanel" aria-labelledby="tab-stamp" hidden>
     <div class="panel">
-      <h2>Kaşe / İmza görselleri</h2>
-      <p class="hint">İmza örneklerini kontrol edin; görsele dokunarak büyütebilirsiniz. Her kişi için birden fazla örnek ekleyebilirsiniz. Her belgede sistem bu örneklerden birini seçer (Risk ve Sertifika için ayrı sırayla), böylece belgeler hep aynı imzayla çıkmaz. Sertifikada imzasız çıktı için İSG belgesi sayfasındaki “Bas / Basma” seçeneklerini kullanın. Beyaz zemin otomatik silinir, kenarlar kırpılır. Görseller yalnızca bu cihazda saklanır.</p>
+      <h2>Ortak imza / kaşe (uzman ve hekim)</h2>
+      <p class="hint">İmza örneklerini kontrol edin; görsele dokunarak büyütebilirsiniz. Her kişi için birden fazla örnek ekleyebilirsiniz. Her belgede sistem bu örneklerden birini seçer (Risk ve Sertifika için ayrı sırayla), böylece belgeler hep aynı imzayla çıkmaz. İşveren imzası firmaya özeldir: Firmalar › Düzenle › Logo / imza. Sertifikada imzasız çıktı için İSG belgesi sayfasındaki “Bas / Basma” seçeneklerini kullanın. Beyaz zemin otomatik silinir, kenarlar kırpılır. Görseller yalnızca bu cihazda saklanır.</p>
     </div>
     <div class="stamps" id="stamps"></div>
   </section>
@@ -1069,7 +1069,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var SLOTS = [
     {key:'uzman',   title:'İş güvenliği uzmanı', hint:'Risk değerlendirmesinde alt bilgiye, belgede uzman kutusuna konur.', tpl:true},
     {key:'hekim',   title:'İşyeri hekimi',       hint:'Yalnızca Temel İSG belgesinde, hekim kutusuna konur.'},
-    {key:'isveren', title:'İşveren / vekili',    hint:'Yalnızca Temel İSG belgesinde, işveren kutusuna konur. Seçili firmaya özeldir, firma değişince o firmanın örnekleri görünür.'}
+    {key:'isveren', title:'İşveren / vekili imza / kaşe',    hint:'Yalnızca Temel İSG belgesinde, işveren kutusuna konur. Bu firmaya özeldir.'}
   ];
   var STAMP_KEY='isg-kase-v2';
   var stamps = {};
@@ -1111,7 +1111,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function saveSt(key){ if(key==='isveren') saveFirms(); else saveStamps(); }
   function renderStampCard(slot){
     var S=stampObj(slot.key);
-    var card=el('div','stamp'); card.appendChild(el('h2',null,slot.title+(slot.key==='isveren'?' ('+(F().name||'firma')+')':''))); card.appendChild(el('p','hint',slot.hint));
+    var card=el('div','stamp'); card.appendChild(el('h2',null,slot.title)); card.appendChild(el('p','hint',slot.hint));
     var thumbs=el('div','thumbs'); card.appendChild(thumbs);
     var empty=el('p','hint','Görsel yok. Belgede bu alan boş kalır.'); card.appendChild(empty);
     var rotL=el('div','field'); rotL.appendChild(el('span',null,'Belgelerde nasıl seçilsin?'));
@@ -1154,7 +1154,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     paint(); return card;
   }
   var stampsEl=document.getElementById('stamps');
-  function renderStamps(){ stampsEl.textContent=''; SLOTS.forEach(function(s){ stampsEl.appendChild(renderStampCard(s)); }); }
+  function renderStamps(){ stampsEl.textContent=''; SLOTS.forEach(function(s){ if(s.key!=='isveren') stampsEl.appendChild(renderStampCard(s)); }); }
   renderStamps();
   hooks.stamps=function(){ loadStamps(); renderStamps(); };
 
@@ -1498,9 +1498,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     [['uzman','İş güvenliği uzmanı imza / kaşe'],['hekim','İşyeri hekimi imza / kaşe'],['isveren','İşveren / vekili imza / kaşe']].forEach(function(m){
       var row=el('div','showrow'); row.appendChild(chkRow(m[1], !LG.hs[m[0]], function(v){ LG.hs[m[0]]=!v; saveLG(); refreshDocs(); })); chips.appendChild(row); });
     (function(){ var row=el('div','showrow'); row.appendChild(chkRow('"Çalıştığı proje" satırı (proje alanı doluysa)', LG.projeOn, function(v){ LG.projeOn=v; saveLG(); refreshDocs(); })); chips.appendChild(row); })();
-    var gb=el('div','row-actions'); var b1=el('button','btn','Logo yükle, şube, ek satırlar…'); b1.type='button'; b1.addEventListener('click', function(){ if(window.__openFirmEditor) window.__openFirmEditor(); }); var b2=el('button','btn','İmza / kaşe ayarları'); b2.type='button'; b2.addEventListener('click', function(){ document.getElementById('tab-stamp').click(); }); gb.appendChild(b1); gb.appendChild(b2); b.appendChild(gb);
+    var gb=el('div','row-actions'); var b1=el('button','btn','Firma ayarları (logo, imza, şube, ek satırlar)'); b1.type='button'; b1.addEventListener('click', function(){ if(window.__openFirmEditor) window.__openFirmEditor(); }); gb.appendChild(b1); b.appendChild(gb);
     renderQuick(); try{ renderHz(); }catch(e){}
-    b.appendChild(el('p','hint','İmza örneği seçimi İmza / Kaşe sayfasında. Bir kişiye özel istisna için kişi satırındaki “Bu kişiye özel seçenekler” kullanılır.'));
+    b.appendChild(el('p','hint','Uzman/hekim imza örnekleri Ayarlar › İmza / Kaşe’de, işveren imzası firma ayarlarında. Bir kişiye özel istisna için kişi satırındaki “Bu kişiye özel seçenekler” kullanılır.'));
   }
   outPanel.open=window.innerWidth>=700; renderOutPanel();
   window.__certAddMany=function(vs){ certList.addMany(vs); };
@@ -1726,7 +1726,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(f.gorev) p.push('Görev: '+f.gorev);
     if(inf.adr) p.push(inf.adr.length>42?inf.adr.slice(0,42)+'…':inf.adr);
     if(sb) p.push(sb+' şube'); var hz=hzName(inf.hz); if(hz) p.push(hz);
-    p.push((f.logos&&f.logos.firma&&f.logos.firma.data)?'Logo var':'Logo yok'); return p.join(' · '); }
+    var lo=f.logos&&f.logos.firma, lm=lo&&lo.mode; p.push(lm==='none'?'Logosuz':(lo&&(lo.data||(lo.list&&lo.list.length)))&&lm==='img'?'Logo var':'Hazır logo'); return p.join(' · '); }
   function openEditor(id,fresh){ if(id&&id!==FM.cur){ FM.cur=id; saveFirms(); } edSec=0; if(!dlg.open) dlg.showModal(); onFirmChanged(); firmRoot.scrollTop=0;
     if(fresh) setTimeout(function(){ var i=firmRoot.querySelector('input'); if(i) i.focus(); },60); }
   window.__openFirmEditor=function(){ if(!F()||firmBlank(F())){ addFirm(); } else openEditor(); };
@@ -1792,7 +1792,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var f=F(); firmRoot.textContent=''; dTitle.textContent=f.name||'Yeni firma (adını yazın)';
 
     var p1=el('div','panel'); p1.appendChild(el('h2',null,'Firma bilgileri'));
-    p1.appendChild(el('p','hint','Değişiklikler otomatik kaydedilir. Ünvan değişirse burayı güncelleyin; sonraki belgelere yansır, indirdiklerinize dokunmaz. İşveren imzası da firmaya özeldir (İmza / Kaşe sekmesi).'));
+    p1.appendChild(el('p','hint','Değişiklikler otomatik kaydedilir. Ünvan değişirse burayı güncelleyin; sonraki belgelere yansır, indirdiklerinize dokunmaz. Logolar ve işveren imzası da firmaya özeldir: “Logo / imza” sekmesinde.'));
     var g=el('div','fields roomy');
     g.appendChild(txtField('Firma adı (kayıt adı; eğitim alınan işyeri ve araç ruhsat sahibi olarak yazılır)', function(){return f.name;}, function(v){ f.name=v; dTitle.textContent=v||'Yeni firma'; renderFirmBar(); renderOutPanel(); refreshDocs(); }, 'Örn: SO CHİC'));
     (function(){ var w=txtField('Grup / müşteri (listede gruplamak için; boş bırakılabilir)', function(){return f.grp;}, function(v){ f.grp=v; }, 'Örn: Mağazalar'); w.querySelector('input').setAttribute('list','dl-grp'); g.appendChild(w); })();
@@ -1821,7 +1821,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     function drawSb(){ sbBox.textContent=''; rend={}; f.info=f.info||{}; f.sbi=f.sbi||{}; sbBox.appendChild(el('p','hint','Aşağıdaki bilgiler Yıllık planda şube seçilince otomatik gelir ve toplu çıkarmada her şubeye ayrı basılır. Şubede boş bırakılan alan firma geneli bilgiden alınır. Firma logosu için bu penceredeki Logo bölümünü kullanın.')); sbBox.appendChild(infoBlock('Firma geneli bilgiler (şubesi olmayan firma veya tüm şubeler için ortak)',f.info,false)); syncSb(); }
     sbTa.addEventListener('change',syncSb); drawSb(); firmRoot.appendChild(pS);
 
-    var p2=dp('Logolar',true); var lg=el('div','stamps'); LOGO_SLOTS.forEach(function(sl){ lg.appendChild(renderLogoCard(sl)); }); p2.appendChild(lg); firmRoot.appendChild(p2);
+    var p2=dp('Logolar ve işveren imzası',true); var lg=el('div','stamps'); LOGO_SLOTS.forEach(function(sl){ lg.appendChild(renderLogoCard(sl)); }); lg.appendChild(renderStampCard(SLOTS[2])); p2.appendChild(lg); firmRoot.appendChild(p2);
 
     var p3=dp('Sertifikaya ek satırlar',true);
     p3.appendChild(el('p','hint','Firma talebine göre sertifikaya "Eğitimi veren kurum" satırının altına en fazla 3 satır eklenir.'));
@@ -1843,12 +1843,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 
     var p4=dp('Önizleme: imza, kaşe ve logo kontrolü', true);
-    p4.appendChild(el('p','hint','Seçili firmanın logoları ve İmza / Kaşe sayfasındaki örnekler çıktıdaki gibi gösterilir. "Başka örnek" ile imza örnekleri arasında gezinin.'));
+    p4.appendChild(el('p','hint','Bu firmanın logoları, işveren imzası ve ortak uzman/hekim örnekleri çıktıdaki gibi gösterilir. "Başka örnek" ile imza örnekleri arasında gezinin.'));
     var a4=el('div','row-actions');
     [['cert','Sertifikayı göster'],['risk','Risk değerlendirmesini göster']].forEach(function(m){ var b=el('button','btn'+(prevKind===m[0]?' primary':''),m[1]); b.type='button'; b.addEventListener('click', function(){ prevKind=m[0]; renderFirmTab(); doPreview(); }); a4.appendChild(b); });
     var bnx=el('button','btn','Başka örnek'); bnx.type='button'; bnx.addEventListener('click', function(){ prevIx++; doPreview(); }); a4.appendChild(bnx);
     p4.appendChild(a4); var cap=el('p','hint'); cap.id='prev-cap'; p4.appendChild(cap); var box=el('div','prevbox'); box.id='prev-box'; p4.appendChild(box); firmRoot.appendChild(p4);
-    var secs=[['Bilgiler',p1],['Şubeler',pS],['Logo',p2],['Sertifika satırları',p3],['Önizleme',p4]];
+    var secs=[['Bilgiler',p1],['Şubeler',pS],['Logo / imza',p2],['Sertifika satırları',p3],['Önizleme',p4]];
     function showSec(){ secs.forEach(function(sc,ix){ sc[1].hidden=ix!==edSec; }); [].forEach.call(dTabs.children,function(b,ix){ b.className=ix===edSec?'on':''; }); }
     dTabs.textContent=''; secs.forEach(function(sc,ix){ var b=el('button',null,sc[0]); b.type='button'; b.addEventListener('click', function(){ edSec=ix; showSec(); if(ix===4) doPreview(); }); dTabs.appendChild(b); });
     showSec();
@@ -3589,7 +3589,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   var GRP=[['Belgeler',['risk','cert','plan']],['Eğitim',['katilim','acilrehber','afis','sinav']],['Ayarlar',['firm','stamp','ocr']],['Sayılar',['rep']]];
   var gbox=document.getElementById('groups'), gbtn=GRP.map(function(g){ var b=document.createElement('button'); b.type='button'; b.textContent=g[0]; b.addEventListener('click',function(){ var cur=null; try{ cur=localStorage.getItem('isg-tab-'+g[0]); }catch(e){} show(g[1].indexOf(cur)>=0?cur:g[1][0]); }); gbox.appendChild(b); return b; });
   function grpSync(n){ GRP.forEach(function(g,i){ var on=g[1].indexOf(n)>=0; gbtn[i].setAttribute('aria-pressed',on?'true':'false'); g[1].forEach(function(t){ document.getElementById('tab-'+t).hidden=!on||g[1].length<2; }); if(on){ try{ localStorage.setItem('isg-tab-'+g[0],n); }catch(e){} document.querySelector('.tabs').style.display=g[1].length<2?'none':''; } }); }
-  var TT={risk:['Risk değerlendirmesi','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['İSG belgesi','Temel İSG eğitim belgesi (sertifika) hazırla'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Katılım formu, sınav ve sertifika aktarımı'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar','Firma listesi, bilgiler, logolar, şubeler, yedek'],stamp:['İmza / Kaşe','İmza ve kaşe görselleri'],ocr:['Yazı biçimi','Yazıyı düzenli biçime çevir'],rep:['Aylık sayılar','Firma bazında belge sayıları']};
+  var TT={risk:['Risk değerlendirmesi','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['İSG belgesi','Temel İSG eğitim belgesi (sertifika) hazırla'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Katılım formu, sınav ve sertifika aktarımı'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar','Firma bilgileri, logolar, işveren imzası, şubeler, yedek'],stamp:['İmza / Kaşe','Ortak uzman ve hekim imza örnekleri'],ocr:['Yazı biçimi','Yazıyı düzenli biçime çevir'],rep:['Aylık sayılar','Firma bazında belge sayıları']};
   var homeEl=document.getElementById('p-home'), navwrap=document.getElementById('navwrap'), pageSel=document.getElementById('page-sel'), innerPushed=false;
   (function(){ var box=document.getElementById('home-tiles');
     GRP.forEach(function(g){ box.appendChild(el('h3','gh',g[0])); var tl=el('div','tiles');
