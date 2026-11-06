@@ -119,6 +119,12 @@ h3.gh{margin:14px 0 6px;font-size:13px;letter-spacing:.04em;text-transform:upper
 .rdconf p{margin:6px 0 10px;font-weight:600}
 .hzbox .hbad{border-color:#b91c1c!important;background:#fef2f2}
 .hz-warn{margin:8px 0 0;color:#b91c1c;font-weight:600;font-size:14px}
+@media (max-width:1099px){
+ body.cw #p-cert:not([hidden]){display:flex;flex-direction:column}
+ body.cw #p-cert>*{order:3}
+ body.cw #p-cert>.hzbox{order:1}
+ body.cw #p-cert>.cprev{order:2}
+}
 @media (min-width:1100px){
  body.cw #p-cert{display:grid;grid-template-columns:minmax(0,1fr) 500px;column-gap:20px;align-items:start}
  body.cw #p-cert>*{grid-column:1}
@@ -211,7 +217,7 @@ details.preview pre{margin:8px 0 0;white-space:pre-wrap;word-break:break-word;fo
 .footer-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px}
 .status{margin:0;font-size:14px;min-height:1.5em;color:var(--muted)}
 .status.ok{color:var(--ok)} .status.bad{color:var(--bad)}
-.after{margin-top:24px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;display:grid;gap:6px;max-width:74ch}
+.after{margin-top:0;padding-top:0;border-top:0;color:var(--muted);font-size:13.5px;display:grid;gap:6px;max-width:74ch}
 .after p{margin:0}.after strong{color:var(--ink);font-weight:600}
 .stamps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .stamp{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:10px;align-content:start}
@@ -306,7 +312,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 88 · 06.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 89 · 06.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -340,7 +346,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
   <section id="p-stamp" role="tabpanel" aria-labelledby="tab-stamp" hidden>
     <div class="panel">
       <h2>Kaşe / İmza görselleri</h2>
-      <p class="hint">İmza örneklerini kontrol edin; görsele dokunarak büyütebilirsiniz. Her kişi için birden fazla örnek ekleyebilirsiniz. Her belgede sistem bu örneklerden birini seçer (Risk ve Sertifika için ayrı sırayla), böylece belgeler hep aynı imzayla çıkmaz. Sertifikada imzasız çıktı için Sertifika sekmesindeki seçeneklere bakın. Beyaz zemin otomatik silinir, kenarlar kırpılır. Görseller yalnızca bu cihazda saklanır.</p>
+      <p class="hint">İmza örneklerini kontrol edin; görsele dokunarak büyütebilirsiniz. Her kişi için birden fazla örnek ekleyebilirsiniz. Her belgede sistem bu örneklerden birini seçer (Risk ve Sertifika için ayrı sırayla), böylece belgeler hep aynı imzayla çıkmaz. Sertifikada imzasız çıktı için İSG belgesi sayfasındaki “Bas / Basma” seçeneklerini kullanın. Beyaz zemin otomatik silinir, kenarlar kırpılır. Görseller yalnızca bu cihazda saklanır.</p>
     </div>
     <div class="stamps" id="stamps"></div>
   </section>
@@ -354,7 +360,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <div class="strip" id="strip" aria-live="polite"></div>
     <div class="panel">
       <h2>Aylık sayılar</h2>
-      <p class="hint">Belge tarihine göre ay ay sayılır. Sayılar firma bazında tutulur: üstteki seçimden tek bir firmaya bakabilir, aşağıdaki tablodan firmaları karşılaştırabilirsiniz. Aynı firmada aynı plaka (ya da kişi) ve aynı tarih için tekrar indirme sayıyı artırmaz. Sayaç yalnızca bu cihazda tutulur.</p>
+      <p class="hint">Belge tarihine göre ay ay sayılır. Sayılar firma bazında tutulur: üstteki seçimden tek bir firmaya bakabilir, aşağıdaki tablodan firmaları karşılaştırabilirsiniz. Aynı firmada aynı plaka (ya da kişi) ve aynı tarih için tekrar indirme sayıyı artırmaz.</p>
       <div class="tablewrap"><table class="rep" id="rep-table"></table></div>
       <div class="row-actions">
         <button class="btn" id="rep-csv" type="button">CSV indir</button>
@@ -1468,7 +1474,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     (function(){ var row=el('div','showrow'); row.appendChild(chkRow('"Çalıştığı proje" satırı (proje alanı doluysa)', LG.projeOn, function(v){ LG.projeOn=v; saveLG(); refreshDocs(); })); chips.appendChild(row); })();
     var gb=el('div','row-actions'); var b1=el('button','btn','Logo yükle, şube, ek satırlar…'); b1.type='button'; b1.addEventListener('click', function(){ if(window.__openFirmEditor) window.__openFirmEditor(); }); var b2=el('button','btn','İmza / kaşe ayarları'); b2.type='button'; b2.addEventListener('click', function(){ document.getElementById('tab-stamp').click(); }); gb.appendChild(b1); gb.appendChild(b2); b.appendChild(gb);
     renderQuick(); try{ renderHz(); }catch(e){}
-    b.appendChild(el('p','hint','İmza örneği seçimi İmza / Kaşe sekmesinde. Bir kişiye özel istisna için kişi satırındaki “Bu kişiye özel seçenekler” kullanılır.'));
+    b.appendChild(el('p','hint','İmza örneği seçimi İmza / Kaşe sayfasında. Bir kişiye özel istisna için kişi satırındaki “Bu kişiye özel seçenekler” kullanılır.'));
   }
   outPanel.open=window.innerWidth>=700; renderOutPanel();
   window.__certAddMany=function(vs){ certList.addMany(vs); };
@@ -1577,6 +1583,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(miss.length){ hzWarn.textContent='Önce şu alanları doldurun: '+miss.join(', ')+'.'; hzWarn.hidden=false; setStatus(hzWarn.textContent,'bad'); first.focus(); return; } hzWarn.hidden=true;
       var r=hzRow(); setStatus('Hazırlanıyor…');
       try{ var blob=await fm.build(r); if(await offer(certList.cfg.fileName(r)+fm.ext, blob)) certList.cfg.record(r); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } }); act.appendChild(b); });
+    var pvb=el('button','btn','Önizle'); pvb.type='button'; pvb.addEventListener('click', function(){ certActive=HZ; clearTimeout(cpT); cpT=setTimeout(certPrev,0); cpOpen.click(); }); act.appendChild(pvb);
     var ad=el('button','btn','Listeye ekle'); ad.type='button'; ad.addEventListener('click', function(){ var r=hzRow(); if(!r.ad){ setStatus('Önce ad soyad yazın.','bad'); return; } certList.addMany([{ad:r.ad,tarih:r.tarih,gorev:r.gorev,proje:'',ov:r.ov}]); HZ.ad=''; renderHz(); touch(true); setStatus('Listeye eklendi. Aşağıdaki listeden toplu indirebilirsiniz.','ok'); });
     var cl=el('button','btn quiet','Kutuları temizle'); cl.type='button'; cl.addEventListener('click', function(){ HZ.ad=''; HZ.gorev=''; HZ.ov={}; HZ.tarih=todayIso(); renderHz(); touch(true); });
     act.appendChild(ad); act.appendChild(cl); hzBox.appendChild(act);
@@ -1772,7 +1779,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var a1=el('div','row-actions');
     var bc=el('button','btn','Bu firmanın kopyasını oluştur'); bc.type='button'; bc.addEventListener('click', function(){ var nf=JSON.parse(JSON.stringify(f)); nf.id=uid(); nf.name=(f.name||'Firma')+' (kopya)'; FM.list.push(nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); setStatus('Kopya oluşturuldu.','ok'); });
     firmRoot.appendChild(p1);
-    var pS=el('div','panel'); pS.appendChild(el('h2',null,'Şubeler (bu firmaya bağlı)')); pS.appendChild(el('p','hint','Her satıra bir şube yazın (virgülle de ayırabilirsiniz). Yazdıklarınız Yıllık plan sekmesinde şube olarak seçilir ve toplu çıkarmada firmanın tüm şubeleri tek tıkla eklenir. Şubesi olmayan firmada boş bırakın.')); var sbTa=document.createElement('textarea'); sbTa.rows=5; sbTa.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; sbTa.placeholder='Atlaspark AVM\nCanpark AVM\nMetropol AVM'; sbTa.setAttribute('aria-label','Şubeler'); sbTa.value=(f.sb||[]).join('\n'); sbTa.addEventListener('input',function(){ f.sb=sbTa.value.split(/\n|,|;/).map(function(x){ return x.trim(); }).filter(Boolean); saveFirms(); }); pS.appendChild(sbTa);
+    var pS=el('div','panel'); pS.appendChild(el('h2',null,'Şubeler (bu firmaya bağlı)')); pS.appendChild(el('p','hint','Her satıra bir şube yazın (virgülle de ayırabilirsiniz). Yazdıklarınız Yıllık plan sayfasında şube olarak seçilir ve toplu çıkarmada firmanın tüm şubeleri tek tıkla eklenir. Şubesi olmayan firmada boş bırakın.')); var sbTa=document.createElement('textarea'); sbTa.rows=5; sbTa.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; sbTa.placeholder='Atlaspark AVM\nCanpark AVM\nMetropol AVM'; sbTa.setAttribute('aria-label','Şubeler'); sbTa.value=(f.sb||[]).join('\n'); sbTa.addEventListener('input',function(){ f.sb=sbTa.value.split(/\n|,|;/).map(function(x){ return x.trim(); }).filter(Boolean); saveFirms(); }); pS.appendChild(sbTa);
     var sbBox=el('div'); pS.appendChild(sbBox);
     function selF(label,opts,get,set){ var w=el('label','field'); w.appendChild(el('span',null,label)); var sl=document.createElement('select'); opts.forEach(function(o){ var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; sl.appendChild(op); }); sl.value=get()||''; sl.addEventListener('change',function(){ set(sl.value); saveFirms(); }); w.appendChild(sl); return w; }
     function infoBlock(title,obj,open){ var d=dp(title,open), gg=el('div','fields roomy');
@@ -1785,7 +1792,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       d.appendChild(gg); return d; }
     var rend={};
     function syncSb(){ f.sbi=f.sbi||{}; (f.sb||[]).forEach(function(n){ if(rend[n]) return; rend[n]=1; f.sbi[n]=f.sbi[n]||{}; sbBox.appendChild(infoBlock('Şube: '+n,f.sbi[n],false)); }); }
-    function drawSb(){ sbBox.textContent=''; rend={}; f.info=f.info||{}; f.sbi=f.sbi||{}; sbBox.appendChild(el('p','hint','Aşağıdaki bilgiler Yıllık planda şube seçilince otomatik gelir ve toplu çıkarmada her şubeye ayrı basılır. Şubede boş bırakılan alan firma geneli bilgiden alınır. Firma logosu için bu sekmedeki Logolar bölümünü kullanın.')); sbBox.appendChild(infoBlock('Firma geneli bilgiler (şubesi olmayan firma veya tüm şubeler için ortak)',f.info,false)); syncSb(); }
+    function drawSb(){ sbBox.textContent=''; rend={}; f.info=f.info||{}; f.sbi=f.sbi||{}; sbBox.appendChild(el('p','hint','Aşağıdaki bilgiler Yıllık planda şube seçilince otomatik gelir ve toplu çıkarmada her şubeye ayrı basılır. Şubede boş bırakılan alan firma geneli bilgiden alınır. Firma logosu için bu penceredeki Logo bölümünü kullanın.')); sbBox.appendChild(infoBlock('Firma geneli bilgiler (şubesi olmayan firma veya tüm şubeler için ortak)',f.info,false)); syncSb(); }
     sbTa.addEventListener('change',syncSb); drawSb(); firmRoot.appendChild(pS);
 
     var p2=dp('Logolar',true); var lg=el('div','stamps'); LOGO_SLOTS.forEach(function(sl){ lg.appendChild(renderLogoCard(sl)); }); p2.appendChild(lg); firmRoot.appendChild(p2);
@@ -1810,7 +1817,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 
     var p4=dp('Önizleme: imza, kaşe ve logo kontrolü', true);
-    p4.appendChild(el('p','hint','Seçili firmanın logoları ve Kaşe / İmza sekmesindeki örnekler çıktıdaki gibi gösterilir. "Başka örnek" ile imza örnekleri arasında gezinin.'));
+    p4.appendChild(el('p','hint','Seçili firmanın logoları ve İmza / Kaşe sayfasındaki örnekler çıktıdaki gibi gösterilir. "Başka örnek" ile imza örnekleri arasında gezinin.'));
     var a4=el('div','row-actions');
     [['cert','Sertifikayı göster'],['risk','Risk değerlendirmesini göster']].forEach(function(m){ var b=el('button','btn'+(prevKind===m[0]?' primary':''),m[1]); b.type='button'; b.addEventListener('click', function(){ prevKind=m[0]; renderFirmTab(); doPreview(); }); a4.appendChild(b); });
     var bnx=el('button','btn','Başka örnek'); bnx.type='button'; bnx.addEventListener('click', function(){ prevIx++; doPreview(); }); a4.appendChild(bnx);
@@ -3331,12 +3338,12 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   var yl=el('label','field'); yl.appendChild(el('span',null,'Yıl')); var sYear=document.createElement('input'); sYear.type='number'; sYear.min='2020'; sYear.max='2100'; sYear.addEventListener('input',function(){ st.year=sYear.value; save(); }); yl.appendChild(sYear); g1.appendChild(yl);
   var g2=el('div','fields roomy'); p.appendChild(g2);
   var fUnv=inp(g2,'Firma ünvanı (boşsa seçili firma yazılır)','unv'), fSube=inp(g2,'Şube (şubesi yoksa boş bırakın)','sube','text','Örn: İSTİNYE PARK AVM ŞUBESİ');
-  var lgBox=el('div','row-actions'), lgImg=document.createElement('img'), lgIn=document.createElement('input'), lgAdd=el('button','btn','Firma logosu ekle'), lgDel=el('button','btn','Logoyu kaldır'); lgImg.style.cssText='max-height:48px;max-width:160px;display:none;border:1px solid var(--line);border-radius:6px;background:#fff'; lgIn.type='file'; lgIn.accept='image/*'; lgIn.style.display='none'; lgAdd.type='button'; lgDel.type='button'; var bInfo=el('button','btn','Kayıtlı firma/şube bilgilerini getir'); bInfo.type='button'; [lgImg,lgAdd,lgDel,bInfo,lgIn].forEach(function(x){ lgBox.appendChild(x); }); p.appendChild(lgBox); p.appendChild(el('p','hint','Logo yalnızca bu plana eklenir (Teksen logosu Firma sekmesindeki ayardan gelir). Logo yüklemezseniz firmanın kayıtlı logosu kullanılır.'));
+  var lgBox=el('div','row-actions'), lgImg=document.createElement('img'), lgIn=document.createElement('input'), lgAdd=el('button','btn','Firma logosu ekle'), lgDel=el('button','btn','Logoyu kaldır'); lgImg.style.cssText='max-height:48px;max-width:160px;display:none;border:1px solid var(--line);border-radius:6px;background:#fff'; lgIn.type='file'; lgIn.accept='image/*'; lgIn.style.display='none'; lgAdd.type='button'; lgDel.type='button'; var bInfo=el('button','btn','Kayıtlı firma/şube bilgilerini getir'); bInfo.type='button'; [lgImg,lgAdd,lgDel,bInfo,lgIn].forEach(function(x){ lgBox.appendChild(x); }); p.appendChild(lgBox); p.appendChild(el('p','hint','Logo yalnızca bu plana eklenir (Teksen logosu Firmalar sayfasındaki ayardan gelir). Logo yüklemezseniz firmanın kayıtlı logosu kullanılır.'));
   function showLogo(){ var d=st.f.logo; lgImg.style.display=d?'':'none'; if(d) lgImg.src=d; lgDel.style.display=d?'':'none'; lgAdd.textContent=d?'Logoyu değiştir':'Firma logosu ekle'; }
   lgAdd.addEventListener('click',function(){ lgIn.click(); }); lgDel.addEventListener('click',function(){ delete st.f.logo; save(); showLogo(); });
   lgIn.addEventListener('change',function(){ var fl=lgIn.files&&lgIn.files[0]; if(!fl) return; var rd=new FileReader(); rd.onload=function(){ var im=new Image(); im.onload=function(){ var r=Math.min(1,700/Math.max(im.naturalWidth,im.naturalHeight)), c=document.createElement('canvas'); c.width=Math.max(1,Math.round(im.naturalWidth*r)); c.height=Math.max(1,Math.round(im.naturalHeight*r)); c.getContext('2d').drawImage(im,0,0,c.width,c.height); st.f.logo=c.toDataURL('image/png'); save(); showLogo(); setStatus('Logo eklendi.'); }; im.onerror=function(){ setStatus('Görsel okunamadı.','bad'); }; im.src=rd.result; }; rd.readAsDataURL(fl); lgIn.value=''; });
-  var sbDl=document.createElement('datalist'); sbDl.id='plan-sube-list'; p.appendChild(sbDl); fSube.setAttribute('list','plan-sube-list'); fSube.parentNode.querySelector('span').textContent='Şube (firma sekmesindeki şubelerden seçilir; şubesi yoksa boş bırakın)';
-  function getInfo(){ cur(); var inf=infoFor(F(),(st.f.sube||'').trim()); if(!Object.keys(inf).length){ setStatus('Bu firma/şube için Firma sekmesinde kayıtlı bilgi yok.'); return; } applyInfo(st,inf); save(); refresh(); setStatus('Kayıtlı bilgiler getirildi.','ok'); }
+  var sbDl=document.createElement('datalist'); sbDl.id='plan-sube-list'; p.appendChild(sbDl); fSube.setAttribute('list','plan-sube-list'); fSube.parentNode.querySelector('span').textContent='Şube (Firmalar sayfasındaki şubelerden seçilir; şubesi yoksa boş bırakın)';
+  function getInfo(){ cur(); var inf=infoFor(F(),(st.f.sube||'').trim()); if(!Object.keys(inf).length){ setStatus('Bu firma/şube için Firmalar sayfasında kayıtlı bilgi yok.'); return; } applyInfo(st,inf); save(); refresh(); setStatus('Kayıtlı bilgiler getirildi.','ok'); }
   bInfo.addEventListener('click',getInfo); fSube.addEventListener('change',function(){ var inf=infoFor(F(),(fSube.value||'').trim()); if(Object.keys(inf).length){ cur(); applyInfo(st,inf); save(); refresh(); setStatus('Şube bilgileri getirildi.','ok'); } });
   var kasL=el('label','field'); kasL.appendChild(el('span',null,'İmza / kaşe (PDF ve Word)')); var sKas=document.createElement('select'); [['0','Boş bırak'],['1','Kayıtlı kaşe/imzaları bas (uzman, hekim, işveren)']].forEach(function(o){ var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; sKas.appendChild(op); }); sKas.addEventListener('change',function(){ st.ks=sKas.value; save(); }); kasL.appendChild(sKas); g2.appendChild(kasL);
   var fKod=inp(g2,'Doküman kodu','kod'), fHaz=inp(g2,'Hazırlayan','haz'), fYay=inp(g2,'Yayın tarihi','yay','date'), fRevN=inp(g2,'Revizyon no','rn'), fRevT=inp(g2,'Revizyon tarihi','rt','date');
@@ -3490,7 +3497,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   bDoc.addEventListener('click',async function(){ try{ cur(); if(!chkHz()) return; setStatus('Word hazırlanıyor...'); await offer(fname('docx'),await buildDocx()); }catch(e){ setStatus(e.message||'Dosya hazırlanamadı.','bad'); } });
   /* ---- toplu çıkarma (birden çok firma ve şubeleri) ---- */
   var bd=el('details','dpanel'); bd.appendChild(el('summary',null,'Toplu çıkarma: birden fazla firma ve şubeleri')); var bb=el('div','dbody'); bd.appendChild(bb); p.appendChild(bd);
-  bb.appendChild(el('p','hint','Her satıra bir firma yazın: Firma adı: şube1, şube2, şube3. Şubesi olmayan firmayı yalnızca adıyla yazın. Satır sonuna | tehlikeli | 50+ gibi ekleyerek o firmanın tehlike sınıfını (az, tehlikeli, çok) ve 50 ve üzeri çalışan olduğunu belirtebilirsiniz. Üstteki ayarlar (yıl, kapsam, hazırlayan, kod, tarih, sınıf) hepsine uygulanır. Firma adı kayıtlı firmalardan biriyle eşleşirse o firmanın logosu kullanılır. Firma sekmesinde şubeleri kayıtlıysa şube yerine * yazmanız yeter (örn. KOTON: *), ya da aşağıdaki düğmeyle kayıtlı firmaları şubeleriyle listeye ekleyin.'));
+  bb.appendChild(el('p','hint','Her satıra bir firma yazın: Firma adı: şube1, şube2, şube3. Şubesi olmayan firmayı yalnızca adıyla yazın. Satır sonuna | tehlikeli | 50+ gibi ekleyerek o firmanın tehlike sınıfını (az, tehlikeli, çok) ve 50 ve üzeri çalışan olduğunu belirtebilirsiniz. Üstteki ayarlar (yıl, kapsam, hazırlayan, kod, tarih, sınıf) hepsine uygulanır. Firma adı kayıtlı firmalardan biriyle eşleşirse o firmanın logosu kullanılır. Firmalar sayfasında şubeleri kayıtlıysa şube yerine * yazmanız yeter (örn. KOTON: *), ya da aşağıdaki düğmeyle kayıtlı firmaları şubeleriyle listeye ekleyin.'));
   var bTa=document.createElement('textarea'); bTa.rows=8; bTa.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; bTa.placeholder='ADİL IŞIK: Atlaspark AVM, Canpark AVM, Metropol AVM, Kadıköy Cadde, Meydan AVM\nENGLISH HOME: Buyaka AVM, Ümraniye Cadde, İstanbul Cadde\nKOTON: Metropol AVM, İstanbul Finans Merkezi, Beşiktaş Cadde, Harbiye, Canpark AVM, Capitol AVM\nŞubesi olmayan firma'; bTa.setAttribute('aria-label','Firma ve şube listesi'); bb.appendChild(bTa);
   var bOpt=el('div','row-actions'); function chk(label,on){ var l=el('label'); l.style.cssText='display:inline-flex;align-items:center;gap:6px;margin-right:12px'; var c=document.createElement('input'); c.type='checkbox'; c.checked=!!on; l.appendChild(c); l.appendChild(el('span',null,label)); bOpt.appendChild(l); c.addEventListener('change',cnt); return c; }
   var cE=chk('Eğitim planı',true), cC=chk('Çalışma planı',true), cP=chk('PDF',true), cW=chk('Word',false), cX=chk('Excel',false); bb.appendChild(bOpt);
