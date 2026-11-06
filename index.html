@@ -312,7 +312,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 90 · 06.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 91 · 06.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -1296,7 +1296,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   /* ---------- risk ---------- */
   var riskBytes=null;
-  function rr(r){ return Object.assign({},r,{sahip:r.sahip||F().name}); }
+  function rr(r){ return Object.assign({},r,{sahip:r.sahip||(rdAkk()||{}).name||'AKKURTLAR TURİZM'}); }
   var XLSX_MIME='';
   var riskList=makeList({
     panel:'p-risk', store:'risk-olusturucu-v1', dupSep:' ', core:{check:function(r){ return RiskCore.check(rr(r)); }}, zipName:'risk-degerlendirme', addLabel:'Araç ekle',
@@ -3556,7 +3556,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   }
   function rdEnter(){ var akk=rdAkk(); if(akk && !rdTemp && FM.cur!==akk.id){ rdPrevFirm=FM.cur; FM.cur=akk.id; saveFirms(); onFirmChanged(); } rdRender(); rdPh(); }
   function rdLeave(){ if(rdPrevFirm){ if(FM.list.some(function(x){ return x.id===rdPrevFirm; })&&FM.cur!==rdPrevFirm){ FM.cur=rdPrevFirm; saveFirms(); onFirmChanged(); } rdPrevFirm=null; } rdTemp=false; }
-  (function(){ var pr=document.getElementById('p-risk'); pr.insertBefore(rdBar,pr.firstChild); try{ new MutationObserver(function(){ rdPh(); }).observe(pr,{childList:true,subtree:true}); }catch(e){} })();
+  (function(){ var pr=document.getElementById('p-risk'); try{ new MutationObserver(function(){ rdPh(); }).observe(pr,{childList:true,subtree:true}); }catch(e){} })();
 
   /* ---------- sekmeler ---------- */
   var tabs=['risk','cert','plan','firm','stamp','katilim','acilrehber','afis','sinav','ocr','rep'];
