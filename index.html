@@ -312,7 +312,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 91 · 06.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 93 · 06.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -773,7 +773,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }));
     var lines = t.a8.split(/\r?\n/);
     for (var p = 2; p <= 5; p++) {
-      pages.push(await page('risk' + p, 841.92, 595.32, async function (ctx, s) { await riskDraw(ctx, s, t, lines, stamp);       }));
+      pages.push(await page('risk' + p, 841.92, 595.32, async function (ctx, s) { await riskDraw(ctx, s, t, lines, Array.isArray(stamp) ? stamp[p - 2] : stamp); }));
     }
     return pdfBlob(pages);
   }
@@ -1034,6 +1034,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     FM=raw;
   }
   loadFirms();
+  /* Akkurtlar kayıtlı firma olarak her zaman bulunur; ilk açılışta (ve yedek geri yüklemesinde yoksa) seçili firma olur */
+  function ensureAkk(){
+    var ak=FM.list.filter(function(f){ return /AKKURT/i.test(f.name||''); })[0], ch=false;
+    if(!ak){ ak=newFirm({name:'AKKURTLAR TURİZM',logos:{firma:{mode:'tpl'},kurum:{mode:'tpl'}}});
+      if(FM.list.length===1 && firmBlank(FM.list[0])) FM.list=[ak]; else FM.list.unshift(ak); ch=true; }
+    var init=null; try{ init=localStorage.getItem('isg-akk-init-v1'); }catch(e){}
+    if(!init){ FM.cur=ak.id; ch=true; try{ localStorage.setItem('isg-akk-init-v1','1'); }catch(e){} }
+    else if(!FM.list.some(function(f){ return f.id===FM.cur; })){ FM.cur=ak.id; ch=true; }
+    if(ch) lsSet(FKEY,FM);
+  }
+  ensureAkk();
   function F(){ return FM.list.filter(function(f){return f.id===FM.cur;})[0]; }
   function removeFirm(id){ FM.list=FM.list.filter(function(y){return y.id!==id;});
     if(!FM.list.length){ var nf=newFirm({name:''}); FM.list=[nf]; FM.cur=nf.id; var d0=lsGet('cert-defaults-v1'); if(d0){ d0.isyeri=''; d0.gorev=''; lsSet('cert-defaults-v1',d0); } }
@@ -1315,7 +1326,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     fileName:function(r){ return RiskCore.fileName(r.plaka).replace(/\.xlsx$/,''); },
     formats:[
       {id:'xlsx',label:'Excel',ext:'.xlsx',build:function(r){ if(!riskBytes) riskBytes=b64bytes(RISK_B64); return RiskCore.fill(riskBytes, rr(r), JSZip, riskStampParam(pick('uzman',r))); }},
-      {id:'pdf',label:'PDF',ext:'.pdf',build:function(r){ return PdfGen.risk(RiskCore.check(rr(r)).texts, pdfStamp(pick('uzman',r))); }}
+      {id:'pdf',label:'PDF',ext:'.pdf',build:function(r){
+        /* 4 iç sayfanın her birinde farklı bir imza örneği (örnek sayısı 4'ten azsa sırayla yinelenir) */
+        var first=pick('uzman',r), c=cands('uzman'), ix=0; for(var q=0;q<c.length;q++) if(c[q].id===first.id) ix=q;
+        var sts=[0,1,2,3].map(function(k){ return pdfStamp(c.length&&first.kind!=='none'?c[(ix+k)%c.length]:first); });
+        return PdfGen.risk(RiskCore.check(rr(r)).texts, sts); }}
     ],
     record:function(r){ var t=RiskCore.check(rr(r)).texts; recordDoc('risk', t.plaka, RiskCore.toIsoDate(r.tarih), t.plaka); },
     parseLine:function(c,def){ if(/^plaka$/i.test((c[0]||'').trim())) return null; var d=RiskCore.toIsoDate(c[3]||''); return {plaka:(c[0]||'').trim(),sahip:(c[1]||'').trim(),surucu:(c[2]||'').trim(),tarih:d||def}; }
@@ -1843,7 +1858,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var __pvFirm=''; window.__firmName=function(){ return (F().name||''); };
   function onFirmChanged(){ try{ rdRender(); rdPh(); }catch(e){} gvRefresh(); var __nm=F().name||''; (window.__firmFns||[]).forEach(function(fn){ try{ fn(__nm,__pvFirm); }catch(e){} }); __pvFirm=__nm; renderFirmBar(); renderFirmTab(); renderStamps(); renderOutPanel(); refreshDocs(); doPreview(); renderStrip(); renderReport(); }
   renderFirmBar(); renderFirmTab();
-  hooks.firms=function(){ loadFirms(); onFirmChanged(); };
+  hooks.firms=function(){ loadFirms(); ensureAkk(); onFirmChanged(); };
   hooks.logos=function(){ LG=lsGet(LOGO_KEY)||{}; LG.noSign=!!LG.noSign; LG.noLogo=!!LG.noLogo; LG.projeOn=!!LG.projeOn; LG.hs=(LG.hs&&typeof LG.hs==='object')?LG.hs:{}; renderOutPanel(); refreshDocs(); };
 
   /* ---------- talep formu (Excel) ---------- */
