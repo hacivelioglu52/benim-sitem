@@ -312,7 +312,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 93 · 06.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 94 · 06.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select> <button type="button" class="btn" id="firm-add" title="Yeni firma ekle ve Firma sekmesini aç">+ Yeni</button></div>
@@ -646,9 +646,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     /* firma / kurum logosu: logos = {firma,kurum} her biri undefined (şablondaki kalsın) | null (kaldır) | {png,w,h} */
     logos = logos || {};
     /* firma logosu, kurum (Teksen) logosuyla aynı ebatta olsun */
-    var tkEx = null, tk = x.indexOf('r:embed="rId8"');
-    if (tk >= 0) { var tds = x.lastIndexOf('<w:drawing>', tk), tde = x.indexOf('</w:drawing>', tk), tm = x.slice(tds, tde).match(/<wp:extent cx="(\d+)" cy="(\d+)"\/>/); if (tm) tkEx = [+tm[1], +tm[2]]; }
-    [['firma', 'rId9', tkEx ? tkEx[0] : 2800000, tkEx ? tkEx[1] : 560000, 1], ['kurum', 'rId8', 0, 0, 0]].forEach(function (L) {
+    var LS = 1.4, tkEx = null, tk = x.indexOf('r:embed="rId8"');
+    if (tk >= 0) { var tds = x.lastIndexOf('<w:drawing>', tk), tde = x.indexOf('</w:drawing>', tk), tm = x.slice(tds, tde).match(/<wp:extent cx="(\d+)" cy="(\d+)"\/>/); if (tm) tkEx = [Math.round(+tm[1] * LS), Math.round(+tm[2] * LS)];
+      if (logos.kurum === undefined || logos.kurum === 'keep') { /* şablondaki hazır kurum logosunu da aynı oranda büyüt */
+        var d8 = x.slice(tds, tde), e8 = d8.match(/<wp:extent cx="(\d+)" cy="(\d+)"\/>/), h8 = d8.match(/(<wp:positionH[^>]*><wp:posOffset>)(-?\d+)/);
+        if (e8 && h8) { var nw8 = Math.round(+e8[1] * LS), nh8 = Math.round(+e8[2] * LS), nhx = +h8[2] - Math.round((nw8 - +e8[1]) / 2);
+          d8 = d8.replace(/<wp:extent cx="\d+" cy="\d+"\/>/, '<wp:extent cx="' + nw8 + '" cy="' + nh8 + '"/>').replace(/<a:ext cx="\d+" cy="\d+"\/>/, '<a:ext cx="' + nw8 + '" cy="' + nh8 + '"/>').replace(h8[0], function () { return h8[1] + nhx; });
+          x = x.slice(0, tds) + d8 + x.slice(tde); } } }
+    [['firma', 'rId9', tkEx ? tkEx[0] : 2800000, tkEx ? tkEx[1] : 560000, 1], ['kurum', 'rId8', tkEx ? tkEx[0] : 0, tkEx ? tkEx[1] : 0, 0]].forEach(function (L) {
       var lg = logos[L[0]];
       if (lg === undefined || lg === 'keep') return;
       var ri = x.indexOf('r:embed="' + L[1] + '"');
@@ -663,7 +668,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var rid = 'rIdLogo' + n, name = 'media/logo' + n + '.png';
       zip.file('word/' + name, lg.png, { createFolders: false });
       relAdd += '<Relationship Id="' + rid + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="' + name + '"/>';
-      var hOff = L[4] ? +ph[2] : +ph[2] + Math.round((ow - cx) / 2), vOff = +pv[2] + Math.round((oh - cy) / 2);
+      var hOff = L[4] ? +ph[2] : +ph[2] + Math.round((ow - cx) / 2), vOff = +pv[2] + Math.round((oh - cy) / 2); if (!L[4] && vOff < +pv[2]) vOff = +pv[2];
       d = d.replace('r:embed="' + L[1] + '"', 'r:embed="' + rid + '"')
         .replace(/<wp:extent cx="\d+" cy="\d+"\/>/, '<wp:extent cx="' + cx + '" cy="' + cy + '"/>')
         .replace(/<a:ext cx="\d+" cy="\d+"\/>/, '<a:ext cx="' + cx + '" cy="' + cy + '"/>')
@@ -779,7 +784,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   /* --- Temel İSG belgesi: 2 sayfa --- */
   /* şablondaki logoyu beyazla kapatır, istenirse yenisini çizer. lg: {kind:'tpl'|'none'|'img', data} */
-  async function drawLogo(ctx, scale, lg, cover, box, left) {
+  async function drawLogo(ctx, scale, lg, cover, box, left, tplCrop) {
+    if (lg && lg.kind === 'tpl' && tplCrop) { /* şablondaki hazır logoyu kırpıp aynı kutuya büyüterek yerleştirir */
+      var cv = document.createElement('canvas'), cw = Math.round((tplCrop[2] - tplCrop[0]) * scale), ch = Math.round((tplCrop[3] - tplCrop[1]) * scale);
+      cv.width = cw; cv.height = ch; cv.getContext('2d').drawImage(ctx.canvas, tplCrop[0] * scale, tplCrop[1] * scale, cw, ch, 0, 0, cw, ch);
+      ctx.fillStyle = '#fff'; ctx.fillRect(cover[0] * scale, cover[1] * scale, (cover[2] - cover[0]) * scale, (cover[3] - cover[1]) * scale);
+      var rr0 = fitBox(cw, ch, box, left); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(cv, rr0[0] * scale, rr0[1] * scale, rr0[2] * scale, rr0[3] * scale); return;
+    }
     if (!lg || lg.kind === 'tpl') return;
     ctx.fillStyle = '#fff';
     ctx.fillRect(cover[0] * scale, cover[1] * scale, (cover[2] - cover[0]) * scale, (cover[3] - cover[1]) * scale);
@@ -791,8 +803,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return page('cert1', 841.92, 595.32, async function (ctx, s) {
       var c = '#000';
       logos = logos || {};
-      await drawLogo(ctx, s, logos.firma, [60, 48, 262, 100], [66, 48.6, 150, 82.6], true);
-      await drawLogo(ctx, s, logos.kurum, [672, 42, 772, 94], [678.4, 48.6, 762.4, 82.6], false);
+      await drawLogo(ctx, s, logos.firma, [60, 40, 262, 100], [62, 41.6, 180, 89.6], true);
+      await drawLogo(ctx, s, logos.kurum, [655, 36, 782, 96], [661.4, 41.6, 779.4, 89.6], false, [678, 48, 764, 84]);
       drawText(ctx, s, T.ad, { x: 205.3, yMin: 178.9, yMax: 194.2, calStr: 'ONUR ARPACIK', calW: 96.3, maxW: 560 });
       drawText(ctx, s, T.tarih, { x: 205.3, yMin: 208.4, yMax: 223.7, calStr: '02.10.2026', calW: 66.7, maxW: 90 });
       drawText(ctx, s, '( Geçerlilik Süresi: ' + T.gecerlilik + ' )', { x: 298.0, yMin: 208.4, yMax: 223.7, calStr: '( Geçerlilik Süresi: 3 yıl )', calW: 142.3, maxW: 400 });
