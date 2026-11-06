@@ -30,18 +30,16 @@
 .ftool{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ftool input[type=search]{flex:1 1 180px;min-width:0}
 .ftool select{width:auto;flex:0 0 150px}.ftool .btn{flex:none}
-.flist{max-height:min(62vh,640px);overflow:auto;display:flex;flex-direction:column;gap:4px}
-.frow{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:0 6px;background:var(--surface)}
-.frow.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
-.fmain{display:flex;flex-wrap:nowrap;gap:2px 8px;align-items:baseline;width:100%;text-align:left;border:0;background:none;font:inherit;color:inherit;padding:7px 4px;cursor:pointer;min-width:0}
-.fmain .ft{font-weight:600}
-.fmain .fm{flex:1 1 0;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fpill{font-size:11.5px;background:var(--accent);color:var(--accent-ink);border-radius:99px;padding:1px 8px}
-.fgb{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:0 8px;color:var(--muted)}
-.fact{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
-.fgrp>summary{font-weight:600;padding:6px 2px;cursor:pointer}
-.fgrp .frow{margin:0 0 6px 6px}
-@media (max-width:600px){.fdlg{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;border:0}.fmain{flex-wrap:wrap}.fmain .fm{flex-basis:100%}.ftool select{flex:1 1 120px;width:auto;min-width:0}.fdlg-b{padding:10px}.flist{max-height:none}}
+.flist{max-height:min(70vh,720px);overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;align-content:start}
+.frow{display:block;border:1px solid var(--line);border-radius:10px;padding:0;background:var(--surface);min-width:0}
+.frow.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--bg)}
+.fmain{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;min-height:52px;justify-content:center;text-align:left;border:0;background:none;font:inherit;color:inherit;padding:8px 10px;cursor:pointer;min-width:0}
+.fmain .ft{font-weight:600;font-size:14.5px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.fmain .fm{display:none}
+.fpill{font-size:11px;background:var(--accent);color:var(--accent-ink);border-radius:99px;padding:0 7px}
+.fgb{font-size:11px;border:1px solid var(--line);border-radius:99px;padding:0 7px;color:var(--muted)}
+.fgrp{grid-column:1/-1}.fgrp[open]{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.fgrp summary{grid-column:1/-1;font-weight:600;padding:4px 2px}
+@media (max-width:600px){.fdlg{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;border:0}.ftool select{flex:1 1 120px;width:auto;min-width:0}.fdlg-b{padding:10px}.flist{max-height:none;grid-template-columns:repeat(2,1fr)}.fgrp[open]{grid-template-columns:repeat(2,1fr)}}
 
 /* --- Sürüm 74: sertifika sekmesi, canlı önizleme --- */
 body.cw .wrap{max-width:1380px}
@@ -314,7 +312,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 100 · 07.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 101 · 07.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-sel">Firma</label><select id="firm-sel" aria-label="Çalışılan firma (siz değiştirene kadar seçili kalır)"></select></div>
@@ -1746,10 +1744,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     mb.appendChild(el('span','fm',firmMeta(f)));
     mb.addEventListener('click', function(){ openEditor(f.id); });
     r.appendChild(mb);
-    var ix=bucket.indexOf(f);
-    if(canMove && bucket.length>1){ var ac=el('div','fact'), up=el('button','btn sm','▲'), dn=el('button','btn sm','▼'); up.type=dn.type='button'; up.title='Yukarı taşı'; dn.title='Aşağı taşı'; up.disabled=ix<1; dn.disabled=ix>=bucket.length-1;
-      up.addEventListener('click', function(){ moveFirm(f,bucket[ix-1]); }); dn.addEventListener('click', function(){ moveFirm(f,bucket[ix+1]); }); ac.appendChild(up); ac.appendChild(dn); r.appendChild(ac); }
-    else r.style.gridTemplateColumns='1fr';
     return r; }
   function renderMgr(){
     var all=visFirms(); mgrRoot.textContent=''; dlGrp.textContent=''; var seenG={};
@@ -1879,6 +1873,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var aa=el('div','row-actions'), cp=el('button','btn','Bu firmanın kopyasını oluştur'), dl=el('button','btn quiet','Firmayı sil'), arm=false; cp.type=dl.type='button';
       cp.addEventListener('click', function(){ var nf=JSON.parse(JSON.stringify(f)); nf.id=uid(); nf.name=(f.name||'Firma')+' (kopya)'; FM.list.splice(FM.list.indexOf(f)+1,0,nf); FM.cur=nf.id; saveFirms(); onFirmChanged(); firmRoot.scrollTop=0; setStatus('Kopya oluşturuldu; adını düzenleyin.','ok'); });
       dl.addEventListener('click', function(){ if(!arm){ arm=true; dl.textContent='Emin misiniz? Silmek için tekrar basın'; setTimeout(function(){ arm=false; dl.textContent='Firmayı sil'; },3500); return; } removeFirm(f.id); dlg.close(); onFirmChanged(); setStatus('Firma silindi.'); });
+      if(FV.mode==='manual'){ var vl=visFirms(), ix=vl.indexOf(f);
+        var bl=el('button','btn','◀ Listede öne al'), br=el('button','btn','Listede geriye al ▶'); bl.type=br.type='button'; bl.disabled=ix<1; br.disabled=ix<0||ix>=vl.length-1;
+        bl.addEventListener('click', function(){ moveFirm(f,vl[ix-1]); renderFirmTab(); }); br.addEventListener('click', function(){ moveFirm(f,vl[ix+1]); renderFirmTab(); }); aa.appendChild(bl); aa.appendChild(br); }
       aa.appendChild(cp); aa.appendChild(dl); pA.appendChild(aa); firmRoot.appendChild(pA); }
     var nav=el('div','fnav'); firmRoot.insertBefore(nav, firmRoot.firstChild);
     [['Firma',pT],['Şubeler',pS],['Görevler',pG],['İSG belgesi',pI],['Yıllık plan',pP],['Önizleme',p4]].forEach(function(m){ var b=el('button',null,m[0]); b.type='button'; b.addEventListener('click', function(){ if(m[1].tagName==='DETAILS') m[1].open=true; firmRoot.scrollTop += m[1].getBoundingClientRect().top-firmRoot.getBoundingClientRect().top-nav.offsetHeight-6; if(m[1]===p4) doPreview(); }); nav.appendChild(b); });
