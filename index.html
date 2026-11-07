@@ -315,7 +315,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 109 · 07.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 110 · 07.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -323,7 +323,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
   <div class="navwrap" id="navwrap" hidden><div class="pagebar"><button type="button" class="btn primary" id="home-btn">← Ana sayfa</button><select id="page-sel" aria-label="Sayfa seç"></select></div><div class="groups" id="groups" role="group" aria-label="Ana bölümler"></div>
   <div class="tabs" role="tablist" aria-label="Bölümler">
     <button role="tab" id="tab-risk" aria-selected="true" aria-controls="p-risk" type="button">Risk (RD)</button>
-    <button role="tab" id="tab-cert" aria-selected="false" aria-controls="p-cert" type="button">İSG belgesi</button>
+    <button role="tab" id="tab-cert" aria-selected="false" aria-controls="p-cert" type="button">Temel İSG Eğitim Belgesi</button>
     <button role="tab" id="tab-plan" aria-selected="false" aria-controls="p-plan" type="button">Yıllık plan</button>
     <button role="tab" id="tab-firm" aria-selected="false" aria-controls="p-firm" type="button">Firma</button>
     <button role="tab" id="tab-stamp" aria-selected="false" aria-controls="p-stamp" type="button">İmza / Kaşe</button>
@@ -988,7 +988,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(repFirm!=='all' && !gs[repFirm]) repFirm='all';
     repFirmSel.textContent=''; [['all','Tüm firmalar']].concat(order.map(function(g){ return [g,gs[g]]; })).forEach(function(m){ var o=document.createElement('option'); o.value=m[0]; o.textContent=m[1]; o.selected=m[0]===repFirm; repFirmSel.appendChild(o); });
     t.textContent=''; var a=monthsAgg(repPred()), keys=Object.keys(a).sort().reverse();
-    var th=el('thead'), tr=el('tr'); ['Ay','Risk değerlendirmesi','Temel İSG belgesi','Toplam'].forEach(function(h,i){ var c=el('th',i?'n':null,h); tr.appendChild(c); }); th.appendChild(tr); t.appendChild(th);
+    var th=el('thead'), tr=el('tr'); ['Ay','Risk değerlendirmesi','Temel İSG Eğitim Belgesi','Toplam'].forEach(function(h,i){ var c=el('th',i?'n':null,h); tr.appendChild(c); }); th.appendChild(tr); t.appendChild(th);
     var tb=el('tbody'), tr0=0, tc0=0;
     if(!keys.length){ var r=el('tr'); var c=el('td',null,'Henüz kayıt yok. Bir belge indirdiğinizde burada görünür.'); c.colSpan=4; r.appendChild(c); tb.appendChild(r); }
     if(!repSel || !a[repSel]) repSel=keys[0]||null;
@@ -1622,7 +1622,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function hzRow(){ return {ad:(HZ.ad||'').trim(),tarih:HZ.tarih||todayIso(),gorev:(HZ.gorev||'').trim(),proje:'',ov:hzClean(),id:'p-cert-hz'}; }
   function renderHz(){
     var f=F(); if(!f) return;
-    hzBox.textContent=''; hzBox.appendChild(el('h2',null,'Sertifika hazırla'));
+    hzBox.textContent=''; hzBox.appendChild(el('h2',null,'Temel İSG Eğitim Belgesi hazırla'));
     hzBox.appendChild(el('p','hint','Kutular sertifikadaki sıra ile aynıdır. Ad soyad, bölüm / görev ve işyeri ünvanı yazılmalıdır; boşsa uyarı verir. Eğitim süresi, geçerlilik süresi ve kurum ünvanı silik görünen değerle basılır, değiştirmek için yazın. Değişiklik sağdaki önizlemede görünür.'));
     var ov=hzOv();
     function touch(fast){ certActive=HZ; clearTimeout(cpT); cpT=setTimeout(certPrev,fast?0:120); }
@@ -1922,7 +1922,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     (function(){ var w=el('label','field wide'); w.appendChild(el('span',null,'Bu firmada sık kullanılan görevler (her satıra bir görev; sertifika ve formlarda öneri olarak çıkar)')); var t=document.createElement('textarea'); t.rows=3; t.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; t.placeholder='Örn:\nŞoför\nMuavin\nOfis personeli'; t.value=(f.gv||[]).join('\n'); t.addEventListener('input', function(){ f.gv=t.value.split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean); gvRefresh(); fsave(); }); w.appendChild(t); pG.appendChild(w); })();
     firmRoot.appendChild(pG);
     /* 4. belge ayarları (ayrı ayrı) */
-    var pI=dp('İSG belgesi (sertifika)',false);
+    var pI=dp('Temel İSG Eğitim Belgesi (sertifika)',false);
     pI.appendChild(el('p','hint','Kurum, süre ve geçerlilik otomatik gelir; kutuyu kaldırıp bu firma için değiştirebilirsiniz.'));
     var ig=el('div','fields roomy');
     ig.appendChild(autoField('Eğitimi veren kurum ünvanı','kurum',D.kurum));
@@ -1949,7 +1949,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       gg.appendChild(txtField('İşyeri adresi',function(){return obj.adr;},function(v){ obj.adr=v; }));
       gg.appendChild(txtField('SGK sicil no',function(){return obj.sgk;},function(v){ obj.sgk=v; }));
       gg.appendChild(txtField('NACE kodu',function(){return obj.nace;},function(v){ obj.nace=v; }));
-      gg.appendChild(txtField('İşveren / vekili adı (plan ve formlarda yazılır; imza görseli İSG belgesi bölümünde)',function(){return obj.isv;},function(v){ obj.isv=v; }));
+      gg.appendChild(txtField('İşveren / vekili adı (plan ve formlarda yazılır; imza görseli Eğitim Belgesi bölümünde)',function(){return obj.isv;},function(v){ obj.isv=v; }));
       gg.appendChild(selF('Tehlike sınıfı',[['','Seçilmedi'],['az','Az tehlikeli'],['te','Tehlikeli'],['ct','Çok tehlikeli']],function(){return obj.hz;},function(v){ obj.hz=v; }));
       gg.appendChild(selF('Çalışan sayısı',[['','Belirtilmedi'],['lt','50\'den az'],['ge','50 ve üzeri']],function(){return obj.emp;},function(v){ obj.emp=v; }));
       d.appendChild(gg); return d; }
@@ -1974,7 +1974,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var bl=el('button','btn','◀ Listede öne al'), br=el('button','btn','Listede geriye al ▶'); bl.type=br.type='button'; bl.disabled=ix<1; br.disabled=ix<0||ix>=vl.length-1;
         bl.addEventListener('click', function(){ moveFirm(f,vl[ix-1]); renderFirmTab(); }); br.addEventListener('click', function(){ moveFirm(f,vl[ix+1]); renderFirmTab(); }); aa.appendChild(bl); aa.appendChild(br); }
       aa.appendChild(cp); aa.appendChild(dl); pA.appendChild(aa); firmRoot.appendChild(pA); }
-    var tops=[[pT,'Firma'],[pS,'Şubeler'],[pG,'Görevler'],[pI,'İSG belgesi'],[pP,'Yıllık plan'],[p4,'Önizleme']]; if(pA) tops.push([pA,'İşlemler']);
+    var tops=[[pT,'Firma'],[pS,'Şubeler'],[pG,'Görevler'],[pI,'Eğitim Belgesi'],[pP,'Yıllık plan'],[p4,'Önizleme']]; if(pA) tops.push([pA,'İşlemler']);
     if(draft) fOpen='Firma';
     var navBtns=[]; function paintNav(){ navBtns.forEach(function(b,i){ var on=tops[i][0].open; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false'); }); }
     tops.forEach(function(t){ t[0].classList.add('fsec'); t[0].open=(t[1]===fOpen); t[0].addEventListener('toggle', function(){ if(t[0].open){ fOpen=t[1]; tops.forEach(function(o){ if(o[0]!==t[0]) o[0].open=false; }); } else if(fOpen===t[1]) fOpen=''; paintNav(); }); });
@@ -3729,7 +3729,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   var GRP=[['Belgeler',['risk','cert','plan']],['Eğitim',['katilim','acilrehber','afis','sinav']],['Ayarlar',['firm','stamp','ocr']],['Sayılar',['rep']]];
   var gbox=document.getElementById('groups'), gbtn=GRP.map(function(g){ var b=document.createElement('button'); b.type='button'; b.textContent=g[0]; b.addEventListener('click',function(){ var cur=null; try{ cur=localStorage.getItem('isg-tab-'+g[0]); }catch(e){} show(g[1].indexOf(cur)>=0?cur:g[1][0]); }); gbox.appendChild(b); return b; });
   function grpSync(n){ GRP.forEach(function(g,i){ var on=g[1].indexOf(n)>=0; gbtn[i].setAttribute('aria-pressed',on?'true':'false'); g[1].forEach(function(t){ document.getElementById('tab-'+t).hidden=!on||g[1].length<2; }); if(on){ try{ localStorage.setItem('isg-tab-'+g[0],n); }catch(e){} document.querySelector('.tabs').style.display=g[1].length<2?'none':''; } }); }
-  var TT={risk:['Risk değerlendirmesi','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['İSG belgesi','Temel İSG eğitim belgesi (sertifika) hazırla'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Katılım formu, sınav ve sertifika aktarımı'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar','Firma bilgileri, logolar, işveren imzası, şubeler, yedek'],stamp:['İmza / Kaşe','Ortak uzman ve hekim imza örnekleri'],ocr:['Yazı biçimi','Yazıyı düzenli biçime çevir'],rep:['Aylık sayılar','Firma bazında belge sayıları']};
+  var TT={risk:['Risk değerlendirmesi','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['Temel İSG Eğitim Belgesi','Katılımcı için Temel İSG Eğitim Belgesi (sertifika) hazırla'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Katılım formu, sınav ve sertifika aktarımı'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar','Firma bilgileri, logolar, işveren imzası, şubeler, yedek'],stamp:['İmza / Kaşe','Ortak uzman ve hekim imza örnekleri'],ocr:['Yazı biçimi','Yazıyı düzenli biçime çevir'],rep:['Aylık sayılar','Firma bazında belge sayıları']};
   var homeEl=document.getElementById('p-home'), navwrap=document.getElementById('navwrap'), pageSel=document.getElementById('page-sel'), innerPushed=false;
   (function(){ var box=document.getElementById('home-tiles');
     GRP.forEach(function(g){ box.appendChild(el('h3','gh',g[0])); var tl=el('div','tiles');
