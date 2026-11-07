@@ -315,7 +315,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 114 · 07.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 115 · 07.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1872,9 +1872,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   /* ---------- Claude hesabıyla bulut eşitleme (yalnızca claude.ai içinde açılan kopyada) ---------- */
   function cloudBox(p6){
-    if(!(window.claude&&typeof window.claude.use==='function')) return;
     var box=el('div','cloud'); box.style.cssText='margin-top:14px;padding-top:12px;border-top:1px solid var(--line,#ddd)';
     box.appendChild(el('strong',null,'Claude hesabıyla eşitleme (telefon ↔ bilgisayar)'));
+    if(!(window.claude&&typeof window.claude.use==='function')){ box.appendChild(el('p','hint','Bu seçenek yalnızca sayfa Claude uygulamasının/claude.ai’nin içinde (Yapıtlar) açıldığında çalışır. Şu an uygulama Claude dışında (ör. GitHub Pages adresinden) açılmış görünüyor; burada Yedek al / Yedekten yükle kullanın.')); p6.appendChild(box); return; }
     box.appendChild(el('p','hint','Aynı Claude hesabıyla açtığınız cihazlar bu bölümden aynı verileri paylaşır. Veriler yalnızca sizin hesabınıza özel bir alana yazılır. Eşitleme otomatik değildir: değişiklik yaptığınız cihazda “Buluta gönder”, diğer cihazda “Buluttan al” yapın. Buluttan almak o cihazdaki verilerin yerine geçer.'));
     var row=el('div','row-actions'), up=el('button','btn primary','Buluta gönder'), dn=el('button','btn','Buluttan al'), info=el('p','hint','');
     up.type='button'; dn.type='button'; row.appendChild(up); row.appendChild(dn); box.appendChild(row); box.appendChild(info);
