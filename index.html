@@ -26,7 +26,7 @@
 .fdlg-t button{padding:9px 12px;border:0;background:none;border-bottom:3px solid transparent;font:inherit;font-weight:600;color:var(--muted);white-space:nowrap;cursor:pointer}
 .fdlg-t button.on{color:var(--accent);border-bottom-color:var(--accent)}
 .fdlg-b{overflow:auto;padding:14px;flex:1}
-.fnav{position:sticky;top:-14px;z-index:5;display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin:-14px 0 8px;background:var(--bg)}.fnav button{flex:none;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}.ftop{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.autof .chk{margin-top:4px}.autof input:disabled{color:var(--muted);background:var(--bg)}@media (max-width:700px){.ftop{grid-template-columns:1fr}}
+.fnav{position:sticky;top:-14px;z-index:5;display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin:-14px 0 8px;background:var(--bg)}.fsec>summary{display:none}.fsec:not([open]){display:none}.fnav button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.fnav button{flex:none;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}.ftop{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.autof .chk{margin-top:4px}.autof input:disabled{color:var(--muted);background:var(--bg)}@media (max-width:700px){.ftop{grid-template-columns:1fr}}
 .ftool{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ftool input[type=search]{flex:1 1 180px;min-width:0}
 .ftool select{width:auto;flex:0 0 150px}.ftool .btn{flex:none}
@@ -314,7 +314,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 107 · 07.11.2026</strong></p>
+    <p class="lede">Risk, İSG belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 108 · 07.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1930,9 +1930,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       aa.appendChild(cp); aa.appendChild(dl); pA.appendChild(aa); firmRoot.appendChild(pA); }
     var tops=[[pT,'Firma'],[pS,'Şubeler'],[pG,'Görevler'],[pI,'İSG belgesi'],[pP,'Yıllık plan'],[p4,'Önizleme']]; if(pA) tops.push([pA,'İşlemler']);
     if(draft) fOpen='Firma';
-    tops.forEach(function(t){ t[0].open=(t[1]===fOpen); t[0].addEventListener('toggle', function(){ if(t[0].open){ fOpen=t[1]; tops.forEach(function(o){ if(o[0]!==t[0]) o[0].open=false; }); } else if(fOpen===t[1]) fOpen=''; }); });
+    var navBtns=[]; function paintNav(){ navBtns.forEach(function(b,i){ var on=tops[i][0].open; b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false'); }); }
+    tops.forEach(function(t){ t[0].classList.add('fsec'); t[0].open=(t[1]===fOpen); t[0].addEventListener('toggle', function(){ if(t[0].open){ fOpen=t[1]; tops.forEach(function(o){ if(o[0]!==t[0]) o[0].open=false; }); } else if(fOpen===t[1]) fOpen=''; paintNav(); }); });
     var nav=el('div','fnav'); firmRoot.insertBefore(nav, firmRoot.firstChild);
-    tops.forEach(function(t){ var b=el('button',null,t[1]); b.type='button'; b.addEventListener('click', function(){ t[0].open=true; fOpen=t[1]; tops.forEach(function(o){ if(o[0]!==t[0]) o[0].open=false; }); requestAnimationFrame(function(){ firmRoot.scrollTop += t[0].getBoundingClientRect().top-firmRoot.getBoundingClientRect().top-nav.offsetHeight-6; if(t[0]===p4) doPreview(); }); }); nav.appendChild(b); });
+    tops.forEach(function(t){ var b=el('button',null,t[1]); b.type='button'; b.addEventListener('click', function(){ t[0].open=true; fOpen=t[1]; tops.forEach(function(o){ if(o[0]!==t[0]) o[0].open=false; }); requestAnimationFrame(function(){ firmRoot.scrollTop += t[0].getBoundingClientRect().top-firmRoot.getBoundingClientRect().top-nav.offsetHeight-6; if(t[0]===p4) doPreview(); }); }); nav.appendChild(b); navBtns.push(b); });
+    paintNav();
     firmRoot.scrollTop=keepTop;
   }
   var BK=[['firms',FKEY],['logo',LOGO_KEY],['stamps',STAMP_KEY],['risk','risk-olusturucu-v1'],['cert','cert-olusturucu-v1'],['log',LOG_KEY],['ctr','isg-ctr-v2'],['qcustom','isg-qcustom-v1'],['defs','isg-defs-v1']];
