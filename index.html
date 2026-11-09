@@ -322,7 +322,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 122 · 09.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 123 · 09.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -986,6 +986,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var sy=el('span','m'); sy.id='sync'; sy.textContent=S.syncText||''; s.appendChild(sy);
   }
   var repSel=null, repFirm='all', repFirmSel=null;
+  function delBtn(label,fn){ var b=el('button','btn quiet sm',label), arm=false; b.type='button'; b.style.marginLeft='8px';
+    b.addEventListener('click', function(ev){ ev.stopPropagation(); if(!arm){ arm=true; b.textContent='Emin misiniz?'; setTimeout(function(){ arm=false; b.textContent=label; },3000); return; } fn(); }); return b; }
+  function delLog(pred,msg){ var n=0; Object.keys(logDb).forEach(function(k){ if(pred(logDb[k],k)){ delete logDb[k]; n++; } }); if(Object.keys(logDb).length) lsSet(LOG_KEY,logDb); else lsDel(LOG_KEY); renderStrip(); renderReport(); setStatus(n+' kayıt silindi'+(msg?': '+msg:'')+'.','ok'); }
   function repPred(){ return repFirm==='all'?null:function(o){ return recGroup(o)===repFirm; }; }
   function renderReport(){
     var t=document.getElementById('rep-table');
@@ -1020,12 +1023,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var dd=document.getElementById('rep-days'); dd.textContent='';
     if(repSel){
       var days={}; a[repSel].items.forEach(function(o){ var q=days[o.d]=days[o.d]||{risk:0,cert:0}; q[o.t]++; });
-      Object.keys(days).sort().reverse().forEach(function(k){ var q=days[k], r=el('div'); r.appendChild(el('span',null,k.split('-').reverse().join('.'))); r.appendChild(el('span',null,'Risk: '+q.risk+' · İSG: '+q.cert+' · Toplam: '+(q.risk+q.cert))); dd.appendChild(r); });
+      Object.keys(days).sort().reverse().forEach(function(k){ var q=days[k], r=el('div'); r.appendChild(el('span',null,k.split('-').reverse().join('.'))); r.appendChild(el('span',null,'Risk: '+q.risk+' · İSG: '+q.cert+' · Toplam: '+(q.risk+q.cert)));
+        var ps=repPred(); function inScope(o){ return o.d===k && (!ps||ps(o)); }
+        var bx=el('span','dayact'); if(q.cert) bx.appendChild(delBtn('İSG’yi sil',function(){ delLog(function(o){ return inScope(o)&&o.t==='cert'; },k.split('-').reverse().join('.')+' İSG'); })); if(q.risk) bx.appendChild(delBtn('Riski sil',function(){ delLog(function(o){ return inScope(o)&&o.t==='risk'; },k.split('-').reverse().join('.')+' risk'); })); r.appendChild(bx); dd.appendChild(r); });
     }
     document.getElementById('rep-dt2').textContent= repSel ? 'Günlük sayılar: '+monthName(repSel) : 'Günlük sayılar';
     var d=document.getElementById('rep-detail'); d.textContent='';
     document.getElementById('rep-dt').textContent= repSel ? 'Ayrıntı: '+monthName(repSel) : 'Ayrıntı'; document.getElementById('rep-dt2').parentNode.style.display=repSel?'':'none'; document.getElementById('rep-dt').parentNode.style.display=repSel?'':'none';
-    if(repSel){ a[repSel].items.sort(function(x,y){ return x.d<y.d?-1:x.d>y.d?1:0; }).forEach(function(o){ var r=el('div'); r.appendChild(el('span',null,(o.t==='risk'?'Risk · ':'İSG · ')+o.n+(repFirm==='all'?' · '+(gs[recGroup(o)]||o.f||''):''))); r.appendChild(el('span',null,o.d.split('-').reverse().join('.'))); d.appendChild(r); }); }
+    if(repSel){ a[repSel].items.sort(function(x,y){ return x.d<y.d?-1:x.d>y.d?1:0; }).forEach(function(o){ var r=el('div'); r.appendChild(el('span',null,(o.t==='risk'?'Risk · ':'İSG · ')+o.n+(repFirm==='all'?' · '+(gs[recGroup(o)]||o.f||''):''))); r.appendChild(el('span',null,o.d.split('-').reverse().join('.'))); r.appendChild(delBtn('Sil',function(){ delLog(function(x){ return x===o; },o.n); })); d.appendChild(r); }); }
   }
   document.getElementById('rep-csv').addEventListener('click', async function(){
     var rows=['Ay;Tür;Ad/Plaka;Tarih;Firma'], keys=Object.keys(logDb).map(function(k){return logDb[k]}).sort(function(a,b){return a.d<b.d?-1:1;});
