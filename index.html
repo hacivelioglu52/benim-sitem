@@ -322,7 +322,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 123 · 09.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 124 · 09.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1808,6 +1808,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     card.appendChild(lst);
     var file=document.createElement('input'); file.type='file'; file.accept='image/*'; file.id='logo-file-'+slot.key;
     var acts=el('div','row-actions'), b1=el('button','btn primary','Yeni logo ekle'); b1.type='button'; b1.addEventListener('click', function(){ file.click(); }); acts.appendChild(b1);
+    if(items.length>1){ var bz=el('button','btn','A→Z sırala'); bz.type='button'; bz.addEventListener('click', function(){ var pr=items.map(function(it,i){ return {it:it,n:logoName(slot.key,f,i)}; }); pr.forEach(function(p){ if(!p.it.name) p.it.name=p.n; }); pr.sort(function(a,b){ return cmpTr(a.n,b.n); }); o.list=pr.map(function(p){ return p.it; }); after('Logolar alfabetik sıralandı.'); }); acts.appendChild(bz); }
     card.appendChild(acts); card.appendChild(file);
     var pend=el('div','logopend'); pend.hidden=true; card.appendChild(pend);
     file.addEventListener('change', async function(){
@@ -1904,6 +1905,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var d=dp('Kayıtlı logolar ('+all.length+(all.length?', yaklaşık '+kb+' KB':'')+')');
     d.appendChild(el('p','hint','Cihazın hafızasında kayıtlı tüm logolar. Gereksiz olanı silerek yer açabilirsiniz. Şablondaki hazır logolar (Akkurtlar, Teksen) silinmez.'));
     if(!all.length) d.appendChild(el('p','hint','Kayıtlı logo yok.'));
+    var lgSort=window.__lgSort||'firm';
+    if(all.length>1){ var ss=document.createElement('select'); ss.setAttribute('aria-label','Logoları sırala'); [['firm','Sırala: Firma adına göre (A→Z)'],['name','Sırala: Logo adına göre (A→Z)'],['size','Sırala: Boyuta göre (büyükten küçüğe)']].forEach(function(m){ var op=document.createElement('option'); op.value=m[0]; op.textContent=m[1]; ss.appendChild(op); }); ss.value=lgSort; ss.style.cssText='margin:6px 0 10px;max-width:100%'; ss.addEventListener('change', function(){ window.__lgSort=ss.value; renderMgr(); }); d.appendChild(ss); }
+    function nm(x){ return x.it.name||'Logo'; } function sz(x){ return (x.it.data||'').length; }
+    all.sort(function(a,b){ if(lgSort==='name') return cmpTr(nm(a),nm(b))||cmpTr(firmLabel(a.f),firmLabel(b.f)); if(lgSort==='size') return sz(b)-sz(a); return cmpTr(firmLabel(a.f),firmLabel(b.f))||cmpTr(nm(a),nm(b)); });
     all.forEach(function(x){ var r=el('div','logoopt'), l=el('label'); var im=document.createElement('img'); im.src=x.it.data; im.alt='Logo'; l.appendChild(im);
       var on=x.o.mode==='img'&&x.o.sel===x.it.id; l.appendChild(el('span',null,(x.it.name||'Logo')+' · '+(firmLabel(x.f))+' · '+(x.k==='firma'?'firma logosu':'kurum logosu')+(on?' (kullanımda)':'')+' · '+Math.round((x.it.data||'').length*0.75/1024)+' KB')); r.appendChild(l);
       var del=el('button','btn quiet sm','Sil'), arm=false; del.type='button';
@@ -1966,11 +1971,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     /* 2. şubeler */
     var pS=dp('Şubeler',false);
     pS.appendChild(el('p','hint','Her satıra bir şube yazın (virgülle de ayırabilirsiniz). Yıllık planda şube olarak seçilir, toplu çıkarmada tüm şubeler tek tıkla eklenir. Şubesi olmayan firmada boş bırakın.'));
-    var sbTa=document.createElement('textarea'); sbTa.rows=4; sbTa.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; sbTa.placeholder='Atlaspark AVM\nCanpark AVM\nMetropol AVM'; sbTa.setAttribute('aria-label','Şubeler'); sbTa.value=(f.sb||[]).join('\n'); sbTa.addEventListener('input',function(){ f.sb=sbTa.value.split(/\n|,|;/).map(function(x){ return x.trim(); }).filter(Boolean); saveFirms(); }); pS.appendChild(sbTa); firmRoot.appendChild(pS);
+    var sbTa=document.createElement('textarea'); sbTa.rows=4; sbTa.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; sbTa.placeholder='Atlaspark AVM\nCanpark AVM\nMetropol AVM'; sbTa.setAttribute('aria-label','Şubeler'); sbTa.value=(f.sb||[]).join('\n'); sbTa.addEventListener('input',function(){ f.sb=sbTa.value.split(/\n|,|;/).map(function(x){ return x.trim(); }).filter(Boolean); saveFirms(); }); pS.appendChild(sbTa);
+    (function(){ var b=el('button','btn quiet sm','A→Z sırala'); b.type='button'; b.addEventListener('click', function(){ var l=(f.sb||[]).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(cmpTr); f.sb=l; sbTa.value=l.join('\n'); saveFirms(); setStatus('Şubeler alfabetik sıralandı.','ok'); }); pS.appendChild(b); })();
+    firmRoot.appendChild(pS);
     /* 3. bölüm ve görevler */
     var pG=dp('Bölüm ve görevler',false);
     pG.appendChild(txtField('Varsayılan bölüm / görev (sertifikada silik gelir, yazılmazsa bu kullanılır)', function(){return f.gorev;}, function(v){ f.gorev=v; refreshDocs(); }, 'Örn: ŞOFÖR'));
-    (function(){ var w=el('label','field wide'); w.appendChild(el('span',null,'Bu firmada sık kullanılan görevler (her satıra bir görev; sertifika ve formlarda öneri olarak çıkar)')); var t=document.createElement('textarea'); t.rows=3; t.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; t.placeholder='Örn:\nŞoför\nMuavin\nOfis personeli'; t.value=(f.gv||[]).join('\n'); t.addEventListener('input', function(){ f.gv=t.value.split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean); gvRefresh(); fsave(); }); w.appendChild(t); pG.appendChild(w); })();
+    (function(){ var w=el('label','field wide'); w.appendChild(el('span',null,'Bu firmada sık kullanılan görevler (her satıra bir görev; sertifika ve formlarda öneri olarak çıkar)')); var t=document.createElement('textarea'); t.rows=3; t.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; t.placeholder='Örn:\nŞoför\nMuavin\nOfis personeli'; t.value=(f.gv||[]).join('\n'); t.addEventListener('input', function(){ f.gv=t.value.split(/\n+/).map(function(x){ return x.trim(); }).filter(Boolean); gvRefresh(); fsave(); }); w.appendChild(t); pG.appendChild(w);
+      var zb=el('button','btn quiet sm','A→Z sırala'); zb.type='button'; zb.addEventListener('click', function(){ var l=(f.gv||[]).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(cmpTr); f.gv=l; t.value=l.join('\n'); gvRefresh(); fsave(); setStatus('Görevler alfabetik sıralandı.','ok'); }); pG.appendChild(zb); })();
     firmRoot.appendChild(pG);
     /* 4. belge ayarları (ayrı ayrı) */
     var pI=dp('Temel İSG Eğitim Belgesi (sertifika)',false);
