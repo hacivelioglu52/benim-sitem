@@ -322,7 +322,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 120 · 09.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 122 · 09.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1686,7 +1686,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var opts=[['','Ayara göre ('+(LG.hs&&LG.hs[m[0]]?'basılmaz':'basılır')+')'],['bas','Bas'],['none','Basma']];
       var c=el('div','hcol'); c.appendChild(el('span',null,m[2])); ch(c,opts,function(){return ov['st'+m[1]];},function(v){ov['st'+m[1]]=v;}); sr.appendChild(c); });
     var tb=el('div','hztoplu'); tb.appendChild(el('p','showlbl','Listedeki (toplu çıkarılan) sertifikalarda basılacaklar:'));
-    [['uzman','İş güvenliği uzmanı imza / kaşe'],['hekim','İşyeri hekimi imza / kaşe'],['isveren','İşveren / vekili imza / kaşe']].forEach(function(m){ var rw=el('div','showrow'); rw.appendChild(chkRow(m[1], !LG.hs[m[0]], function(v){ LG.hs[m[0]]=!v; saveLG(); refreshDocs(); renderHz(); })); tb.appendChild(rw); });
+    [['uzman','İş güvenliği uzmanı imza / kaşe'],['hekim','İşyeri hekimi imza / kaşe'],['isveren','İşveren / vekili imza / kaşe']].forEach(function(m){ var rw=el('div','showrow'); rw.appendChild(chkRow(m[1], !LG.hs[m[0]], function(v){ LG.hs[m[0]]=!v; saveLG(); refreshDocs(); renderHz(); }));
+      if(!cands(m[0]).length){ var wn=el('p','hint bad','⚠ Bu cihazda kayıtlı '+(m[0]==='uzman'?'uzman':m[0]==='hekim'?'hekim':'işveren')+' imza/kaşe örneği yok, işaretli olsa da belgeye basılacak bir şey yok. Ayarlar › İmza / Kaşe bölümünden örnek ekleyin ya da yedekten yükleyin.'); wn.style.color='#b45309'; rw.appendChild(wn); }
+      tb.appendChild(rw); });
     (function(){ var rw=el('div','showrow'); rw.appendChild(chkRow('"Çalıştığı proje" satırı (proje alanı doluysa)', LG.projeOn, function(v){ LG.projeOn=v; saveLG(); refreshDocs(); })); tb.appendChild(rw); })();
     tb.appendChild(el('p','hint','Yukarıdaki “Ayara göre” seçeneği bu işaretlere uyar. Tek bir kişi için “Bas” ya da “Basma” seçerek bunu geçersiz kılabilirsiniz.'));
     tgt.appendChild(tb);
@@ -2051,7 +2053,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   reqDlg.addEventListener('click', function(e){ if(e.target===reqDlg) reqDlg.close(); });
   function openReq(){ reqDlg.showModal(); }
   function reqMsg(t,k){ setStatus(t,k); var m=reqRoot.querySelector('.req-msg'); if(m){ m.textContent=t; m.className='status req-msg'+(k?' '+k:''); } }
-  var reqItems=[], reqDate=todayIso(), reqFormDate='', reqName='', reqProje=false;
+  var reqItems=[], reqDbg='', reqDate=todayIso(), reqFormDate='', reqName='', reqProje=false;
   function colIdx(ref){ var m=/^([A-Z]+)/.exec(ref)[1], n=0; for(var i=0;i<m.length;i++) n=n*26+m.charCodeAt(i)-64; return n; }
   function U(x){ return String(x||'').normalize('NFC').toLocaleUpperCase('tr-TR'); }
   async function readSheet(file){
@@ -2070,6 +2072,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return rows;
   }
   function cellDate(c){ if(!c) return ''; if(c.num!=null && c.num>30000 && c.num<90000) return new Date(Math.round((c.num-25569)*86400000)).toISOString().slice(0,10); return CertCore.toIso(c.v); }
+  function colName(i){ var n='',x=+i; while(x>0){ var m=(x-1)%26; n=String.fromCharCode(65+m)+n; x=Math.floor((x-1)/26); } return n; }
   function parseRequest(rows){
     var rn=Object.keys(rows).map(Number).sort(function(a,b){return a-b;}), hdr=0, cols={}, date='';
     rn.forEach(function(r){ if(hdr) return; Object.keys(rows[r]).forEach(function(c){ if(/ARA[CÇ] PLAKASI/.test(U(rows[r][c].v))) hdr=r; }); });
@@ -2086,9 +2089,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(!plaka && !sofor) return;
       var ut=U(talep), risk=/R[İI]SK|^RD\b|\bRD\b/.test(ut), isg=/[İI]SG|SERT[İI]F|E[ĞG][İI]T[İI]M/.test(ut), none=!risk&&!isg;
       if(none){ risk=true; isg=true; } /* talep yazmıyorsa ikisi birden */
+      if(!items.dbg) items.dbg=ks.map(function(k){ return colName(k)+'='+String(cs[k].v).slice(0,24); }).join(' · ');
       items.push({proje:proje,plaka:plaka,sofor:sofor,ted:ted,talep:talep,risk:risk,isg:isg,unknown:none});
     });
-    return {date:date,items:items};
+    return {date:date,items:items,dbg:items.dbg||'',cols:JSON.stringify(cols)};
   }
   function renderReq(){
     reqRoot.textContent='';
@@ -2103,7 +2107,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var acts=el('div','row-actions'), b=el('button','btn primary','Talep formunu yükle (.xlsx)'); b.type='button'; b.addEventListener('click', function(){ file.click(); }); acts.appendChild(b); p.appendChild(acts); p.appendChild(file);
     file.addEventListener('change', async function(){
       var fl=file.files&&file.files[0]; file.value=''; if(!fl) return;
-      try{ var rows=await readSheet(fl), res=parseRequest(rows); if(!res.items.length) throw new Error('Formda araç satırı bulunamadı.'); reqItems=res.items; reqFormDate=res.date||''; reqDate=todayIso(); reqName=fl.name;
+      try{ var rows=await readSheet(fl), res=parseRequest(rows); if(!res.items.length) throw new Error('Formda araç satırı bulunamadı.'); reqItems=res.items; reqDbg=res.dbg; reqFormDate=res.date||''; reqDate=todayIso(); reqName=fl.name;
         /* talep formları çoğunlukla Akkurtlar'dan gelir: kayıtlı son seçim ya da Akkurtlar firması otomatik seçilir */
         var want=null; try{ want=localStorage.getItem('isg-req-firm'); }catch(e){}
         var tgt=FM.list.filter(function(x){ return x.id===want; })[0]||FM.list.filter(function(x){ return /AKKURT/i.test(x.name||''); })[0], sw='';
@@ -2130,11 +2134,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var sm=el('p','hint'); p.appendChild(sm);
       function sum(){ var a=reqItems.filter(function(x){return x.risk;}).length, c=reqItems.filter(function(x){return x.isg;}).length, u=reqItems.filter(function(x){return x.unknown;}).length; sm.textContent='Eklenecek: '+a+' risk değerlendirmesi, '+c+' İSG sertifikası.'+(u?' '+u+' satırda talep yazmıyor, ikisi de işaretlendi; gerekirse değiştirin.':''); }
       sum();
+      if(reqItems.some(function(x){ return x.unknown; })&&reqDbg){ var dg=el('p','hint','İlk satırda okunan hücreler: '+reqDbg+'. “Talep” için İSG/RD yazan sütun burada görünmüyorsa dosyayı bana gönderin.'); dg.style.fontSize='12px'; p.appendChild(dg); }
       var a2=el('div','row-actions'), go=el('button','btn primary','Seçilenleri listelere ekle'); go.type='button'; go.addEventListener('click', function(){ addReq(); });
       var cl=el('button','btn quiet','Temizle'); cl.type='button'; cl.addEventListener('click', function(){ reqItems=[]; renderReq(); });
       var g2=el('button','btn','Ekle ve sertifikaları tek PDF indir'); g2.type='button'; g2.addEventListener('click', function(){ addReq('pdf'); });
       var g3=el('button','btn','Ekle ve sertifikaları ZIP (PDF) indir'); g3.type='button'; g3.addEventListener('click', function(){ addReq('zip'); });
-      go.addEventListener('click', function(){}); a2.appendChild(go); a2.appendChild(g2); a2.appendChild(g3); a2.appendChild(cl); p.appendChild(a2);
+      var q1=el('button','btn quiet','Hepsinde RD’yi kaldır'); q1.type='button'; q1.addEventListener('click', function(){ reqItems.forEach(function(x){ x.risk=false; x.unknown=false; }); renderReq(); });
+      var q2=el('button','btn quiet','Hepsinde İSG’yi kaldır'); q2.type='button'; q2.addEventListener('click', function(){ reqItems.forEach(function(x){ x.isg=false; x.unknown=false; }); renderReq(); });
+      var qa=el('div','row-actions'); qa.appendChild(q1); qa.appendChild(q2); p.appendChild(qa);
+      a2.appendChild(go); a2.appendChild(g2); a2.appendChild(g3); a2.appendChild(cl); p.appendChild(a2);
     }
     reqRoot.appendChild(p);
   }
@@ -2145,14 +2153,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(it.isg) cs.push({ad:it.sofor,tarih:reqDate,gorev:'',proje:it.proje,projeon:reqProje});
     });
     if(!rs.length && !cs.length){ reqMsg('Eklenecek satır seçilmedi.','bad'); return; }
-    var newCert=[]; if(rs.length) riskList.addMany(rs); if(cs.length) newCert=certList.addMany(cs)||[];
+    var newCert=[]; if(rs.length&&!after) riskList.addMany(rs); if(cs.length) newCert=certList.addMany(cs)||[];
     var miss=cs.filter(function(c){return !c.ad;}).length;
     reqItems=[]; renderReq();
     var done=el('div','req-done'); done.appendChild(el('h3',null,'Listelere eklendi'));
-    done.appendChild(el('p','hint',rs.length+' risk değerlendirmesi ve '+cs.length+' İSG sertifikası satırı eklendi.'+(miss?' '+miss+' sertifika satırında şoför adı yok, Sertifika listesinde ad soyad girin.':'')));
-    var ac=el('div','row-actions'); if(rs.length){ var g1=el('button','btn','Risk listesine git'); g1.type='button'; g1.addEventListener('click', function(){ reqDlg.close(); show('risk'); }); ac.appendChild(g1); } if(cs.length){ var g2=el('button','btn','Sertifika listesine git'); g2.type='button'; g2.addEventListener('click', function(){ reqDlg.close(); show('cert'); }); ac.appendChild(g2); }
+    done.appendChild(el('p','hint',(after?0:rs.length)+' risk değerlendirmesi ve '+cs.length+' İSG sertifikası satırı eklendi.'+(miss?' '+miss+' sertifika satırında şoför adı yok, Sertifika listesinde ad soyad girin.':'')));
+    var ac=el('div','row-actions'); if(rs.length&&!after){ var g1=el('button','btn','Risk listesine git'); g1.type='button'; g1.addEventListener('click', function(){ reqDlg.close(); show('risk'); }); ac.appendChild(g1); } if(cs.length){ var g2=el('button','btn','Sertifika listesine git'); g2.type='button'; g2.addEventListener('click', function(){ reqDlg.close(); show('cert'); }); ac.appendChild(g2); }
     done.appendChild(ac); reqRoot.appendChild(done);
-    setStatus(rs.length+' risk, '+cs.length+' İSG satırı eklendi.','ok');
+    setStatus((after?'0':rs.length)+' risk, '+cs.length+' İSG satırı eklendi.','ok');
     if(after&&newCert.length){ setTimeout(function(){ if(after==='pdf') certList.downloadMerged(newCert); else certList.downloadZip(certList.cfg.formats.filter(function(f){ return f.id==='pdf'; })[0]||certList.cfg.formats[0],newCert); },400); }
   }
   renderReq();
