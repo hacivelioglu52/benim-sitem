@@ -322,7 +322,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 130 · 10.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 131 · 10.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1845,6 +1845,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var r={ad:'Örnek Ad Soyad',tarih:todayIso(),gorev:'',proje:'Örnek Proje',projeon:true}, st={};
         ['uzman','hekim','isveren'].forEach(function(k){ st[k]=(LG.noSign||(LG.hs&&LG.hs[k]))?{kind:'none'}:pdfStamp(peek(k)); });
         blob=await PdfGen.certPreview(CertCore.check(withD(r)).texts, st, logoPdf(r));
+      } else if(prevKind==='egt'||prevKind==='cal'){
+        var fp=F(), sbs=fp.sb||[], br=sbs.length?sbs[prevIx%sbs.length]:''; var du=await window.__planPreview(fp,prevKind,br); if(prevUrl&&/^blob:/.test(prevUrl)) URL.revokeObjectURL(prevUrl); prevUrl=du; box.textContent=''; var im2=document.createElement('img'); im2.src=du; im2.alt='Önizleme'; box.appendChild(im2); var cp2=document.getElementById('prev-cap'); if(cp2) cp2.textContent=(prevKind==='egt'?'Yıllık eğitim planı':'Yıllık çalışma planı')+', 1. sayfa'+(br?' · şube: '+br+(sbs.length>1?' ('+((prevIx%sbs.length)+1)+'/'+sbs.length+')':''):''); return;
       } else {
         var rt=RiskCore.check(rr({plaka:'34 ABC 123',surucu:'Örnek Sürücü',tarih:todayIso()})).texts;
         blob=await PdfGen.riskPreview(rt, pdfStamp(peek('uzman')));
@@ -1976,9 +1978,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     tg.appendChild(tl); tg.appendChild(renderLogoCard(LOGO_SLOTS[0])); pT.appendChild(tg); firmRoot.appendChild(pT);
     /* 2. şubeler */
     var pS=dp('Şubeler',false);
-    pS.appendChild(el('p','hint','Her satıra bir şube yazın (virgülle de ayırabilirsiniz). Şubesi olmayan firmada boş bırakın. Yazdığınız her şube için aşağıda ayrı bir kutu açılır; adres, SGK no, ziyaret başlangıç ayı gibi o şubeye özel bilgileri oradan girersiniz.'));
-    var sbTa=document.createElement('textarea'); sbTa.rows=4; sbTa.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; sbTa.placeholder='Atlaspark AVM\nCanpark AVM\nMetropol AVM'; sbTa.setAttribute('aria-label','Şubeler'); sbTa.value=(f.sb||[]).join('\n'); sbTa.addEventListener('input',function(){ f.sb=sbTa.value.split(/\n|,|;/).map(function(x){ return x.trim(); }).filter(Boolean); saveFirms(); }); pS.appendChild(sbTa);
-    (function(){ var b=el('button','btn quiet sm','A→Z sırala'); b.type='button'; b.addEventListener('click', function(){ var l=(f.sb||[]).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(cmpTr); f.sb=l; sbTa.value=l.join('\n'); saveFirms(); syncSb(); setStatus('Şubeler alfabetik sıralandı.','ok'); }); pS.appendChild(b); })();
+    pS.appendChild(el('p','hint','Şube adını yazıp Ekle’ye basın. Şubesi olmayan firmada boş bırakın. Her şubenin kutusunu açarak adını değiştirebilir, adres, SGK no, ziyaret başlangıç ayı gibi o şubeye özel bilgileri girebilir veya şubeyi silebilirsiniz.'));
+    var addRow=el('div','row-actions'), addIn=document.createElement('input'); addIn.type='text'; addIn.placeholder='Yeni şube adı'; addIn.setAttribute('aria-label','Yeni şube adı'); addIn.style.cssText='flex:1;min-width:160px'; var addBtn=el('button','btn','Ekle'); addBtn.type='button';
+    function addBranches(arr){ var n=0; f.sb=f.sb||[]; arr.forEach(function(x){ x=x.trim(); if(x&&f.sb.indexOf(x)<0){ f.sb.push(x); n++; } }); if(n){ saveFirms(); syncSb(); setStatus(n+' şube eklendi.','ok'); } return n; }
+    addBtn.addEventListener('click', function(){ if(addBranches([addIn.value])) addIn.value=''; addIn.focus(); });
+    addIn.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addBtn.click(); } });
+    addRow.appendChild(addIn); addRow.appendChild(addBtn);
+    (function(){ var b=el('button','btn quiet sm','A→Z sırala'); b.type='button'; b.addEventListener('click', function(){ f.sb=(f.sb||[]).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(cmpTr); saveFirms(); syncSb(); setStatus('Şubeler alfabetik sıralandı.','ok'); }); addRow.appendChild(b); })();
+    pS.appendChild(addRow);
+    (function(){ var d=el('details','opts'); d.style.cssText='max-width:100%;box-sizing:border-box;margin:8px 0'; d.appendChild(el('summary',null,'Çok şubeyi birden ekle')); var ta=document.createElement('textarea'); ta.rows=4; ta.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; ta.placeholder='Her satıra bir şube yazın veya yapıştırın'; ta.setAttribute('aria-label','Toplu şube ekle'); var bb2=el('button','btn','Listeye ekle'); bb2.type='button'; bb2.addEventListener('click', function(){ if(addBranches(ta.value.split(/\n|;/))) ta.value=''; }); d.appendChild(ta); d.appendChild(bb2); pS.appendChild(d); })();
     firmRoot.appendChild(pS);
     /* 3. bölüm ve görevler */
     var pG=dp('Bölüm ve görevler',false);
@@ -2021,17 +2029,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       gg.appendChild(selF('Ziyaret sıklığı (boşsa firma ayarı)',[['','Firma ayarı'],['a','Aylık'],['b','2 ayda bir'],['c','3 ayda bir']],function(){return obj.vz;},function(v){ obj.vz=v; }));
       d.appendChild(gg); return d; }
     var pP=dp('Yıllık plan',false), sbBox=el('div'); pP.appendChild(sbBox); var sbList=el('div','sblist'); pS.appendChild(sbList);
-    function syncSb(){ f.sbi=f.sbi||{}; sbList.textContent=''; (f.sb||[]).forEach(function(n){ f.sbi[n]=f.sbi[n]||{}; sbList.appendChild(infoBlock(n+' — şube bilgileri',f.sbi[n],false)); }); }
+    function syncSb(){ f.sbi=f.sbi||{}; sbList.textContent=''; if(!(f.sb||[]).length) sbList.appendChild(el('p','hint','Henüz şube yok. Şubesiz firmada bilgileri Yıllık plan bölümündeki “Firma geneli bilgiler”e yazın.')); (f.sb||[]).forEach(function(n){ sbList.appendChild(branchBlock(n)); }); }
+    function branchBlock(n){ f.sbi[n]=f.sbi[n]||{}; var d=infoBlock(n,f.sbi[n],false), body=d.querySelector('.dbody'), sm=d.querySelector('summary');
+      var top=el('div','fields roomy'), cur=n; top.appendChild(txtField('Şube adı',function(){return cur;},function(v){ v=v.trim(); if(!v||v===cur||f.sb.indexOf(v)>=0) return; var ix=f.sb.indexOf(cur); if(ix<0) return; f.sb[ix]=v; f.sbi[v]=f.sbi[cur]; delete f.sbi[cur]; cur=v; sm.textContent=v; saveFirms(); }));
+      var del=el('button','btn quiet sm','Bu şubeyi sil'), arm=false; del.type='button'; del.addEventListener('click', function(){ if(!arm){ arm=true; del.textContent='Emin misiniz? Silmek için tekrar basın'; setTimeout(function(){ arm=false; del.textContent='Bu şubeyi sil'; },3500); return; } f.sb=f.sb.filter(function(x){ return x!==cur; }); delete f.sbi[cur]; saveFirms(); syncSb(); setStatus('Şube silindi.'); });
+      body.insertBefore(top,body.firstChild); body.appendChild(del); return d; }
     f.info=f.info||{}; f.sbi=f.sbi||{};
     (function(){ var w=el('label','field'); w.appendChild(el('span',null,'Firma ziyaret sıklığı (Yıllık planda planlı aylar buna göre; her firma için ayrı)')); var sl=document.createElement('select'); [['a','Aylık'],['b','2 ayda bir'],['c','3 ayda bir']].forEach(function(o){ var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; sl.appendChild(op); }); sl.value=f.vz||'b';
       sl.addEventListener('change', function(){ f.vz=sl.value; saveFirms(); try{ var all=lsGet('isg-plan-v2')||{}; if(all[f.id]){ all[f.id].vz=f.vz; lsSet('isg-plan-v2',all); } }catch(e){} setStatus('Ziyaret sıklığı: '+sl.options[sl.selectedIndex].textContent,'ok'); }); w.appendChild(sl); sbBox.appendChild(w); })();
     sbBox.appendChild(el('p','hint','Bu bölüm firmanın geneli içindir. Şubeye özel bilgiler Şubeler bölümündedir; şubede boş bırakılan alan buradan alınır.'));
     sbBox.appendChild(infoBlock('Firma geneli bilgiler (şubesi olmayan firma veya tüm şubeler için ortak)',f.info,true)); syncSb();
-    sbTa.addEventListener('change',syncSb); firmRoot.appendChild(pP);
-    var p4=dp('Önizleme: imza, kaşe ve logo kontrolü', false);
+    firmRoot.appendChild(pP);
+    var p4=dp('Önizleme: örnek belgeler (imza, kaşe, logo ve plan kontrolü)', false);
     var a4=el('div','row-actions');
-    [['cert','Sertifikayı göster'],['risk','Risk değerlendirmesini göster']].forEach(function(m){ var b=el('button','btn'+(prevKind===m[0]?' primary':''),m[1]); b.type='button'; b.addEventListener('click', function(){ prevKind=m[0]; renderFirmTab(); p4.open=true; doPreview(); }); a4.appendChild(b); });
-    var bnx=el('button','btn','Başka örnek'); bnx.type='button'; bnx.addEventListener('click', function(){ prevIx++; doPreview(); }); a4.appendChild(bnx);
+    [['cert','Sertifika'],['risk','Risk değerlendirmesi'],['egt','Yıllık eğitim planı'],['cal','Yıllık çalışma planı']].forEach(function(m){ var b=el('button','btn'+(prevKind===m[0]?' primary':''),m[1]); b.type='button'; b.addEventListener('click', function(){ prevKind=m[0]; renderFirmTab(); p4.open=true; doPreview(); }); a4.appendChild(b); });
+    var bnx=el('button','btn','Başka örnek (imza / şube)'); bnx.type='button'; bnx.addEventListener('click', function(){ prevIx++; doPreview(); }); a4.appendChild(bnx);
     p4.appendChild(a4); var cap=el('p','hint'); cap.id='prev-cap'; p4.appendChild(cap); var box=el('div','prevbox'); box.id='prev-box'; p4.appendChild(box); firmRoot.appendChild(p4);
     p4.addEventListener('toggle', function(){ if(p4.open) doPreview(); });
     var pA=null;
@@ -3632,6 +3644,8 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   function kaseList(){ if(st.ks!=='1') return [null,null,null]; var o=[]; ['uzman','hekim','isveren'].forEach(function(k){ var S=k==='isveren'?(FF()&&FF().isv):stamps[k]; var it=S&&S.items&&S.items[0]; o.push(it&&it.data?it:null); }); return o; }
   function fname(ext){ var f=(meta().firm||'FİRMA').replace(/[\\\/:*?"<>|_]/g,' ').replace(/\s+/g,' ').trim(); return f+' '+(st.type==='egt'?'YILLIK EĞİTİM PLANI':'YILLIK ÇALIŞMA PLANI')+' '+(st.year||'')+'.'+ext; }
   /* ---- PDF ---- */
+  var PREV1=false;
+  window.__planPreview=async function(fm,type,branch){ cur(); var base=JSON.parse(JSON.stringify(st)); var saveFo=fo; try{ fo=fm; ov=JSON.parse(JSON.stringify(base)); ov.type=type; ov.f.unv=fm.name; ov.f.sube=branch||''; delete ov.f.logo; ['adr','sgk','nace','isv','kt','kn'].forEach(function(k){ delete ov.f[k]; }); ov.ps='1'; if(fm.vz) ov.vz=fm.vz; applyInfo(ov,infoFor(fm,branch)); if(!ov.rows) ov.rows={}; cur(); PREV1=true; return await buildPdf(); } finally{ PREV1=false; ov=null; fo=saveFo; cur(); } };
   async function buildPdf(){
     cur(); var rows=view(), M=meta(), W=1754,H=1240, LM=40, TW=W-80, FS='Arial, Helvetica, sans-serif';
     var cv=document.createElement('canvas'); cv.width=W; cv.height=H; var ctx=cv.getContext('2d');
@@ -3676,7 +3690,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
       var fy=H-FOOT+10, bw=TW/3; ctx.lineWidth=1.5; ctx.font='bold 18px '+FS; ctx.fillText('HAZIRLAYAN VE ONAYLAYANLAR;',LM+10,fy+12);
       ['İş Sağlığı ve Güvenliği Uzmanı','İşyeri Hekimi','İşveren veya İşveren Vekili'].forEach(function(t,k){ ctx.strokeRect(LM+k*bw,fy+30,bw,96); ctx.font='17px '+FS; ctx.fillText(t,LM+k*bw+10,fy+46); var im=ksI[k]; if(im){ var rr=Math.min((bw-30)/im.naturalWidth,66/im.naturalHeight); ctx.drawImage(im,LM+k*bw+(bw-im.naturalWidth*rr)/2,fy+54+(66-im.naturalHeight*rr)/2,im.naturalWidth*rr,im.naturalHeight*rr); } });
       ctx.font='17px '+FS; ctx.textAlign='right'; ctx.fillText('Sayfa '+(pi+1)+' / '+pages.length,W-LM,fy+12); ctx.textAlign='left';
-      out.push({wPt:841.92,hPt:595.32,jw:W,jh:H,jpeg:await PdfGen.toJpeg(cv)});
+      if(PREV1) return cv.toDataURL('image/jpeg',0.88); out.push({wPt:841.92,hPt:595.32,jw:W,jh:H,jpeg:await PdfGen.toJpeg(cv)});
     }
     return PdfGen.pdfBlob(out);
   }
