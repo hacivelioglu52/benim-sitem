@@ -322,7 +322,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 127 · 10.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 129 · 10.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1313,7 +1313,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         for(var pi=0;pi<parts;pi++){
           var chunk=ok.slice(pi*CH,(pi+1)*CH);
           var blob=await cfg.mergePdf(chunk, function(i){ setStatus('Tek PDF hazırlanıyor… '+(done+i+1)+'/'+ok.length+(parts>1?' (parça '+(pi+1)+'/'+parts+')':'')); });
-          var nm=cfg.zipName+'-tek-pdf-'+todayIso()+(parts>1?'-parca'+(pi+1)+'-'+parts:'')+'.pdf';
+          var nm=cfg.zipName+'-tek-pdf-'+todayIso()+(parts>1?'-parca'+(pi+1)+'-'+parts:'')+'.pdf'; if(ok.length===1){ try{ nm=cfg.fileName(ok[0])+'.pdf'; }catch(e){} }
           if(!(await offer(nm, blob))) return;
           chunk.forEach(cfg.record); done+=chunk.length;
         }
@@ -2017,6 +2017,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       gg.appendChild(txtField('İşveren / vekili adı (plan ve formlarda yazılır; imza görseli Eğitim Belgesi bölümünde)',function(){return obj.isv;},function(v){ obj.isv=v; }));
       gg.appendChild(selF('Tehlike sınıfı',[['','Seçilmedi'],['az','Az tehlikeli'],['te','Tehlikeli'],['ct','Çok tehlikeli']],function(){return obj.hz;},function(v){ obj.hz=v; }));
       gg.appendChild(selF('Çalışan sayısı',[['','Belirtilmedi'],['lt','50\'den az'],['ge','50 ve üzeri']],function(){return obj.emp;},function(v){ obj.emp=v; }));
+      gg.appendChild(selF('Ziyaret başlangıç ayı (boşsa Ocak; her şube için ayrı yazılabilir)',[['','Belirtilmedi (Ocak)']].concat(['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'].map(function(n,i){ return [String(i+1),n]; })),function(){return obj.ps;},function(v){ obj.ps=v; }));
+      gg.appendChild(selF('Ziyaret sıklığı (boşsa firma ayarı)',[['','Firma ayarı'],['a','Aylık'],['b','2 ayda bir'],['c','3 ayda bir']],function(){return obj.vz;},function(v){ obj.vz=v; }));
       d.appendChild(gg); return d; }
     var pP=dp('Yıllık plan',false), sbBox=el('div'); pP.appendChild(sbBox); var rend={};
     function syncSb(){ f.sbi=f.sbi||{}; (f.sb||[]).forEach(function(n){ if(rend[n]) return; rend[n]=1; f.sbi[n]=f.sbi[n]||{}; sbBox.appendChild(infoBlock('Şube: '+n,f.sbi[n],false)); }); }
@@ -3579,7 +3581,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   p.appendChild(el('p','hint','Firma logosu Ayarlar › Firmalar › Düzenle’deki logodan otomatik gelir; burada ayrıca yüklenmez.'));
   function showLogo(){}
   var sbDl=document.createElement('datalist'); sbDl.id='plan-sube-list'; p.appendChild(sbDl); fSube.setAttribute('list','plan-sube-list'); fSube.parentNode.querySelector('span').textContent='Şube (kayıtlı şubelerden seçilir; özel de yazılabilir)';
-  fSube.addEventListener('change',function(){ var inf=infoFor(F(),(fSube.value||'').trim()); if(Object.keys(inf).length){ cur(); applyInfo(st,inf); save(); refresh(); setStatus('Şube bilgileri getirildi.','ok'); } });
+  fSube.addEventListener('change',function(){ var inf=infoFor(F(),(fSube.value||'').trim()); var fx=F()||{}; var anyPs=Object.keys(fx.sbi||{}).some(function(k){ return fx.sbi[k]&&(fx.sbi[k].ps||fx.sbi[k].vz); })||!!(fx.info&&(fx.info.ps||fx.info.vz)); if(Object.keys(inf).length||anyPs){ cur(); if(anyPs){ st.ps='1'; st.vz=fx.vz||'b'; } applyInfo(st,inf); save(); refresh(); setStatus('Şube bilgileri getirildi.','ok'); } });
   var kasL=el('label','field'); kasL.appendChild(el('span',null,'İmza / kaşe (PDF ve Word)')); var sKas=document.createElement('select'); [['0','Boş bırak'],['1','Kayıtlı kaşe/imzaları bas (uzman, hekim, işveren)']].forEach(function(o){ var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; sKas.appendChild(op); }); sKas.addEventListener('change',function(){ st.ks=sKas.value; save(); }); kasL.appendChild(sKas); g2.appendChild(kasL);
   var fKod=inp(g2,'Doküman kodu','kod'), fHaz=inp(g2,'Hazırlayan','haz'), fYay=inp(g2,'Yayın tarihi','yay','date'), fRevN=inp(g2,'Revizyon no','rn'), fRevT=inp(g2,'Revizyon tarihi','rt','date');
   (function(){ var d=el('details','dpanel'); d.appendChild(el('summary',null,'Doküman bilgileri (kod, hazırlayan, yayın, revizyon: isteğe bağlı)')); var bd=el('div','dbody'), gg=el('div','fields'); bd.appendChild(gg); d.appendChild(bd); [fKod,fHaz,fYay,fRevN,fRevT].forEach(function(i){ gg.appendChild(i.parentNode); }); d.style.gridColumn='1 / -1'; g2.appendChild(d); })();
@@ -3607,7 +3609,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
   bGrp.addEventListener('click',function(){ st.ed=1; rowsOf().push({g:1,n:'',s:'',y:'',d:'',m:[]}); save(); drawList(); });
   bRes.addEventListener('click',function(){ if(!confirm('Bu planın satırları varsayılana döner. Emin misiniz?')) return; resetRows(); drawList(); });
   function infoFor(fm,sb){ var o={}; [fm&&fm.info,fm&&fm.sbi&&sb?fm.sbi[sb]:null].forEach(function(x){ if(x) Object.keys(x).forEach(function(k){ if(x[k]) o[k]=x[k]; }); }); return o; }
-  function applyInfo(t,inf){ ['adr','sgk','nace','isv'].forEach(function(k){ if(inf[k]) t.f[k]=inf[k]; }); if(inf.hz){ t.hz=inf.hz; t.hzs=1; } if(inf.emp) t.emp=inf.emp; }
+  function applyInfo(t,inf){ ['adr','sgk','nace','isv'].forEach(function(k){ if(inf[k]) t.f[k]=inf[k]; }); if(inf.hz){ t.hz=inf.hz; t.hzs=1; } if(inf.emp) t.emp=inf.emp; if(inf.ps) t.ps=inf.ps; if(inf.vz) t.vz=inf.vz; }
   fSube.readOnly=true; fSube.placeholder='Şube seçin (şubesiz ise “Tüm şubeler”)'; fSube.style.cursor='pointer';
   function subeFire(v){ fSube.value=v; fSube.dispatchEvent(new Event('input')); fSube.dispatchEvent(new Event('change')); }
   function openSube(){ var f=F()||{}, br=f.sb||[]; var curV=(fSube.value||'').trim();
@@ -3770,7 +3772,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
         var cf=F()||{}; fo=mt||{name:it.name,id:'toplu',logos:{kurum:(cf.logos&&cf.logos.kurum)||{mode:'tpl'},firma:{mode:'none'}}};
         var dir=it.name.replace(/[\\\/:*?"<>|_]/g,' ').replace(/\s+/g,' ').trim().toLocaleUpperCase('tr');
         for(var b=0;b<it.br.length;b++) for(var t=0;t<types.length;t++){
-          ov=JSON.parse(JSON.stringify(base)); ov.type=types[t]; ov.f.unv=it.name; ov.f.sube=it.br[b]; delete ov.f.logo; ['adr','sgk','nace','isv','kt','kn'].forEach(function(k){ delete ov.f[k]; }); applyInfo(ov,infoFor(mt,it.br[b])); if(it.hz) ov.hz=it.hz; if(it.emp) ov.emp=it.emp; if(mt&&mt.vz) ov.vz=mt.vz; if(!ov.rows) ov.rows={}; cur();
+          ov=JSON.parse(JSON.stringify(base)); ov.type=types[t]; ov.f.unv=it.name; ov.f.sube=it.br[b]; delete ov.f.logo; ['adr','sgk','nace','isv','kt','kn'].forEach(function(k){ delete ov.f[k]; }); ov.ps='1'; if(mt&&mt.vz) ov.vz=mt.vz; applyInfo(ov,infoFor(mt,it.br[b])); if(it.hz) ov.hz=it.hz; if(it.emp) ov.emp=it.emp; if(!ov.rows) ov.rows={}; cur();
           for(var q=0;q<fm.length;q++){ var fn=fname(fm[q]); if(names[dir+'/'+fn]) fn=fn.replace(/\.(\w+)$/,' ('+(names[dir+'/'+fn]+1)+').$1'); names[dir+'/'+fname(fm[q])]=(names[dir+'/'+fname(fm[q])]||0)+1;
             setStatus('Hazırlanıyor '+(done+1)+' / '+total+': '+fn); var blob=fm[q]==='pdf'?await buildPdf():(fm[q]==='docx'?await buildDocx():await buildXlsx()); z.folder(dir).file(fn,blob); done++; } }
       }
