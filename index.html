@@ -322,7 +322,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 129 · 10.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 130 · 10.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1976,9 +1976,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     tg.appendChild(tl); tg.appendChild(renderLogoCard(LOGO_SLOTS[0])); pT.appendChild(tg); firmRoot.appendChild(pT);
     /* 2. şubeler */
     var pS=dp('Şubeler',false);
-    pS.appendChild(el('p','hint','Her satıra bir şube yazın (virgülle de ayırabilirsiniz). Yıllık planda şube olarak seçilir, toplu çıkarmada tüm şubeler tek tıkla eklenir. Şubesi olmayan firmada boş bırakın.'));
+    pS.appendChild(el('p','hint','Her satıra bir şube yazın (virgülle de ayırabilirsiniz). Şubesi olmayan firmada boş bırakın. Yazdığınız her şube için aşağıda ayrı bir kutu açılır; adres, SGK no, ziyaret başlangıç ayı gibi o şubeye özel bilgileri oradan girersiniz.'));
     var sbTa=document.createElement('textarea'); sbTa.rows=4; sbTa.style.cssText='width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit'; sbTa.placeholder='Atlaspark AVM\nCanpark AVM\nMetropol AVM'; sbTa.setAttribute('aria-label','Şubeler'); sbTa.value=(f.sb||[]).join('\n'); sbTa.addEventListener('input',function(){ f.sb=sbTa.value.split(/\n|,|;/).map(function(x){ return x.trim(); }).filter(Boolean); saveFirms(); }); pS.appendChild(sbTa);
-    (function(){ var b=el('button','btn quiet sm','A→Z sırala'); b.type='button'; b.addEventListener('click', function(){ var l=(f.sb||[]).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(cmpTr); f.sb=l; sbTa.value=l.join('\n'); saveFirms(); setStatus('Şubeler alfabetik sıralandı.','ok'); }); pS.appendChild(b); })();
+    (function(){ var b=el('button','btn quiet sm','A→Z sırala'); b.type='button'; b.addEventListener('click', function(){ var l=(f.sb||[]).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort(cmpTr); f.sb=l; sbTa.value=l.join('\n'); saveFirms(); syncSb(); setStatus('Şubeler alfabetik sıralandı.','ok'); }); pS.appendChild(b); })();
     firmRoot.appendChild(pS);
     /* 3. bölüm ve görevler */
     var pG=dp('Bölüm ve görevler',false);
@@ -2014,19 +2014,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       gg.appendChild(txtField('İşyeri adresi',function(){return obj.adr;},function(v){ obj.adr=v; }));
       gg.appendChild(txtField('SGK sicil no',function(){return obj.sgk;},function(v){ obj.sgk=v; }));
       gg.appendChild(txtField('NACE kodu',function(){return obj.nace;},function(v){ obj.nace=v; }));
-      gg.appendChild(txtField('İşveren / vekili adı (plan ve formlarda yazılır; imza görseli Eğitim Belgesi bölümünde)',function(){return obj.isv;},function(v){ obj.isv=v; }));
+      gg.appendChild(txtField('İşveren / vekili adı (plan ve formlarda yazılır)',function(){return obj.isv;},function(v){ obj.isv=v; }));
       gg.appendChild(selF('Tehlike sınıfı',[['','Seçilmedi'],['az','Az tehlikeli'],['te','Tehlikeli'],['ct','Çok tehlikeli']],function(){return obj.hz;},function(v){ obj.hz=v; }));
       gg.appendChild(selF('Çalışan sayısı',[['','Belirtilmedi'],['lt','50\'den az'],['ge','50 ve üzeri']],function(){return obj.emp;},function(v){ obj.emp=v; }));
       gg.appendChild(selF('Ziyaret başlangıç ayı (boşsa Ocak; her şube için ayrı yazılabilir)',[['','Belirtilmedi (Ocak)']].concat(['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'].map(function(n,i){ return [String(i+1),n]; })),function(){return obj.ps;},function(v){ obj.ps=v; }));
       gg.appendChild(selF('Ziyaret sıklığı (boşsa firma ayarı)',[['','Firma ayarı'],['a','Aylık'],['b','2 ayda bir'],['c','3 ayda bir']],function(){return obj.vz;},function(v){ obj.vz=v; }));
       d.appendChild(gg); return d; }
-    var pP=dp('Yıllık plan',false), sbBox=el('div'); pP.appendChild(sbBox); var rend={};
-    function syncSb(){ f.sbi=f.sbi||{}; (f.sb||[]).forEach(function(n){ if(rend[n]) return; rend[n]=1; f.sbi[n]=f.sbi[n]||{}; sbBox.appendChild(infoBlock('Şube: '+n,f.sbi[n],false)); }); }
+    var pP=dp('Yıllık plan',false), sbBox=el('div'); pP.appendChild(sbBox); var sbList=el('div','sblist'); pS.appendChild(sbList);
+    function syncSb(){ f.sbi=f.sbi||{}; sbList.textContent=''; (f.sb||[]).forEach(function(n){ f.sbi[n]=f.sbi[n]||{}; sbList.appendChild(infoBlock(n+' — şube bilgileri',f.sbi[n],false)); }); }
     f.info=f.info||{}; f.sbi=f.sbi||{};
     (function(){ var w=el('label','field'); w.appendChild(el('span',null,'Firma ziyaret sıklığı (Yıllık planda planlı aylar buna göre; her firma için ayrı)')); var sl=document.createElement('select'); [['a','Aylık'],['b','2 ayda bir'],['c','3 ayda bir']].forEach(function(o){ var op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; sl.appendChild(op); }); sl.value=f.vz||'b';
       sl.addEventListener('change', function(){ f.vz=sl.value; saveFirms(); try{ var all=lsGet('isg-plan-v2')||{}; if(all[f.id]){ all[f.id].vz=f.vz; lsSet('isg-plan-v2',all); } }catch(e){} setStatus('Ziyaret sıklığı: '+sl.options[sl.selectedIndex].textContent,'ok'); }); w.appendChild(sl); sbBox.appendChild(w); })();
-    sbBox.appendChild(el('p','hint','Bu bilgiler Yıllık planda otomatik gelir; şube seçilince o şubenin bilgisi kullanılır. Şubede boş bırakılan alan firma geneli bilgiden alınır.'));
-    sbBox.appendChild(infoBlock('Firma geneli bilgiler (şubesi olmayan firma veya tüm şubeler için ortak)',f.info,false)); syncSb();
+    sbBox.appendChild(el('p','hint','Bu bölüm firmanın geneli içindir. Şubeye özel bilgiler Şubeler bölümündedir; şubede boş bırakılan alan buradan alınır.'));
+    sbBox.appendChild(infoBlock('Firma geneli bilgiler (şubesi olmayan firma veya tüm şubeler için ortak)',f.info,true)); syncSb();
     sbTa.addEventListener('change',syncSb); firmRoot.appendChild(pP);
     var p4=dp('Önizleme: imza, kaşe ve logo kontrolü', false);
     var a4=el('div','row-actions');
