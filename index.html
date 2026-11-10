@@ -322,7 +322,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 125 · 10.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 126 · 10.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -3770,7 +3770,7 @@ QCATS.push(["bolge","Reyon, kasa ve depo güvenliği"],["elektrik","Elektrik gü
         var cf=F()||{}; fo=mt||{name:it.name,id:'toplu',logos:{kurum:(cf.logos&&cf.logos.kurum)||{mode:'tpl'},firma:{mode:'none'}}};
         var dir=it.name.replace(/[\\\/:*?"<>|_]/g,' ').replace(/\s+/g,' ').trim().toLocaleUpperCase('tr');
         for(var b=0;b<it.br.length;b++) for(var t=0;t<types.length;t++){
-          ov=JSON.parse(JSON.stringify(base)); ov.type=types[t]; ov.f.unv=it.name; ov.f.sube=it.br[b]; delete ov.f.logo; ['adr','sgk','nace','isv','kt','kn'].forEach(function(k){ delete ov.f[k]; }); applyInfo(ov,infoFor(mt,it.br[b])); if(it.hz) ov.hz=it.hz; if(it.emp) ov.emp=it.emp; if(!ov.rows) ov.rows={}; cur();
+          ov=JSON.parse(JSON.stringify(base)); ov.type=types[t]; ov.f.unv=it.name; ov.f.sube=it.br[b]; delete ov.f.logo; ['adr','sgk','nace','isv','kt','kn'].forEach(function(k){ delete ov.f[k]; }); applyInfo(ov,infoFor(mt,it.br[b])); if(it.hz) ov.hz=it.hz; if(it.emp) ov.emp=it.emp; if(mt&&mt.vz) ov.vz=mt.vz; if(!ov.rows) ov.rows={}; cur();
           for(var q=0;q<fm.length;q++){ var fn=fname(fm[q]); if(names[dir+'/'+fn]) fn=fn.replace(/\.(\w+)$/,' ('+(names[dir+'/'+fn]+1)+').$1'); names[dir+'/'+fname(fm[q])]=(names[dir+'/'+fname(fm[q])]||0)+1;
             setStatus('Hazırlanıyor '+(done+1)+' / '+total+': '+fn); var blob=fm[q]==='pdf'?await buildPdf():(fm[q]==='docx'?await buildDocx():await buildXlsx()); z.folder(dir).file(fn,blob); done++; } }
       }
