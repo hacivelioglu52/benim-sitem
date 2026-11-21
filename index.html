@@ -2273,8 +2273,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     async function pdfPages(file){ await loadPdfJs(); var doc=await window.pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise, out=[], n=Math.min(doc.numPages,5); for(var i=1;i<=n;i++){ var pg=await doc.getPage(i), vp0=pg.getViewport({scale:1}), sc=Math.min(3,2400/Math.max(vp0.width,vp0.height)), vp=pg.getViewport({scale:sc}), cv=document.createElement('canvas'); cv.width=Math.round(vp.width); cv.height=Math.round(vp.height); var cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height); await pg.render({canvasContext:cx,viewport:vp}).promise; out.push(cv); } return out; }
     async function prep(file){ var bm; try{ bm=await createImageBitmap(file,{imageOrientation:'from-image'}); }catch(e){ bm=await createImageBitmap(file); } var sc=Math.min(1,2400/Math.max(bm.width,bm.height)), cv=document.createElement('canvas'); cv.width=Math.round(bm.width*sc); cv.height=Math.round(bm.height*sc); var cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(bm,0,0,cv.width,cv.height); return cv; }
     var busy=false;
-    bOcr.addEventListener('click', async function(){
-      if(busy) return; var fl=fi.files&&fi.files[0]; if(!fl){ setStatus('Önce bir resim seçin.','bad'); return; }
+    async function runOcr(forced){
+      if(busy) return; var fl=forced||(fi.files&&fi.files[0]); if(!fl){ setStatus('Önce bir resim seçin.','bad'); return; }
       if(navigator.onLine===false){ setStatus('İnternet bağlantısı yok. Resimden yazıya çevirme için bağlantı gerekir; bağlantı gelince tekrar deneyin.','bad'); return; }
       busy=true; bOcr.disabled=true; var w=null;
       try{
@@ -2287,7 +2287,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         else{ ta.value=(ta.value.trim()?ta.value.replace(/\s+$/,'')+'\n':'')+ls.join('\n'); oprog.textContent=ls.length+' satır okundu.'; setStatus(ls.length+' satır okundu ve kutuya eklendi. Lütfen hataları düzeltin.','ok'); }
       }catch(e){ oprog.textContent=''; setStatus((e&&e.message)||'Resim okunamadı.','bad'); }
       finally{ try{ if(w) await w.terminate(); }catch(e2){} busy=false; bOcr.disabled=false; }
-    });
+    }
+    bOcr.addEventListener('click', function(){ runOcr(); });
+    var dz=el('div','ocr-drop','Resmi veya PDF\'yi buraya sürükleyip bırakın · ya da bu sekme açıkken Ctrl+V ile yapıştırın'); dz.tabIndex=0; dz.setAttribute('role','button'); dz.setAttribute('aria-label','Resim veya PDF bırak ya da yapıştır');
+    dz.style.cssText='margin:10px 0;padding:22px 12px;border:2px dashed var(--line,#999);border-radius:10px;text-align:center;font-size:15px;cursor:pointer';
+    ob.insertBefore(dz,fi);
+    function okF(f){ return f&&(/^image\//.test(f.type)||/pdf$/i.test(f.type)||/\.(png|jpe?g|webp|bmp|heic|pdf)$/i.test(f.name||'')); }
+    function takeFile(f){ if(busy){ setStatus('Önceki okuma sürüyor, bitince tekrar deneyin.','bad'); return; } try{ var dt=new DataTransfer(); dt.items.add(f); fi.files=dt.files; }catch(e){} setStatus('Resim alındı, okunuyor…','ok'); runOcr(f); }
+    dz.addEventListener('click', function(){ fi.click(); });
+    dz.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fi.click(); } });
+    function hasFiles(e){ var t=e.dataTransfer&&e.dataTransfer.types; return !!t&&Array.prototype.indexOf.call(t,'Files')>=0; }
+    function onFileInput(e){ return e.target&&e.target.tagName==='INPUT'&&e.target.type==='file'; }
+    document.addEventListener('dragover', function(e){ if(!hasFiles(e)||onFileInput(e)) return; e.preventDefault(); dz.style.background=ocrRoot.hidden?'':'rgba(37,99,235,.08)'; });
+    document.addEventListener('dragleave', function(e){ if(e.target===document||e.target===dz) dz.style.background=''; });
+    document.addEventListener('drop', function(e){ if(!hasFiles(e)||onFileInput(e)) return; e.preventDefault(); dz.style.background=''; if(ocrRoot.hidden){ setStatus('Resimden yazıya sekmesini açıp resmi oraya bırakın.','bad'); return; } var fs=Array.prototype.slice.call(e.dataTransfer.files||[]).filter(okF); if(!fs.length){ setStatus('Yalnızca resim veya PDF dosyası okunabilir.','bad'); return; } takeFile(fs[0]); });
+    document.addEventListener('paste', function(e){ if(ocrRoot.hidden) return; var cd=e.clipboardData; if(!cd) return; var f=null; var fl=cd.files||[]; for(var i=0;i<fl.length;i++){ if(okF(fl[i])){ f=fl[i]; break; } } if(!f&&cd.items){ for(var j=0;j<cd.items.length;j++){ var it=cd.items[j]; if(it.kind==='file'&&/^image\//.test(it.type)){ f=it.getAsFile(); break; } } } if(!f) return; e.preventDefault(); takeFile(f); });
     window.__ocrFile=async function(fl,cb){ if(navigator.onLine===false) throw new Error('İnternet bağlantısı yok. Resimden okumak için bağlantı gerekir; Excel/CSV dosyası ya da yapıştırma kullanabilirsiniz.'); var w=null; try{ if(cb) cb('Okuma motoru hazırlanıyor (ilk seferde biraz sürebilir)…'); await loadTess(); var isPdf=/pdf$/i.test(fl.type)||/\.pdf$/i.test(fl.name); var cvs=isPdf?await pdfPages(fl):[await prep(fl)], opt={logger:function(m){ if(m&&m.status&&cb){ var pc=(typeof m.progress==='number')?' %'+Math.round(m.progress*100):''; cb((m.status==='recognizing text'?'Yazı okunuyor':'Hazırlanıyor: '+m.status)+pc); } }}; if(window.__OCRP) Object.assign(opt,window.__OCRP); w=await Tesseract.createWorker('tur',1,opt); var allT=''; for(var ci=0;ci<cvs.length;ci++){ var r=await w.recognize(cvs[ci]); allT+='\n'+String((r&&r.data&&r.data.text)||''); } return String(allT).split(/\n+/).map(function(x){ return x.replace(/\s+/g,' ').trim(); }).filter(function(x){ return x.length>1&&/[A-Za-zÇĞİÖŞÜçğıöşü]{2}/.test(x); }); } finally{ try{ if(w) await w.terminate(); }catch(e2){} } };
     p.appendChild(ob);
     ocrRoot.appendChild(p);
