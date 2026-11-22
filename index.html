@@ -329,7 +329,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 196 · 22.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 197 · 22.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5427,69 +5427,113 @@ window.__makePrev=function(host,fn){
     }
     sMore.addEventListener('click',function(){ SMLIM+=15; renderSummary(); });
 
-    /* ---- Firma durum kartı (v196) — yalnız okuma; mevcut panellerin hesaplarını kullanır ---- */
-    var pK=E('div','panel'); pK.appendChild(E('h2',null,'Firma durum kartı'));
-    pK.appendChild(E('p','hint','Bir firma/şube seçin: ziyaret, açık uygunsuzluk, doküman, eğitim ve personel durumu tek kartta görünür. Aşağıdaki panellerle aynı kurallar ve aynı hesap kullanılır. Yalnız okuma.'));
-    var kr=E('div','tkp-row'); var kq=E('input'); kq.type='search'; kq.placeholder='Firma ara'; kq.setAttribute('aria-label','Firma ara (durum kartı)');
-    var ksel=E('select'); ksel.setAttribute('aria-label','Firma seç (durum kartı)'); kr.appendChild(kq); kr.appendChild(ksel); pK.appendChild(kr);
-    var kcard=E('div'); pK.appendChild(kcard);
+    /* ---- Firma → şube → alan gezinmesi (v196) — yalnız okuma; mevcut panellerin hesaplarını kullanır ---- */
+    var pN=E('div','panel'); pN.appendChild(E('h2',null,'Firmalar'));
+    var nTop=E('div','tkp-row'); var nBug=E('button','btn','Bugün bakılacaklar'); nBug.type='button'; nBug.setAttribute('aria-expanded','false'); nTop.appendChild(nBug); pN.appendChild(nTop);
+    var nCrumb=E('div','tkp-row'); pN.appendChild(nCrumb);
+    var nL1=E('div'), nL2=E('div'), nL3=E('div'); pN.appendChild(nL1); pN.appendChild(nL2); pN.appendChild(nL3);
+    var nq=E('input'); nq.type='search'; nq.placeholder='Firma ara'; nq.setAttribute('aria-label','Firma ara');
+    var nso=mkSel('Firma sıralaması',[['uyari','En çok uyarısı olan önce'],['ad','Firma adı (A–Z)']]);
+    var nr=E('div','tkp-row'); nr.appendChild(nq); nr.appendChild(nso); nL1.appendChild(nr);
+    var nsum=E('p','hint'); nL1.appendChild(nsum); var nlst=E('div'); nL1.appendChild(nlst);
+    var nmore=E('button','btn','Daha fazla firma göster'); nmore.type='button'; nmore.hidden=true; nL1.appendChild(nmore);
+    var NAV={g:null,s:null,tab:'ozet'}, NLIM=30, NG=[], NSM={};
+    var TEHN={aztehlikeli:'az tehlikeli',tehlikeli:'tehlikeli',coktehlikeli:'çok tehlikeli'};
     function kName(f){ return (f.ad||'(adsız)')+(f.sube?' · '+f.sube:''); }
-    function fillCard(){
-      var keep=ksel.value; ksel.textContent=''; kcard.textContent='';
-      if(!DATA||!DATA.f.length){ kcard.appendChild(E('p','hint','Kayıtlı firma yok. Önce yukarıdan Teksen verisini içe aktarın.')); return; }
-      var q=trd(kq.value).trim(), fs=DATA.f.filter(function(f){ return !q||trd((f.ad||'')+' '+(f.sube||'')).indexOf(q)>=0; });
-      fs.sort(function(a,b){ return trd(kName(a)).localeCompare(trd(kName(b)),'tr'); });
-      if(!fs.length){ kcard.appendChild(E('p','hint','Aramaya uyan firma yok.')); return; }
-      fs.slice(0,300).forEach(function(f){ var op=E('option',null,kName(f)); op.value=f.sicil; ksel.appendChild(op); });
-      if(fs.slice(0,300).some(function(f){ return String(f.sicil)===String(keep); })) ksel.value=keep;
-      renderCard();
+    function gk(f){ return trd(f.ad||'(adsız)').trim(); }
+    function nBtn(cls){ var b=E('button',cls||'btn'); b.type='button'; b.style.cssText='display:block;width:100%;text-align:left;margin:4px 0'; return b; }
+    function buildNav(){
+      NG=[]; NSM={};
+      if(!DATA||!DATA.f.length) return;
+      var bugun=today(); summaryData(DATA,bugun).rows.forEach(function(m){ NSM[m.f.sicil]=m; });
+      var M={}; DATA.f.forEach(function(f){ var k=gk(f), g=M[k]; if(!g){ g=M[k]={key:k,ad:f.ad||'(adsız)',fs:[],pts:0,warn:0,why:''}; NG.push(g); } g.fs.push(f); var m=NSM[f.sicil]; if(m){ g.pts+=m.pts; g.warn+=m.why.length; if(!g.why&&m.why.length) g.why=m.why[0]; } });
+      NG.forEach(function(g){ g.fs.sort(function(a,b){ return trd(a.sube||'').localeCompare(trd(b.sube||''),'tr'); }); });
     }
-    function renderCard(){
-      kcard.textContent='';
-      if(!DATA||!ksel.value) return;
-      var bugun=today(), f=null; DATA.f.forEach(function(x){ if(String(x.sicil)===String(ksel.value)) f=x; });
-      if(!f) return;
+    function grp(k){ for(var i=0;i<NG.length;i++) if(NG[i].key===k) return NG[i]; return null; }
+    function secs(f,full){
+      var bugun=today(), out={};
       var v=visitStats(DATA,bugun).filter(function(x){ return String(x.f.sicil)===String(f.sicil); })[0];
       var st=staffStats(DATA,bugun).filter(function(x){ return String(x.f.sicil)===String(f.sicil); })[0];
-      var sm=summaryData(DATA,bugun).rows.filter(function(m){ return String(m.f.sicil)===String(f.sicil); })[0];
-      var TEHN={aztehlikeli:'az tehlikeli',tehlikeli:'tehlikeli',coktehlikeli:'çok tehlikeli'};
-      var box=E('div','tkp-g'); box.appendChild(E('b',null,kName(f)));
-      box.appendChild(E('div','hint',[(f.tehlike?(TEHN[f.tehlike]||f.tehlike):'tehlike sınıfı bilinmiyor'),((parseInt(f.calisan,10)||0)+' çalışan'),(f.periyot?'periyot '+f.periyot:'periyot bilinmiyor')].join(' · ')));
-      var ozet=sm&&sm.why.length?sm.why.join(' · '):'Şu an uyarı yok.';
-      var oz=E('div',sm&&sm.why.length?'hint tkp-late':'hint','Özet: '+ozet); box.appendChild(oz);
-      function sec(title,lines,bad){ var r=E('div','tkp-i'); r.appendChild(E('div',null,title)); lines.forEach(function(t){ r.appendChild(E('div',bad?'hint tkp-late':'hint',t)); }); box.appendChild(r); }
-      /* ziyaret */
       var vl=[]; if(v.last) vl.push('Son ziyaret '+vTr(v.last)+' ('+v.days+' gün önce); '+VST[v.state]+(v.late?' ('+v.late+' gün gecikmiş)':'')); else vl.push('Ziyaret kaydı yok.');
+      if(v.per) vl.push('Periyot '+(f.periyot||'')+' (~'+v.per+' gün)'); else vl.push('Periyot bilinmiyor (firma listesi alınmamış olabilir).');
       if(v.fut.length) vl.push('Gelecek tarihli kayıt: '+v.fut.map(vTr).join(', '));
-      vl.push(v.past.length+' ziyaret kayıtlı'+(v.past.length?'; son ziyaretler: '+v.past.slice(0,6).map(vTr).join(', '):''));
-      sec('Ziyaret',vl,v.state==='gec'||v.state==='yok');
-      /* uygunsuzluk */
+      var nP=full?24:6; vl.push(v.past.length+' ziyaret kayıtlı'+(v.past.length?'; son ziyaretler: '+v.past.slice(0,nP).map(vTr).join(', ')+(v.past.length>nP?' …':''):''));
+      out.ziyaret={title:'Ziyaret',lines:vl,bad:v.state==='gec'||v.state==='yok'};
       var us=DATA.u.filter(function(u){ return u.state==='acik'&&String(u.sicil)===String(f.sicil); }), gc=0, yk=0, eski='';
       us.forEach(function(u){ if(u.termin&&u.termin<bugun){ gc++; var r=trd(u.onem); if(r==='kritik'||r==='yüksek') yk++; } if(u.termin&&(!eski||u.termin<eski)) eski=u.termin; });
-      var ul=[us.length+' açık uygunsuzluk'+(gc?', '+gc+' tanesinin termini geçmiş':'')+(yk?' ('+yk+' yüksek/kritik)':'')+(eski?'; en eski termin '+vTr(vDate(eski)||eski):'')];
-      us.slice().sort(function(a,b){ var x=a.termin||'9999', y=b.termin||'9999'; return x<y?-1:(x>y?1:0); }).slice(0,5).forEach(function(u){ ul.push((u.onem?'['+u.onem+'] ':'')+(u.tanim||'(tanım yok)')+(u.termin?' · termin '+(vDate(u.termin)?vTr(vDate(u.termin)):u.termin):' · termin girilmemiş')); });
-      if(us.length>5) ul.push('… ve '+(us.length-5)+' madde daha (ayrıntı Açık uygunsuzluklar panelinde)');
-      sec('Açık uygunsuzluklar',ul,gc>0);
-      /* doküman */
+      var ul=[us.length+' açık uygunsuzluk'+(gc?', '+gc+' tanesinin termini geçmiş':'')+(yk?' ('+yk+' yüksek/kritik)':'')+(eski?'; en eski termin '+(vDate(eski)?vTr(vDate(eski)):eski):'')];
+      var nU=full?200:5, srt=us.slice().sort(function(a,b){ var x=a.termin||'9999', y=b.termin||'9999'; return x<y?-1:(x>y?1:0); });
+      srt.slice(0,nU).forEach(function(u){ var l=(u.onem?'['+u.onem+'] ':'')+(u.tanim||'(tanım yok)')+(u.termin?' · termin '+(vDate(u.termin)?vTr(vDate(u.termin)):u.termin):' · termin girilmemiş'); if(full){ if(u.sorumlu) l+=' · sorumlu '+u.sorumlu; if(u.oneri) l+=' · öneri: '+u.oneri; } ul.push(l); });
+      if(us.length>nU) ul.push('… ve '+(us.length-nU)+' madde daha (Uygunsuzluk sekmesinde tamamı görünür)');
+      out.uyg={title:'Uygunsuzluk',lines:ul,bad:gc>0,sumLine:ul[0]};
       var rec=null; (DATA.d||[]).forEach(function(x){ if(String(x.sicil)===String(f.sicil)) rec=x; }); var dd=rec&&rec.docs;
-      if(!dd||!Object.keys(dd).length) sec('Dokümanlar',['Bu firma için doküman verisi alınmamış.'],false);
-      else {
-        var dl=[], dbad=false; DTYPES.forEach(function(t){ var e=docEval(t[0],dd[t[0]],f.tehlike,bugun); if(e.s==='yok'||e.s==='eski') dbad=true; dl.push(t[1]+': '+DST[e.s]+' — '+e.msg+(e.last?' (son yükleme '+vTr(e.last)+')':'')); });
-        dl.push('Personel belgeleri: '+((dd.personel_belgeleri||[]).length)+' dosya');
-        sec('Dokümanlar',dl,dbad);
-      }
-      /* eğitim ve personel */
+      if(!dd||!Object.keys(dd).length) out.dok={title:'Doküman',lines:['Bu firma için doküman verisi alınmamış.'],bad:false};
+      else { var dl=[], dbad=0; DTYPES.forEach(function(t){ var e=docEval(t[0],dd[t[0]],f.tehlike,bugun); if(e.s==='yok'||e.s==='eski') dbad++; dl.push(t[1]+': '+DST[e.s]+' — '+e.msg+(e.last?' (son yükleme '+vTr(e.last)+')':'')); }); dl.push('Personel belgeleri: '+((dd.personel_belgeleri||[]).length)+' dosya'); out.dok={title:'Doküman',lines:dl,bad:dbad>0,sumLine:dbad?dbad+' doküman eksik/yenilenmeli':'Tüm dokümanlar güncel'}; }
       var el2=[];
-      if(st.egitim) el2.push('Son eğitim '+vTr(st.egitim.d)+' ('+gunFark(bugun,st.egitim.d)+' gün önce) · eğitim alan '+st.egitim.tamam+', almayan '+st.egitim.eksik); else el2.push('Hizmet kayıtlarında eğitim tarihi yok.');
+      if(st.egitim) el2.push('Son eğitim '+vTr(st.egitim.d)+' ('+gunFark(bugun,st.egitim.d)+' gün önce) · eğitim alan '+st.egitim.tamam+', almayan '+st.egitim.eksik+(full&&st.egitim.kisiler?' · '+st.egitim.kisiler:'')); else el2.push('Hizmet kayıtlarında eğitim tarihi yok.');
       if(!st.persVar) el2.push('Personel görevlendirme: hizmet kaydı olmadığı için karşılaştırılamadı.');
       else if(!st.pers.length) el2.push('Personel görevlendirme: tümü gerekli sayıda.');
       else el2.push('Personel görevlendirme eksik: '+st.pers.map(function(p){ return p.t+' '+p.mev+' / '+p.gerekli; }).join(' · '));
       el2.push(st.tatbikat?'Son tatbikat: '+vTr(st.tatbikat):'Hizmet kayıtlarında tatbikat bilgisi yok.');
-      sec('Eğitim ve personel',el2,!st.egitim||st.pers.length>0||st.egitim.eksik>0);
-      kcard.appendChild(box);
+      out.egitim={title:'Eğitim/Personel',lines:el2,bad:!st.egitim||st.pers.length>0||st.egitim.eksik>0};
+      out.ziyaret.sumLine=vl[0]; out.egitim.sumLine=el2[0]; if(!out.dok.sumLine) out.dok.sumLine=dl0(out.dok);
+      return out;
     }
-    kq.addEventListener('input',fillCard); ksel.addEventListener('change',renderCard);
-    root.appendChild(p1); root.appendChild(p2); root.appendChild(pS); root.appendChild(pK); root.appendChild(p3); root.appendChild(p4); root.appendChild(p5); root.appendChild(p6);
+    function dl0(d){ return d.lines[0]; }
+    var TABS=[['ozet','Özet'],['ziyaret','Ziyaret'],['uyg','Uygunsuzluk'],['dok','Doküman'],['egitim','Eğitim/Personel']];
+    function navGo(g,s,tab){ NAV.g=g; NAV.s=s; NAV.tab=tab||'ozet'; renderNav(); try{ pN.scrollIntoView({block:'start'}); }catch(e){} }
+    function renderCrumb(){
+      nCrumb.textContent='';
+      if(!NAV.g) return;
+      var g=grp(NAV.g); if(!g) return;
+      var b0=E('button','btn','‹ Firmalar'); b0.type='button'; b0.addEventListener('click',function(){ navGo(null,null); }); nCrumb.appendChild(b0);
+      if(NAV.s&&g.fs.length>1){ var b1=E('button','btn',g.ad); b1.type='button'; b1.addEventListener('click',function(){ navGo(g.key,null); }); nCrumb.appendChild(b1); }
+      var cur=E('b',null,NAV.s?kName(g.fs.filter(function(f){ return String(f.sicil)===String(NAV.s); })[0]||g.fs[0]):g.ad); nCrumb.appendChild(cur);
+    }
+    function renderL1(){
+      nlst.textContent='';
+      var q=trd(nq.value).trim(), rows=NG.filter(function(g){ return !q||g.key.indexOf(q)>=0; });
+      rows.sort(function(a,b){ if(nso.value==='ad') return trd(a.ad).localeCompare(trd(b.ad),'tr'); return (b.pts-a.pts)||trd(a.ad).localeCompare(trd(b.ad),'tr'); });
+      var wf=NG.filter(function(g){ return g.warn>0; }).length;
+      nsum.textContent=NG.length+' firma, '+DATA.f.length+' firma/şube kaydı; '+wf+' firmada uyarı var. Bu aramada '+rows.length+' firma.';
+      rows.slice(0,NLIM).forEach(function(g){
+        var b=nBtn(); b.appendChild(E('b',null,g.ad));
+        b.appendChild(E('div',g.warn?'hint tkp-late':'hint',(g.fs.length>1?g.fs.length+' şube · ':'')+(g.warn?g.warn+' uyarı'+(g.why?' · '+g.why:''):'uyarı yok')));
+        b.addEventListener('click',function(){ navGo(g.key,g.fs.length===1?g.fs[0].sicil:null); }); nlst.appendChild(b);
+      });
+      nmore.hidden=!(rows.length>NLIM); if(rows.length>NLIM) nmore.textContent='Daha fazla firma göster ('+(rows.length-NLIM)+' firma daha)';
+    }
+    function renderL2(g){
+      nL2.textContent=''; nL2.appendChild(E('p','hint',g.fs.length+' şube/kayıt. Birine dokunun:'));
+      g.fs.forEach(function(f){ var m=NSM[f.sicil], b=nBtn(); b.appendChild(E('b',null,f.sube||'Şubesiz / merkez'));
+        b.appendChild(E('div',m&&m.why.length?'hint tkp-late':'hint',m&&m.why.length?m.why.slice(0,3).join(' · '):'uyarı yok'));
+        b.addEventListener('click',function(){ navGo(g.key,f.sicil); }); nL2.appendChild(b); });
+    }
+    function renderL3(g){
+      nL3.textContent='';
+      var f=null; g.fs.forEach(function(x){ if(String(x.sicil)===String(NAV.s)) f=x; }); if(!f) return;
+      var S=secs(f,NAV.tab!=='ozet');
+      var head=E('div','hint',[(f.tehlike?(TEHN[f.tehlike]||f.tehlike):'tehlike sınıfı bilinmiyor'),((parseInt(f.calisan,10)||0)+' çalışan'),(f.periyot?'periyot '+f.periyot:'periyot bilinmiyor')].join(' · ')); nL3.appendChild(head);
+      var tb=E('div','tkp-row'); TABS.forEach(function(t){ var b=E('button',t[0]===NAV.tab?'btn primary':'btn',t[1]); b.type='button'; b.addEventListener('click',function(){ NAV.tab=t[0]; renderNav(); }); tb.appendChild(b); }); nL3.appendChild(tb);
+      if(NAV.tab==='ozet'){
+        var m=NSM[f.sicil]; nL3.appendChild(E('div',m&&m.why.length?'hint tkp-late':'hint',m&&m.why.length?'Uyarılar: '+m.why.join(' · '):'Şu an uyarı yok.'));
+        ['ziyaret','uyg','dok','egitim'].forEach(function(k){ var x=S[k], b=nBtn(); b.appendChild(E('b',null,x.title)); b.appendChild(E('div',x.bad?'hint tkp-late':'hint',x.sumLine||x.lines[0])); b.addEventListener('click',function(){ NAV.tab=k; renderNav(); }); nL3.appendChild(b); });
+      } else { var x=S[NAV.tab]; var box=E('div','tkp-g'); x.lines.forEach(function(l,i){ box.appendChild(E('div',(x.bad&&i===0)?'tkp-i tkp-late':'tkp-i',l)); }); nL3.appendChild(box); }
+    }
+    function renderNav(){
+      if(!DATA||!DATA.f.length){ nCrumb.textContent=''; nL1.hidden=false; nL2.hidden=true; nL3.hidden=true; nsum.textContent=''; nlst.textContent=''; nlst.appendChild(E('p','hint','Kayıtlı firma yok. Önce aşağıdaki “Teksen verisini al” bölümünden içe aktarın.')); nmore.hidden=true; return; }
+      var g=NAV.g?grp(NAV.g):null; if(!g){ NAV.g=null; NAV.s=null; }
+      if(g&&NAV.s&&!g.fs.some(function(f){ return String(f.sicil)===String(NAV.s); })) NAV.s=null;
+      renderCrumb();
+      nL1.hidden=!!g; nL2.hidden=!(g&&!NAV.s); nL3.hidden=!(g&&NAV.s);
+      if(!g) renderL1(); else if(!NAV.s) renderL2(g); else renderL3(g);
+    }
+    nq.addEventListener('input',function(){ NLIM=30; renderNav(); }); nso.addEventListener('change',function(){ NLIM=30; renderNav(); });
+    nmore.addEventListener('click',function(){ NLIM+=30; renderNav(); });
+    pS.hidden=true; nBug.addEventListener('click',function(){ pS.hidden=!pS.hidden; nBug.setAttribute('aria-expanded',pS.hidden?'false':'true'); nBug.className=pS.hidden?'btn':'btn primary'; });
+    var dG=E('details','tkp-g'); dG.appendChild(E('summary',null,'Genel listeler (tüm firmalar)')); dG.appendChild(p3); dG.appendChild(p4); dG.appendChild(p5); dG.appendChild(p6);
+    var dI=E('details','tkp-g'); dI.appendChild(E('summary',null,'Teksen verisini al / kayıtlı veri')); dI.appendChild(p1); dI.appendChild(p2);
+    root.appendChild(pN); root.appendChild(pS); root.appendChild(dG); root.appendChild(dI);
 
     function line(parent,text){ parent.appendChild(E('div',null,text)); }
     function showErr(msg){ rep.textContent=''; var d=E('div','tkp-rep err'); line(d,msg); rep.appendChild(d); }
@@ -5507,7 +5551,7 @@ window.__makePrev=function(host,fn){
     function refresh(){
       return Promise.all([getAll('firms'),getAll('hizmet'),getAll('uyg'),getAll('meta'),getAll('docs')]).then(function(a){
         var bugun=today(), acik=0, gec=0; a[2].forEach(function(u){ if(u.state==='acik'){ acik++; if(u.termin&&u.termin<bugun) gec++; } });
-        var son=null; a[3].forEach(function(m){ if(m.k==='son') son=m; }); DATA={f:a[0],u:a[2],h:a[1],d:a[4]}; renderList(); renderVisits(); renderDocs(); renderStaff(); renderSummary(); fillCard();
+        var son=null; a[3].forEach(function(m){ if(m.k==='son') son=m; }); DATA={f:a[0],u:a[2],h:a[1],d:a[4]}; renderList(); renderVisits(); renderDocs(); renderStaff(); renderSummary(); buildNav(); renderNav(); if(!a[0].length) dI.open=true;
         stats.textContent='';
         [['Firma / şube',a[0].length],['Hizmet kaydı',a[1].length],['Açık uygunsuzluk',acik],['Termini geçmiş',gec]].forEach(function(x){ var c=E('div','tkp-stat'); c.appendChild(E('b',null,String(x[1]))); c.appendChild(E('span',null,x[0])); stats.appendChild(c); });
         last.textContent=son?('Son alma: '+new Date(son.t).toLocaleString('tr-TR')):'Henüz Teksen verisi alınmadı.';
