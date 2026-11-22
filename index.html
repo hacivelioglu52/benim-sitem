@@ -329,7 +329,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 197 · 22.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 199 · 22.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -339,7 +339,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-risk" aria-selected="true" aria-controls="p-risk" type="button">Risk (RD)</button>
     <button role="tab" id="tab-cert" aria-selected="false" aria-controls="p-cert" type="button">Sertifika (İSG)</button>
     <button role="tab" id="tab-plan" aria-selected="false" aria-controls="p-plan" type="button">Yıllık plan</button>
-    <button role="tab" id="tab-firm" aria-selected="false" aria-controls="p-firm" type="button">Firma</button>
+    <button role="tab" id="tab-firm" aria-selected="false" aria-controls="p-firm" type="button">Firma bilgileri</button>
     <button role="tab" id="tab-stamp" aria-selected="false" aria-controls="p-stamp" type="button">İmza / Kaşe</button>
     <button role="tab" id="tab-katilim" aria-selected="false" aria-controls="p-katilim" type="button">Katılım formu</button>
     <button role="tab" id="tab-acilrehber" aria-selected="false" aria-controls="p-acilrehber" type="button">Acil durum rehberi</button>
@@ -353,7 +353,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-rdr" aria-selected="false" aria-controls="p-rdr" type="button">Risk değerlendirme raporu</button>
     <button role="tab" id="tab-osgbd" aria-selected="false" aria-controls="p-osgbd" type="button">Evrak deposu</button>
     <button role="tab" id="tab-osgbf" aria-selected="false" aria-controls="p-osgbf" type="button">Form şablonları</button>
-    <button role="tab" id="tab-tkp" aria-selected="false" aria-controls="p-tkp" type="button">Teksen verisini al</button>
+    <button role="tab" id="tab-tkp" aria-selected="false" aria-controls="p-tkp" type="button">Firma takibi</button>
   </div></div>
 
   <section id="p-home" aria-label="Ana sayfa">
@@ -5428,7 +5428,7 @@ window.__makePrev=function(host,fn){
     sMore.addEventListener('click',function(){ SMLIM+=15; renderSummary(); });
 
     /* ---- Firma → şube → alan gezinmesi (v196) — yalnız okuma; mevcut panellerin hesaplarını kullanır ---- */
-    var pN=E('div','panel'); pN.appendChild(E('h2',null,'Firmalar'));
+    var pN=E('div','panel'); pN.appendChild(E('h2',null,'Firma takibi'));
     var nTop=E('div','tkp-row'); var nBug=E('button','btn','Bugün bakılacaklar'); nBug.type='button'; nBug.setAttribute('aria-expanded','false'); nTop.appendChild(nBug); pN.appendChild(nTop);
     var nCrumb=E('div','tkp-row'); pN.appendChild(nCrumb);
     var nL1=E('div'), nL2=E('div'), nL3=E('div'); pN.appendChild(nL1); pN.appendChild(nL2); pN.appendChild(nL3);
@@ -5577,14 +5577,15 @@ window.__makePrev=function(host,fn){
 
   /* ---------- sekmeler ---------- */
   var tabs=['risk','cert','plan','firm','stamp','katilim','acilrehber','afis','sinav','ocr','rep','osgbd','osgbf','edp','rdr','evt','evp','tkp'];
-  var GRP=[['Evrak takımı',['evt','evp']],['Belgeler',['risk','cert','plan','edp','rdr']],['Eğitim',['katilim','sinav','acilrehber','afis']],['Teksen OSGB Evrakları',['osgbd','osgbf']],['Takip merkezi',['tkp']],['Araçlar',['ocr','rep']],['Ayarlar',['firm','stamp']]];
+  var GRP=[['Firmalar',['tkp','firm','stamp']],['Evrak hazırla',['evt','evp']],['Belgeler',['risk','cert','plan','edp','rdr']],['Eğitim',['katilim','sinav','acilrehber','afis'],['katilim','sinav','acilrehber']],['Teksen OSGB',['osgbd','osgbf']],['Araçlar',['ocr','rep']]];
   var gbox=document.getElementById('groups'), gbtn=GRP.map(function(g){ var b=document.createElement('button'); b.type='button'; b.textContent=g[0]; b.addEventListener('click',function(){ var cur=null; try{ cur=localStorage.getItem('isg-tab-'+g[0]); }catch(e){} show(g[1].indexOf(cur)>=0?cur:g[1][0]); }); gbox.appendChild(b); return b; });
-  function grpSync(n){ GRP.forEach(function(g,i){ var on=g[1].indexOf(n)>=0; gbtn[i].setAttribute('aria-pressed',on?'true':'false'); g[1].forEach(function(t){ document.getElementById('tab-'+t).hidden=!on||g[1].length<2; }); if(on){ try{ localStorage.setItem('isg-tab-'+g[0],n); }catch(e){} document.querySelector('.tabs').style.display=g[1].length<2?'none':''; } }); }
-  var TT={tkp:['Teksen verisini al','Yer imi çıktısını yapıştır; firma, hizmet ve uygunsuzlukları bu cihaza kaydet'],risk:['Risk değerlendirmesi','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['Temel İSG Eğitim Belgesi','Katılımcı için Temel İSG Eğitim Belgesi (sertifika) hazırla'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Katılım formu, sınav ve sertifika aktarımı'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar','Firma bilgileri, logolar, işveren imzası, şubeler, yedek'],stamp:['İmza / Kaşe','Ortak uzman ve hekim imza örnekleri'],ocr:['Resimden yazıya','Fotoğraf veya PDF\'ten isim oku, büyük-küçük harfi düzenle'],evp:['Personel evrakları','Personel listesi gir; işbaşı, talimat, eğitim, sınav ve sertifika evraklarını hazırla'],evt:['Firma evrak takımı','Firma bilgilerini bir kez gir; yönetmeliğe göre gereken evrakları hazırla (PDF, ZIP)'],edp:['Acil durum eylem planı','Firma ve şubeye özel acil durum planı (PDF)'],rdr:['Risk değerlendirme raporu','Firma ve şubeye özel rapor: amaç, kapsam, Fine-Kinney yöntemi (PDF)'],osgbd:['Evrak deposu','Teksen OSGB evraklarını klasörlere ayırıp sakla'],osgbf:['Form şablonları','Teksen OSGB için kendi form şablonlarını oluştur, doldur, PDF al'],rep:['Belge sayıları','Ay ay hazırlanan belge sayıları (firma bazında)']};
+  function grpSync(n){ GRP.forEach(function(g,i){ var on=g[1].indexOf(n)>=0; gbtn[i].setAttribute('aria-pressed',on?'true':'false'); g[1].forEach(function(t){ document.getElementById('tab-'+t).hidden=!on||g[1].length<2; }); if(on){ var bar=document.querySelector('.tabs'); g[1].forEach(function(t){ bar.appendChild(document.getElementById('tab-'+t)); }); try{ localStorage.setItem('isg-tab-'+g[0],n); }catch(e){} document.querySelector('.tabs').style.display=g[1].length<2?'none':''; } }); }
+  var TT={tkp:['Firma takibi','Firma → şube → alan: uyarılar, ziyaret, doküman, eğitim. Teksen verisi buradan alınır'],risk:['Risk değerlendirmesi (RD)','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['Temel İSG Eğitim Belgesi (Sertifika)','Katılımcı için Temel İSG Eğitim Belgesi (sertifika) hazırla'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Tek bir eğitim için katılım formu; kişileri elle yaz ya da Personel evraklarından gönder'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar (bilgi, logo, yedek)','Firma bilgileri, logolar, işveren imzası, şubeler, yedek'],stamp:['İmza / Kaşe','Ortak uzman ve hekim imza örnekleri'],ocr:['Resimden yazıya','Fotoğraf veya PDF\'ten isim oku, büyük-küçük harfi düzenle'],evp:['Personel evrakları','Kişi listesini bir kez gir; işbaşı, talimat, katılım formu, sınav ve sertifika evraklarını toplu hazırla'],evt:['Firma evrak takımı','Firma bilgilerini bir kez gir; yönetmeliğe göre gereken evrakları hazırla (PDF, ZIP)'],edp:['Acil durum eylem planı','Firma ve şubeye özel acil durum planı (PDF)'],rdr:['Risk değerlendirme raporu','Firma ve şubeye özel rapor: amaç, kapsam, Fine-Kinney yöntemi (PDF)'],osgbd:['Evrak deposu','Teksen OSGB evraklarını klasörlere ayırıp sakla'],osgbf:['Form şablonları','Teksen OSGB için kendi form şablonlarını oluştur, doldur, PDF al'],rep:['Belge sayıları','Ay ay hazırlanan belge sayıları (firma bazında)']};
+  var TL={acilrehber:['Acil durum rehberi ve afiş','Ne yapılır rehberi ve asılacak resimli afişler (iki sekme)']};
   var homeEl=document.getElementById('p-home'), navwrap=document.getElementById('navwrap'), pageSel=document.getElementById('page-sel'), innerPushed=false;
   (function(){ var box=document.getElementById('home-tiles');
     GRP.forEach(function(g){ box.appendChild(el('h3','gh',g[0])); var tl=el('div','tiles');
-      g[1].forEach(function(t){ var b=el('button','tile'); b.type='button'; b.appendChild(el('b',null,TT[t][0])); b.appendChild(el('span',null,TT[t][1])); b.addEventListener('click', function(){ show(t); }); tl.appendChild(b); });
+      (g[2]||g[1]).forEach(function(t){ var tt=TL[t]||TT[t], b=el('button','tile'); b.type='button'; b.appendChild(el('b',null,tt[0])); b.appendChild(el('span',null,tt[1])); b.addEventListener('click', function(){ show(t); }); tl.appendChild(b); });
       box.appendChild(tl);
       var og=document.createElement('optgroup'); og.label=g[0]; g[1].forEach(function(t){ var o=document.createElement('option'); o.value=t; o.textContent=TT[t][0]; og.appendChild(o); }); pageSel.appendChild(og); }); })();
   pageSel.addEventListener('change', function(){ show(pageSel.value); });
