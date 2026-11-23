@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 200 · 23.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 202 · 23.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5028,7 +5028,7 @@ window.__makePrev=function(host,fn){
     function fillF(keep,pres){ var cur=keep||(st.f&&st.f.id)||(FM&&FM.cur)||''; fS.textContent=''; var l=FL(); if(!l.length){ var o=document.createElement('option'); o.value=''; o.textContent='Önce Firmalar bölümünden firma ekleyin'; fS.appendChild(o); } l.forEach(function(f){ var o=document.createElement('option'); o.value=f.id; o.textContent=f.name||'(adsız firma)'; fS.appendChild(o); }); var same=st.f&&st.f.id===cur; fS.value=l.some(function(f){ return f.id===cur; })?cur:(l[0]?l[0].id:''); st.f=fById(fS.value); if(!(pres&&same)){ st.sel={}; lastDel=null; } fillS(pres&&same?st.sb:'',pres&&same); }
     function fillS(keep,pres){ sS.textContent=''; var o=document.createElement('option'); o.value=''; o.textContent=(st.f&&(st.f.sb||[]).length)?'(firma geneli – şubesiz)':'(şubesiz)'; sS.appendChild(o); ((st.f&&st.f.sb)||[]).forEach(function(s){ var x=document.createElement('option'); x.value=s; x.textContent=s; sS.appendChild(x); }); var old=st.sb; sS.value=keep!==undefined?keep:''; st.sb=sS.value; if(!(pres&&old===st.sb)){ st.sel={}; lastDel=null; loadSet(); } render(); }
     fS.addEventListener('change',function(){ st.f=fById(fS.value); lastDel=null; fillS(''); }); sS.addEventListener('change',function(){ st.sb=sS.value; st.sel={}; lastDel=null; loadSet(); render(); });
-    try{ new MutationObserver(function(){ if(!root.hidden) fillF(null,true); }).observe(root,{attributes:true,attributeFilter:['hidden']}); }catch(e){}
+    try{ new MutationObserver(function(){ if(root.hidden) return; var q=window.__EVP_SEL; window.__EVP_SEL=null; if(q&&fById(q.fid)){ fillF(q.fid); if(st.f&&st.f.id===q.fid&&q.sb!==undefined&&(q.sb===''||(st.f.sb||[]).indexOf(q.sb)>=0)) fillS(q.sb); } else fillF(null,true); }).observe(root,{attributes:true,attributeFilter:['hidden']}); }catch(e){}
     fillF(); loadSet();
   })();
 
@@ -5577,9 +5577,9 @@ window.__makePrev=function(host,fn){
         L.push(['Teksen kaydı',u.rec?tkLabel(u.rec)+' · sicil '+u.rec.sicil+' ('+(lk&&lk.how==='sgk'?'SGK sicil no ile eşleşti':'elle bağlandı')+')':'eşleşmedi']);
         var box=E('div','tkp-g'); L.forEach(function(x){ box.appendChild(E('div','tkp-i',x[0]+': '+x[1])); }); host.appendChild(box);
         var ac=E('div','tkp-row');
-        [['Personel evrakları','tab-evp'],['Firma evrak takımı','tab-evt']].forEach(function(x){ var b=E('button','btn',x[0]); b.type='button'; b.addEventListener('click',function(){ api.pick(F.id); var tt=document.getElementById(x[1]); if(tt) tt.click(); }); ac.appendChild(b); });
+        [['Personel evrakları','tab-evp','__EVP_SEL'],['Firma evrak takımı','tab-evt','__EVT_SEL']].forEach(function(x){ var b=E('button','btn',x[0]); b.type='button'; b.addEventListener('click',function(){ api.pick(F.id); window[x[2]]={fid:F.id,sb:u.sube||''}; var tt=document.getElementById(x[1]); if(tt) tt.click(); }); ac.appendChild(b); });
         host.appendChild(ac);
-        host.appendChild(E('p','hint','Evrak sayfalarında şubeyi ayrıca seçmeniz gerekir; firma seçili gelir.'));
+        host.appendChild(E('p','hint','Firma ve şube evrak sayfasında hazır gelir; gerekirse orada değiştirebilirsiniz.'));
         if(u.rec&&lk&&lk.how==='elle'){ var bd=E('button','btn quiet','Teksen bağlantısını kaldır'); bd.type='button'; bd.addEventListener('click',function(){ delLink(u.rec.sicil).then(function(){ buildNav(); afterLink(); }); }); host.appendChild(bd); }
         if(!u.rec&&DATA&&DATA.f.length) host.appendChild(recPicker(F,u));
         return;
@@ -5624,7 +5624,84 @@ window.__makePrev=function(host,fn){
     nBug.addEventListener('click',function(){ SHOWBUG=!SHOWBUG; pS.hidden=!SHOWBUG; nBug.setAttribute('aria-expanded',SHOWBUG?'true':'false'); nBug.className=SHOWBUG?'btn primary':'btn'; });
     var dG=E('details','tkp-g'); dG.appendChild(E('summary',null,'Genel listeler (tüm firmalar)')); dG.appendChild(p3); dG.appendChild(p4); dG.appendChild(p5); dG.appendChild(p6);
     var dI=E('details','tkp-g'); dI.appendChild(E('summary',null,'Teksen verisini al / kayıtlı veri')); dI.appendChild(p1); dI.appendChild(p2);
-    topEl.appendChild(nTop); topEl.appendChild(pS); pS.hidden=true; restEl.appendChild(uD); restEl.appendChild(dG); restEl.appendChild(dI);
+    /* ---- Aylık plan karşılaştırması (v202): Teksen "Aylık Plan Formu" sayfa kaynağından plan okunur, hizmet kayıtlarıyla SGK sicil üzerinden karşılaştırılır. Kayıtlı firma verisine yazmaz ---- */
+    var PLAN={}, PNM={}, PLT=0;
+    var PL_AY=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+    function plJson(text,re){ var m=re.exec(text); if(!m) return null; var i=m.index+m[0].length, o=text.charAt(i), c=o==='{'?'}':(o==='['?']':''); if(!c) return null; var d=0, ins=false, esc=false; for(var j=i;j<text.length;j++){ var ch=text.charAt(j); if(ins){ if(esc) esc=false; else if(ch==='\\') esc=true; else if(ch==='"') ins=false; continue; } if(ch==='"') ins=true; else if(ch===o) d++; else if(ch===c){ d--; if(!d){ try{ return JSON.parse(text.slice(i,j+1)); }catch(e){ return null; } } } } return null; }
+    function plParse(text){
+      text=String(text||''); if(!text.trim()) throw new Error('Metin boş. Aylık Plan Formu sayfasının kaynağını yapıştırın.');
+      var cd=plJson(text,/\bcalendarData\s*:\s*/);
+      if(!cd||Array.isArray(cd)) throw new Error('Bu, Aylık Plan Formu sayfasının kaynağına benzemiyor (calendarData bulunamadı). Sayfada Ctrl+U ile kaynağı açıp tümünü kopyalayın.');
+      var ad=plJson(text,/\ballDays\s*:\s*/), cc=plJson(text,/\bcalendarCompany\s*:\s*/)||{}, co=plJson(text,/\bcompanies\s*:\s*/)||[];
+      var dates=(Array.isArray(ad)&&ad.length)?ad.map(function(x){ return x.date; }):Object.keys(cd);
+      dates=dates.filter(function(d){ return /^\d{4}-\d{2}-\d{2}$/.test(d); });
+      var days={}, names={}, nrow=0;
+      dates.forEach(function(d){ var v=cd[d], l=[]; if(Array.isArray(v)) l=v.slice(); else if(v&&typeof v==='object') l=Object.keys(v).sort(function(a,b){ return a-b; }).map(function(k){ return v[k]; });
+        l=l.map(nSic).filter(Boolean); days[d]=l; nrow+=l.length; });
+      Object.keys(cc).forEach(function(k){ names[nSic(k)]={ad:String(cc[k]||'').trim(),adres:''}; });
+      co.forEach(function(c){ if(c&&c.sgksicil) names[nSic(c.sgksicil)]={ad:String(c.firmaadi||'').trim(),adres:String(c.adres||'').trim()}; });
+      var mm=/\bselectedMonth\s*:\s*(\d+)/.exec(text), yy=/\bselectedYear\s*:\s*(\d+)/.exec(text);
+      return {days:days,names:names,nrow:nrow,ay:mm?+mm[1]:0,yil:yy?+yy[1]:0};
+    }
+    function plLoad(metas){ PLAN={}; PNM={}; PLT=0; (metas||[]).forEach(function(m){ if(!m||!m.k) return; if(String(m.k).indexOf('plan:')===0){ PLAN[m.date]=m.sicil||[]; if(m.t>PLT) PLT=m.t; } else if(m.k==='plannames') PNM=m.n||{}; }); }
+    function plSave(P){
+      var items=[], t=Date.now();
+      Object.keys(P.days).forEach(function(d){ PLAN[d]=P.days[d]; items.push({k:'plan:'+d,date:d,sicil:P.days[d],t:t}); });
+      Object.keys(P.names).forEach(function(k){ PNM[k]=P.names[k]; });
+      items.push({k:'plannames',n:PNM,t:t}); PLT=t;
+      return putMany({meta:items});
+    }
+    function plCalc(ym){
+      var bugun=today(), fM={}, hM={}, rows=[];
+      DATA.f.forEach(function(f){ fM[nSic(f.sicil)]=f; });
+      DATA.h.forEach(function(h){ var d=vDate(h.tarih||(h.veri&&h.veri.hizmet_tarihi)); if(!d) return; var k=nSic(h.sicil); (hM[k]||(hM[k]=[])).push(d); });
+      Object.keys(PLAN).filter(function(d){ return d.indexOf(ym+'-')===0; }).sort().forEach(function(d){
+        PLAN[d].forEach(function(sic){
+          var rec=fM[sic], ds=hM[sic]||[], inM=ds.filter(function(x){ return x.indexOf(ym+'-')===0; }).sort(), n=PNM[sic]||{};
+          var label=rec?tkLabel(rec):((n.ad||sic)+(n.adres?' · '+n.adres:'')), state;
+          if(!rec) state='es'; else if(ds.indexOf(d)>=0) state='ok'; else if(inM.length) state='bsk'; else state=d<bugun?'yok':'bek';
+          rows.push({d:d,sic:sic,label:label,state:state,inM:inM});
+        });
+      });
+      return rows;
+    }
+    var plD=E('details','tkp-g'), plBody=E('div'); plD.appendChild(E('summary',null,'Aylık plan karşılaştırması')); plD.appendChild(plBody);
+    plBody.appendChild(E('p','hint','Teksen’de “Aylık Plan Formu” sayfasını açın, Ctrl+U ile sayfa kaynağını açıp tümünü kopyalayın ve aşağıya yapıştırın. Plan ay sonunda gelecek ay için hazırlandığından, her yeni plan hazırlandığında yeniden yapıştırın: günler tarih bazında güncellenir, eski aylar silinmez. Kayıtlı firma verisine dokunulmaz.'));
+    var plTa=E('textarea','tkp-box'); plTa.placeholder='Aylık Plan Formu sayfa kaynağı'; plTa.setAttribute('aria-label','Aylık Plan Formu sayfa kaynağı'); plBody.appendChild(plTa);
+    var plRow=E('div','tkp-row'), plBtn=E('button','btn primary','Planı al'), plMsg=E('span','hint',''), plSelL=E('label','field'), plSel=document.createElement('select');
+    plBtn.type='button'; plSel.setAttribute('aria-label','Plan ayı'); plSelL.appendChild(E('span',null,'Ay')); plSelL.appendChild(plSel); plRow.appendChild(plBtn); plRow.appendChild(plMsg); plBody.appendChild(plRow); plBody.appendChild(plSelL);
+    var plOut=E('div'); plBody.appendChild(plOut);
+    function plYm(ym){ return PL_AY[+ym.slice(5)-1]+' '+ym.slice(0,4); }
+    function plRender(){
+      var months={}; Object.keys(PLAN).forEach(function(d){ if(PLAN[d].length) months[d.slice(0,7)]=1; });
+      var ms=Object.keys(months).sort(); plSel.textContent='';
+      ms.forEach(function(m){ var o=document.createElement('option'); o.value=m; o.textContent=plYm(m); plSel.appendChild(o); });
+      plOut.textContent=''; plSelL.hidden=!ms.length;
+      var bg=today(), cur=bg.slice(0,7);
+      if(!ms.length){ plOut.appendChild(E('p','hint','Henüz plan alınmadı.')); return; }
+      var ym=ms.indexOf(plSel.dataset.keep)>=0?plSel.dataset.keep:(ms.indexOf(cur)>=0?cur:ms[ms.length-1]); plSel.value=ym; plSel.dataset.keep=ym;
+      plOut.appendChild(E('p','hint','Plan son güncelleme: '+new Date(PLT).toLocaleString('tr-TR')+'.'));
+      var nx=new Date(+bg.slice(0,4),+bg.slice(5,7),1), ny=nx.getFullYear()+'-'+('0'+(nx.getMonth()+1)).slice(-2);
+      if(+bg.slice(8)>=22&&!months[ny]) plOut.appendChild(E('p','tkp-rep err','Ayın son haftasındasınız ve '+plYm(ny)+' planı henüz alınmadı.'));
+      if(!DATA||!DATA.f.length){ plOut.appendChild(E('p','hint','Karşılaştırma için önce Teksen verisini alın (aşağıda “Teksen verisini al”).')); return; }
+      var rows=plCalc(ym), c={ok:0,bsk:0,yok:0,bek:0,es:0}; rows.forEach(function(r){ c[r.state]++; });
+      var g=E('div','tkp-stats'); [['Planlı satır',rows.length],['Kaydı var',c.ok],['Başka günde yapılmış',c.bsk],['Kaydı yok (tarihi geçti)',c.yok],['Bekleyen',c.bek],['Teksen’de bulunamadı',c.es]].forEach(function(x){ var b=E('div','tkp-stat'); b.appendChild(E('b',null,String(x[1]))); b.appendChild(E('span',null,x[0])); g.appendChild(b); });
+      plOut.appendChild(g);
+      [['yok','Kaydı yok (tarihi geçmiş; yapılmamış sayılır)',true],['bek','Bekleyen (bugün ve sonrası)',false],['bsk','Planlanan günde değil, ay içinde başka günde kaydı var',false],['es','Teksen verisinde bulunamayan sicil',false],['ok','Kaydı olanlar',false]].forEach(function(s){
+        var l=rows.filter(function(r){ return r.state===s[0]; }); if(!l.length) return;
+        var dd=E('details','tkp-g'); if(s[2]) dd.open=true; dd.appendChild(E('summary',null,s[1]+' ('+l.length+')'));
+        l.forEach(function(r){ dd.appendChild(E('div',s[0]==='yok'?'tkp-i tkp-late':'tkp-i',vTr(r.d)+' · '+r.label+(s[0]==='bsk'?' → kayıt: '+r.inM.map(vTr).join(', '):''))); });
+        plOut.appendChild(dd);
+      });
+    }
+    plSel.addEventListener('change',function(){ plSel.dataset.keep=plSel.value; plRender(); });
+    plBtn.addEventListener('click',function(){
+      var P; try{ P=plParse(plTa.value); }catch(e){ plMsg.textContent=e.message; return; }
+      plMsg.textContent='Kaydediliyor…';
+      plSave(P).then(function(){ plMsg.textContent=Object.keys(P.days).length+' gün okundu, '+P.nrow+' plan satırı kaydedildi.'; plTa.value=''; if(P.ay&&P.yil) plSel.dataset.keep=P.yil+'-'+('0'+P.ay).slice(-2); plRender(); }).catch(function(){ plMsg.textContent='Kaydedilemedi (tarayıcı depolaması kapalı olabilir).'; });
+    });
+    window.__plan={parse:plParse,calc:plCalc,render:plRender,state:function(){ return {PLAN:PLAN,PNM:PNM}; }};
+    topEl.appendChild(nTop); topEl.appendChild(pS); topEl.appendChild(plD); pS.hidden=true; restEl.appendChild(uD); restEl.appendChild(dG); restEl.appendChild(dI);
     window.__firmNav={prepare:buildNav,info:infoFor,pick:function(id){ navGo(id,null); },search:function(id){ return recsOf(id).map(tkLabel).join(' '); }};
     if(window.__firmApi&&window.__firmApi.hooks) window.__firmApi.hooks.push(renderAll);
 
@@ -5644,7 +5721,7 @@ window.__makePrev=function(host,fn){
     function refresh(){
       return Promise.all([getAll('firms'),getAll('hizmet'),getAll('uyg'),getAll('meta'),getAll('docs')]).then(function(a){
         var bugun=today(), acik=0, gec=0; a[2].forEach(function(u){ if(u.state==='acik'){ acik++; if(u.termin&&u.termin<bugun) gec++; } });
-        var son=null; a[3].forEach(function(m){ if(m.k==='son') son=m; }); DATA={f:a[0],u:a[2],h:a[1],d:a[4]}; renderList(); renderVisits(); renderDocs(); renderStaff(); renderSummary(); LINKS={}; a[3].forEach(function(m){ if(m&&String(m.k).indexOf('link:')===0) LINKS[m.sicil]={fid:m.fid,sube:m.sube||''}; }); if(window.__firmApi&&window.__firmApi.rerender) window.__firmApi.rerender(); else renderAll(); if(!a[0].length) dI.open=true;
+        var son=null; a[3].forEach(function(m){ if(m.k==='son') son=m; }); DATA={f:a[0],u:a[2],h:a[1],d:a[4]}; plLoad(a[3]); renderList(); renderVisits(); renderDocs(); renderStaff(); renderSummary(); LINKS={}; a[3].forEach(function(m){ if(m&&String(m.k).indexOf('link:')===0) LINKS[m.sicil]={fid:m.fid,sube:m.sube||''}; }); if(window.__firmApi&&window.__firmApi.rerender) window.__firmApi.rerender(); else renderAll(); if(!a[0].length) dI.open=true; plRender();
         stats.textContent='';
         [['Firma / şube',a[0].length],['Hizmet kaydı',a[1].length],['Açık uygunsuzluk',acik],['Termini geçmiş',gec]].forEach(function(x){ var c=E('div','tkp-stat'); c.appendChild(E('b',null,String(x[1]))); c.appendChild(E('span',null,x[0])); stats.appendChild(c); });
         last.textContent=son?('Son alma: '+new Date(son.t).toLocaleString('tr-TR')):'Henüz Teksen verisi alınmadı.';
