@@ -41,6 +41,7 @@
 .fmain{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;min-height:52px;justify-content:center;text-align:left;border:0;background:none;font:inherit;color:inherit;padding:8px 10px;cursor:pointer;min-width:0}
 .fmain .ft{font-weight:600;font-size:14.5px;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
 .fmain .fm{display:none}
+.fmain .fw{font-size:12px;line-height:1.25;color:var(--muted);word-break:break-word}.fmain .fw.late{color:#b45309}
 .fpill{font-size:11px;background:var(--accent);color:var(--accent-ink);border-radius:99px;padding:0 7px}
 .fgb{font-size:11px;border:1px solid var(--line);border-radius:99px;padding:0 7px;color:var(--muted)}
 .fgrp{grid-column:1/-1}.fgrp[open]{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.fgrp summary{grid-column:1/-1;font-weight:600;padding:4px 2px}
@@ -329,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 199 · 22.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 200 · 23.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -339,7 +340,8 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-risk" aria-selected="true" aria-controls="p-risk" type="button">Risk (RD)</button>
     <button role="tab" id="tab-cert" aria-selected="false" aria-controls="p-cert" type="button">Sertifika (İSG)</button>
     <button role="tab" id="tab-plan" aria-selected="false" aria-controls="p-plan" type="button">Yıllık plan</button>
-    <button role="tab" id="tab-firm" aria-selected="false" aria-controls="p-firm" type="button">Firma bilgileri</button>
+    <button role="tab" id="tab-firm" aria-selected="false" aria-controls="p-firm" type="button">Firmalar</button>
+    <button role="tab" id="tab-ayar" aria-selected="false" aria-controls="p-ayar" type="button">Varsayılanlar, logo, yedek</button>
     <button role="tab" id="tab-stamp" aria-selected="false" aria-controls="p-stamp" type="button">İmza / Kaşe</button>
     <button role="tab" id="tab-katilim" aria-selected="false" aria-controls="p-katilim" type="button">Katılım formu</button>
     <button role="tab" id="tab-acilrehber" aria-selected="false" aria-controls="p-acilrehber" type="button">Acil durum rehberi</button>
@@ -353,7 +355,6 @@ details.dpanel[open]>summary{margin-bottom:10px}
     <button role="tab" id="tab-rdr" aria-selected="false" aria-controls="p-rdr" type="button">Risk değerlendirme raporu</button>
     <button role="tab" id="tab-osgbd" aria-selected="false" aria-controls="p-osgbd" type="button">Evrak deposu</button>
     <button role="tab" id="tab-osgbf" aria-selected="false" aria-controls="p-osgbf" type="button">Form şablonları</button>
-    <button role="tab" id="tab-tkp" aria-selected="false" aria-controls="p-tkp" type="button">Firma takibi</button>
   </div></div>
 
   <section id="p-home" aria-label="Ana sayfa">
@@ -365,7 +366,8 @@ details.dpanel[open]>summary{margin-bottom:10px}
   <section id="p-cert" role="tabpanel" aria-labelledby="tab-cert" hidden></section>
 
   <section id="p-plan" role="tabpanel" aria-labelledby="tab-plan" hidden></section>
-  <section id="p-firm" role="tabpanel" aria-labelledby="tab-firm" hidden></section>
+  <section id="p-firm" role="tabpanel" aria-labelledby="tab-firm" hidden><div id="firm-top"></div><div id="firm-tiles"></div><div id="firm-nav"></div><div id="firm-rest"></div></section>
+  <section id="p-ayar" role="tabpanel" aria-labelledby="tab-ayar" hidden></section>
 
   <section id="p-stamp" role="tabpanel" aria-labelledby="tab-stamp" hidden>
     <div class="panel">
@@ -386,7 +388,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
   <section id="p-rdr" role="tabpanel" aria-labelledby="tab-rdr" hidden></section>
   <section id="p-osgbd" role="tabpanel" aria-labelledby="tab-osgbd" hidden></section>
   <section id="p-osgbf" role="tabpanel" aria-labelledby="tab-osgbf" hidden></section>
-  <section id="p-tkp" role="tabpanel" aria-labelledby="tab-tkp" hidden></section>
+  
   <section id="p-rep" role="tabpanel" aria-labelledby="tab-rep" hidden>
     <div class="strip" id="strip" aria-live="polite"></div>
     <div class="panel">
@@ -1743,7 +1745,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   try{ renderHz(); }catch(e){ console.error(e); }
 
   /* ---------- firma seçici ve firma ayarları ---------- */
-  var firmSel=document.getElementById('firm-sel'), mgrRoot=document.getElementById('p-firm'), firmRoot=el('div','fdlg-b');
+  var firmSel=document.getElementById('firm-sel'), mgrRoot=document.getElementById('firm-tiles'), setRoot=document.getElementById('p-ayar'), firmRoot=el('div','fdlg-b');
   var dlg=document.createElement('dialog'); dlg.id='firm-dlg'; dlg.className='fdlg';
   var dHead=el('div','fdlg-h'), dTitle=el('strong',null,'Firma'), dClose=el('button','btn primary','Kaydet'), dCancel=el('button','btn','Vazgeç'), dBtns=el('div'); dClose.type='button'; dCancel.type='button'; dCancel.hidden=true; dBtns.style.cssText='display:flex;gap:8px'; dBtns.appendChild(dCancel); dBtns.appendChild(dClose); var draft=null, fOpen='Firma', sig0=null;
   dHead.appendChild(dTitle); dHead.appendChild(dBtns); dlg.appendChild(dHead); dlg.appendChild(firmRoot); document.body.appendChild(dlg);
@@ -1801,11 +1803,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function firmLabel(f){ if(f.name) return f.name; var n=0,k=0; FM.list.forEach(function(x){ if(!x.name){ n++; if(x.id===f.id) k=n; } }); return '(adsız firma'+(n>1?' '+k:'')+')'; }
   function firmBlank(f){ return !f.name && !(f.grp||'').trim() && !(f.gorev||'').trim() && !(f.gv&&f.gv.length) && !(f.sabl&&f.sabl.length) && !(f.sb&&f.sb.length) && !(f.ek&&f.ek.length) && !(f.logos&&((f.logos.firma&&f.logos.firma.data)||(f.logos.kurum&&f.logos.kurum.data))) && !JSON.stringify(f.info||{}).replace(/[{}\":,]/g,'').trim(); }
   var firmBtn=document.getElementById('firm-btn');
-  function paintFirmBtn(){ var cf=F(); firmBtn.textContent=''; firmBtn.appendChild(el('span',null,(cf&&!firmBlank(cf))?firmLabel(cf):(FM.list.some(function(x){ return !firmBlank(x); })?'Firma seçin':'Firma yok: Ayarlar › Firmalar'))); }
+  function paintFirmBtn(){ var cf=F(); firmBtn.textContent=''; firmBtn.appendChild(el('span',null,(cf&&!firmBlank(cf))?firmLabel(cf):(FM.list.some(function(x){ return !firmBlank(x); })?'Firma seçin':'Firma yok: Firmalar sayfasından ekleyin'))); }
   firmBtn.addEventListener('click', function(){ var l=orderedFirms().filter(function(f){ return !firmBlank(f); });
-    openPicker({title:'Firma seç', items:l.map(function(f){ var g=FV.mode==='grp'?(grpOf(f)||'Grupsuz'):''; return {id:f.id,label:firmLabel(f),sub:(f.sb&&f.sb.length)?f.sb.length+' şube':'',group:g}; }), multi:false, sel:[FM.cur], footer:{label:'Firma ve şubeleri düzenle / ekle',fn:function(){ openFirmTab(); }}, emptyText:'Kayıtlı firma yok. Ayarlar › Firmalar’dan ekleyin.', onDone:function(r){ if(r.ids&&r.ids[0]){ firmSel.value=r.ids[0]; firmSel.dispatchEvent(new Event('change')); } } }); });
+    openPicker({title:'Firma seç', items:l.map(function(f){ var g=FV.mode==='grp'?(grpOf(f)||'Grupsuz'):''; return {id:f.id,label:firmLabel(f),sub:(f.sb&&f.sb.length)?f.sb.length+' şube':'',group:g}; }), multi:false, sel:[FM.cur], footer:{label:'Firma ve şubeleri düzenle / ekle',fn:function(){ openFirmTab(); }}, emptyText:'Kayıtlı firma yok. Firmalar sayfasından ekleyin.', onDone:function(r){ if(r.ids&&r.ids[0]){ firmSel.value=r.ids[0]; firmSel.dispatchEvent(new Event('change')); } } }); });
   function renderFirmBar(){ paintFirmBtn(); firmSel.textContent=''; var cf=F(), l=orderedFirms();
-    var ph=document.createElement('option'); ph.value=''; ph.textContent=l.length?'— Kayıtlı firmalardan seçin —':'— Firma yok: Ayarlar › Firmalar’dan ekleyin —'; ph.selected=!!(cf&&firmBlank(cf)); firmSel.appendChild(ph);
+    var ph=document.createElement('option'); ph.value=''; ph.textContent=l.length?'— Kayıtlı firmalardan seçin —':'— Firma yok: Firmalar sayfasından ekleyin —'; ph.selected=!!(cf&&firmBlank(cf)); firmSel.appendChild(ph);
     var curG=null, og=null;
     l.forEach(function(f){ var o=document.createElement('option'); o.value=f.id; o.textContent=firmLabel(f); o.selected=f.id===FM.cur;
       if(FV.mode==='grp'){ var g=grpOf(f)||'Grupsuz'; if(g!==curG){ og=document.createElement('optgroup'); og.label=g; firmSel.appendChild(og); curG=g; } og.appendChild(o); } else firmSel.appendChild(o); }); }
@@ -1899,20 +1901,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(inf.adr) p.push(inf.adr.length>42?inf.adr.slice(0,42)+'…':inf.adr);
     if(sb) p.push(sb+' şube'); var hz=hzName(inf.hz); if(hz) p.push(hz);
     var lo=f.logos&&f.logos.firma, lm=lo&&lo.mode; p.push(lm==='none'?'Logosuz':(lo&&(lo.data||(lo.list&&lo.list.length)))&&lm==='img'?'Logo var':'Hazır logo'); return p.join(' · '); }
+  window.__firmApi=window.__firmApi||{hooks:[]}; Object.assign(window.__firmApi,{all:function(){ return visFirms(); },byId:function(id){ return FM.list.filter(function(f){ return f.id===id; })[0]||null; },cur:function(){ return FM.cur; },pick:function(id){ if(id&&id!==FM.cur&&FM.list.some(function(f){ return f.id===id; })){ FM.cur=id; saveFirms(); onFirmChanged(); } },open:function(id){ openEditor(id); },add:function(){ addFirm(); },label:firmLabel,rerender:function(){ renderMgr(); }});
   function openEditor(id,fresh){ if(id&&id!==FM.cur){ FM.cur=id; saveFirms(); } edSec=0; fOpen='Firma'; sig0=firmLogoSig(F()); if(!dlg.open) dlg.showModal(); onFirmChanged(); firmRoot.scrollTop=0;
     if(fresh) setTimeout(function(){ var i=firmRoot.querySelector('input'); if(i) i.focus(); },60); }
   window.__openFirmEditor=function(){ if(!F()||firmBlank(F())){ addFirm(); } else openEditor(); };
   function addFirm(){ var cf=F(), reuse=!!(cf&&firmBlank(cf)), nf=reuse?cf:newFirm({name:'',draft:true}); draft={id:nf.id,prev:reuse?null:FM.cur,created:!reuse}; if(!reuse) FM.list.push(nf); FM.cur=nf.id; openEditor(null,true); }
   function moveFirm(f,o){ var a=FM.list.indexOf(f), b=FM.list.indexOf(o); if(a<0||b<0) return; FM.list[a]=o; FM.list[b]=f; saveFirms(); renderFirmBar(); renderMgr(); }
   function mgrRow(f,bucket,canMove){
-    var r=el('div','frow'+(f.id===FM.cur?' on':'')), mb=el('button','fmain'); mb.type='button'; mb.title='Firmayı aç: bilgiler, logo, şube, kopyala, sil';
-    mb.appendChild(el('span','ft',firmLabel(f))); if(f.id===FM.cur) mb.appendChild(el('span','fpill','aktif'));
+    var r=el('div','frow'+(f.id===FM.cur?' on':'')), mb=el('button','fmain'); mb.type='button'; mb.title='Firmayı aç: şubeler, uyarılar, bilgiler';
+    var nv=null; try{ nv=window.__firmNav&&window.__firmNav.info?window.__firmNav.info(f.id):null; }catch(e){}
+    mb.appendChild(el('span','ft',(nv&&nv.title)||firmLabel(f))); if(f.id===FM.cur) mb.appendChild(el('span','fpill','aktif'));
     if(grpOf(f)&&FV.mode!=='grp') mb.appendChild(el('span','fgb',grpOf(f)));
+    if(nv&&nv.title&&nv.title!==firmLabel(f)) mb.appendChild(el('span','fw','Kayıtlı ad: '+firmLabel(f)));
     mb.appendChild(el('span','fm',firmMeta(f)));
-    mb.addEventListener('click', function(){ openEditor(f.id); });
+    if(nv&&nv.line) mb.appendChild(el('span',nv.warn?'fw late':'fw',nv.line));
+    mb.addEventListener('click', function(){ if(window.__firmNav&&window.__firmNav.pick) window.__firmNav.pick(f.id); else openEditor(f.id); });
     r.appendChild(mb);
     return r; }
   function renderMgr(){
+    try{ if(window.__firmNav&&window.__firmNav.prepare) window.__firmNav.prepare(); }catch(e){}
     var all=visFirms(); mgrRoot.textContent=''; dlGrp.textContent=''; var seenG={};
     all.forEach(function(f){ var g=grpOf(f); if(g&&!seenG[g]){ seenG[g]=1; var o=document.createElement('option'); o.value=g; dlGrp.appendChild(o); } });
     var pn=el('div','panel'); pn.appendChild(el('h2',null,'Firmalar'+(all.length?' ('+all.length+')':'')));
@@ -1922,7 +1929,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     tb.appendChild(q); tb.appendChild(sel); tb.appendChild(nb); pn.appendChild(tb);
     var fl=el('div','flist'); pn.appendChild(fl);
     function draw(){ fl.textContent=''; var l=orderedFirms(), qq=FV.q.trim().toLocaleLowerCase('tr');
-      if(qq) l=l.filter(function(f){ return [f.name,grpOf(f),Array.isArray(f.sb)?f.sb.join(' '):'',(f.info&&f.info.adr)||'',f.gorev].join(' ').toLocaleLowerCase('tr').indexOf(qq)>=0; });
+      if(qq) l=l.filter(function(f){ return [f.name,grpOf(f),Array.isArray(f.sb)?f.sb.join(' '):'',(f.info&&f.info.adr)||'',f.gorev,(window.__firmNav&&window.__firmNav.search?window.__firmNav.search(f.id):'')].join(' ').toLocaleLowerCase('tr').indexOf(qq)>=0; });
       if(!all.length){ fl.appendChild(el('p','hint','Kayıtlı firma yok. “+ Yeni firma” ile ekleyin.')); return; }
       if(!l.length){ fl.appendChild(el('p','hint','Eşleşen firma yok.')); return; }
       var canMove=FV.mode!=='az' && !qq;
@@ -1931,7 +1938,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       else l.forEach(function(f){ fl.appendChild(mgrRow(f,l,canMove)); }); }
     q.addEventListener('input', function(){ FV.q=q.value; draw(); });
     sel.addEventListener('change', function(){ FV.mode=sel.value; lsSet(FVKEY,{mode:FV.mode}); renderFirmBar(); renderMgr(); });
-    draw(); if(FM.list.filter(function(f){ return !firmBlank(f); }).length<=1) pn.appendChild(el('p','hint','Bu cihazda yalnızca 1 firma kayıtlı. Firmalar her cihazda ayrı tutulur. Başka cihazdaki firmaları getirmek için orada Yedek › Yedek al, burada Yedekten yükle’yi kullanın.')); mgrRoot.appendChild(pn); renderDefaults(mgrRoot); renderLogosPanel(mgrRoot); renderBackup(mgrRoot); }
+    draw(); if(FM.list.filter(function(f){ return !firmBlank(f); }).length<=1) pn.appendChild(el('p','hint','Bu cihazda yalnızca 1 firma kayıtlı. Firmalar her cihazda ayrı tutulur. Başka cihazdaki firmaları getirmek için orada Ayarlar › Varsayılanlar, logolar, yedek bölümünde Yedek al, burada Yedekten yükle’yi kullanın.')); mgrRoot.appendChild(pn); setRoot.textContent=''; renderDefaults(setRoot); renderLogosPanel(setRoot); renderBackup(setRoot); ((window.__firmApi||{}).hooks||[]).forEach(function(fn){ try{ fn(); }catch(e){} }); }
   function renderLogosPanel(host){
     var all=[]; FM.list.forEach(function(f){ if(firmBlank(f)) return; ['firma','kurum'].forEach(function(k){ var o=f.logos&&f.logos[k]; if(!o) return; logoItems(o).forEach(function(it){ all.push({f:f,k:k,o:o,it:it}); }); }); });
     var kb=0; all.forEach(function(x){ kb+=Math.round((x.it.data||'').length*0.75/1024); });
@@ -3699,7 +3706,7 @@ window.__makePrev=function(host,fn){
   var roBox=document.createElement('details'); roBox.className='sub'; p.appendChild(roBox);
   function drawRo(){ roBox.textContent=''; if((st.lay||'std')!=='ref'){ roBox.style.display='none'; return; } roBox.style.display=''; var all=refRowList(), n=all.filter(function(r){ return refEx(r.k); }).length; var sm=document.createElement('summary'); sm.textContent='İşyerine özgü satırlar (resmî form planı) — '+n+' satır uygulanmıyor'; roBox.appendChild(sm); roBox.appendChild(el('p','hint','İşaretli satırlar bu işyerinde vardır. Her işyerinde her konu bulunmaz (ör. forklift, raf sistemi, laboratuvar, yüksekte çalışma): işareti kaldırdığınız satır PDF\'te soluk görünür, ayları boş kalır ve "uygulanmıyor" yazılır. İşaretli işyerine özgü satırlar PDF altındaki nota otomatik yazılır; ayrıca kendi notunuzu da ekleyebilirsiniz.')); var box=el('div'); box.style.cssText='max-height:260px;overflow:auto;border:1px solid var(--line,#ccc);border-radius:8px;padding:6px 10px'; all.forEach(function(r){ var lb=document.createElement('label'); lb.style.cssText='display:flex;gap:8px;align-items:flex-start;padding:3px 0;font-size:13px'; var cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!refEx(r.k); cb.addEventListener('change',function(){ cur(); if(!st.ro) st.ro={}; st.ro[r.k]=!cb.checked; save(); var nn=refRowList().filter(function(q){ return refEx(q.k); }).length; sm.textContent='İşyerine özgü satırlar (resmî form planı) — '+nn+' satır uygulanmıyor'; }); lb.appendChild(cb); lb.appendChild(document.createTextNode(r.n)); box.appendChild(lb); }); roBox.appendChild(box); var nl=el('label','field'); nl.appendChild(el('span',null,'İşyerine özgü ek not (isteğe bağlı; PDF\'in altına yazılır)')); var ni=document.createElement('input'); ni.type='text'; ni.maxLength=220; ni.placeholder='Örn. Yüksekte çalışma 3. kat çatı bakımında yapılmaktadır'; ni.value=st.ron||''; ni.addEventListener('input',function(){ cur(); st.ron=ni.value; save(); }); nl.appendChild(ni); roBox.appendChild(nl); }
   var fUnv=inp(g2,'Firma ünvanı (boşsa seçili firma yazılır)','unv'), fSube=inp(g2,'Şube (şubesi yoksa boş bırakın)','sube','text','Örn: İSTİNYE PARK AVM ŞUBESİ');
-  p.appendChild(el('p','hint','Firma logosu Ayarlar › Firmalar › Düzenle’deki logodan otomatik gelir; burada ayrıca yüklenmez.'));
+  p.appendChild(el('p','hint','Firma logosu Firmalar sayfasında firmayı açıp “Firma ve şube bilgilerini düzenle”deki logodan otomatik gelir; burada ayrıca yüklenmez.'));
   function showLogo(){}
   var sbDl=document.createElement('datalist'); sbDl.id='plan-sube-list'; p.appendChild(sbDl); fSube.setAttribute('list','plan-sube-list'); fSube.parentNode.querySelector('span').textContent='Şube (kayıtlı şubelerden seçilir; özel de yazılabilir)';
   fSube.addEventListener('change',function(){ var inf=infoFor(F(),(fSube.value||'').trim()); var fx=F()||{}; var anyPs=Object.keys(fx.sbi||{}).some(function(k){ return fx.sbi[k]&&(fx.sbi[k].ps||fx.sbi[k].vz); })||!!(fx.info&&(fx.info.ps||fx.info.vz)); if(Object.keys(inf).length||anyPs){ cur(); if(anyPs){ st.ps='1'; st.vz=fx.vz||'b'; } applyInfo(st,inf); save(); refresh(); setStatus('Şube bilgileri getirildi.','ok'); } });
@@ -3734,7 +3741,7 @@ window.__makePrev=function(host,fn){
   fSube.readOnly=true; fSube.placeholder='Şube seçin (şubesiz ise “Tüm şubeler”)'; fSube.style.cursor='pointer';
   function subeFire(v){ fSube.value=v; fSube.dispatchEvent(new Event('input')); fSube.dispatchEvent(new Event('change')); }
   function openSube(){ var f=F()||{}, br=f.sb||[]; var curV=(fSube.value||'').trim();
-    window.__pick({title:'Şube seç: '+(f.name||'firma'), items:br.map(function(x){ return {id:x,label:x}; }), multi:false, sel:curV?[curV]:[], allLabel:'Tüm şubeler (şube belirtme)', allSelected:!curV, customLabel:'Özel şube adı (kayıtlı değilse elle yazın)', customPlaceholder:'Örn: İSTİNYE PARK AVM ŞUBESİ', customValue:(curV&&br.indexOf(curV)<0)?curV:'', emptyText:'Bu firmada kayıtlı şube yok. Ayarlar › Firmalar › Düzenle › Şubeler bölümünden ekleyebilirsiniz.',
+    window.__pick({title:'Şube seç: '+(f.name||'firma'), items:br.map(function(x){ return {id:x,label:x}; }), multi:false, sel:curV?[curV]:[], allLabel:'Tüm şubeler (şube belirtme)', allSelected:!curV, customLabel:'Özel şube adı (kayıtlı değilse elle yazın)', customPlaceholder:'Örn: İSTİNYE PARK AVM ŞUBESİ', customValue:(curV&&br.indexOf(curV)<0)?curV:'', emptyText:'Bu firmada kayıtlı şube yok. Firmalar sayfasında firmayı açıp “Firma ve şube bilgilerini düzenle › Şubeler” bölümünden ekleyebilirsiniz.',
       onDone:function(r){ if(r.all) subeFire(''); else if(r.custom) subeFire(r.custom); else if(r.ids&&r.ids[0]) subeFire(r.ids[0]); } }); }
   fSube.addEventListener('click',openSube); fSube.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSube(); } });
   function fillSb(){ sbDl.textContent=''; ((F()&&F().sb)||[]).forEach(function(x){ var o=document.createElement('option'); o.value=x; sbDl.appendChild(o); }); }
@@ -5027,7 +5034,7 @@ window.__makePrev=function(host,fn){
 
   /* ---------- Takip merkezi: Teksen verisini al (v186) ---------- */
   (function(){
-    var root=document.getElementById('p-tkp'); if(!root) return;
+    var root=document.getElementById('p-firm'); if(!root) return;
     var DBN='teksen-takip', STORES=['firms','hizmet','uyg','docs','meta'], KEYS={firms:'sicil',hizmet:'id',uyg:'id',docs:'sicil',meta:'k'};
     var dbp=null;
     function openDb(){ if(dbp) return dbp; dbp=new Promise(function(ok,no){ var r; try{ r=indexedDB.open(DBN,1); }catch(e){ dbp=null; no(e); return; } r.onupgradeneeded=function(){ STORES.forEach(function(s){ if(!r.result.objectStoreNames.contains(s)) r.result.createObjectStore(s,{keyPath:KEYS[s]}); }); }; r.onsuccess=function(){ ok(r.result); }; r.onerror=function(){ dbp=null; no(r.error); }; }); return dbp; }
@@ -5427,29 +5434,48 @@ window.__makePrev=function(host,fn){
     }
     sMore.addEventListener('click',function(){ SMLIM+=15; renderSummary(); });
 
-    /* ---- Firma → şube → alan gezinmesi (v196) — yalnız okuma; mevcut panellerin hesaplarını kullanır ---- */
-    var pN=E('div','panel'); pN.appendChild(E('h2',null,'Firma takibi'));
-    var nTop=E('div','tkp-row'); var nBug=E('button','btn','Bugün bakılacaklar'); nBug.type='button'; nBug.setAttribute('aria-expanded','false'); nTop.appendChild(nBug); pN.appendChild(nTop);
-    var nCrumb=E('div','tkp-row'); pN.appendChild(nCrumb);
-    var nL1=E('div'), nL2=E('div'), nL3=E('div'); pN.appendChild(nL1); pN.appendChild(nL2); pN.appendChild(nL3);
-    var nq=E('input'); nq.type='search'; nq.placeholder='Firma ara'; nq.setAttribute('aria-label','Firma ara');
-    var nso=mkSel('Firma sıralaması',[['uyari','En çok uyarısı olan önce'],['ad','Firma adı (A–Z)']]);
-    var nr=E('div','tkp-row'); nr.appendChild(nq); nr.appendChild(nso); nL1.appendChild(nr);
-    var nsum=E('p','hint'); nL1.appendChild(nsum); var nlst=E('div'); nL1.appendChild(nlst);
-    var nmore=E('button','btn','Daha fazla firma göster'); nmore.type='button'; nmore.hidden=true; nL1.appendChild(nmore);
-    var NAV={g:null,s:null,tab:'ozet'}, NLIM=30, NG=[], NSM={};
-    var TEHN={aztehlikeli:'az tehlikeli',tehlikeli:'tehlikeli',coktehlikeli:'çok tehlikeli'};
-    function kName(f){ return (f.ad||'(adsız)')+(f.sube?' · '+f.sube:''); }
-    function gk(f){ return trd(f.ad||'(adsız)').trim(); }
+    /* ---- Firmalar sayfası: firma → şube → alan (v200). Kayıtlı firmalar ile Teksen kayıtları SGK sicil no ile eşleşir; elle de bağlanabilir ---- */
+    var topEl=document.getElementById('firm-top'), navEl=document.getElementById('firm-nav'), restEl=document.getElementById('firm-rest'), tilesEl=document.getElementById('firm-tiles');
+    var NAV={fid:null,uk:null,tab:'ozet',raw:null}, NSM={}, LINKS={}, LK={byRec:{},byUnit:{},unmatched:[],auto:0,manual:0}, SHOWBUG=false;
+    var TEHN={aztehlikeli:'az tehlikeli',tehlikeli:'tehlikeli',coktehlikeli:'çok tehlikeli'}, HZN={az:'Az tehlikeli',te:'Tehlikeli',ct:'Çok tehlikeli'};
+    function FA(){ return window.__firmApi||null; }
+    function sn(x){ return String(x==null?'':x).replace(/\D/g,''); }
+    function tkLabel(r){ return (r.ad||'(adsız)')+(r.sube?' · '+r.sube:''); }
     function nBtn(cls){ var b=E('button',cls||'btn'); b.type='button'; b.style.cssText='display:block;width:100%;text-align:left;margin:4px 0'; return b; }
-    function buildNav(){
-      NG=[]; NSM={};
-      if(!DATA||!DATA.f.length) return;
-      var bugun=today(); summaryData(DATA,bugun).rows.forEach(function(m){ NSM[m.f.sicil]=m; });
-      var M={}; DATA.f.forEach(function(f){ var k=gk(f), g=M[k]; if(!g){ g=M[k]={key:k,ad:f.ad||'(adsız)',fs:[],pts:0,warn:0,why:''}; NG.push(g); } g.fs.push(f); var m=NSM[f.sicil]; if(m){ g.pts+=m.pts; g.warn+=m.why.length; if(!g.why&&m.why.length) g.why=m.why[0]; } });
-      NG.forEach(function(g){ g.fs.sort(function(a,b){ return trd(a.sube||'').localeCompare(trd(b.sube||''),'tr'); }); });
+    function warnOf(r){ var m=NSM[r.sicil]; return m?m.why.length:0; }
+    function recsOf(fid){ var out=[]; Object.keys(LK.byUnit).forEach(function(k){ if(k.indexOf(fid+'|')===0) out=out.concat(LK.byUnit[k]); }); return out; }
+    function firmTitle(recs){ if(!recs.length) return ''; var ads=recs.map(function(r){ return String(r.ad||'').trim(); }), best=ads.slice().sort(function(x,y){ return x.length-y.length; })[0];
+      if(ads.length>1){ var pre=ads.map(function(x){ var i=x.lastIndexOf(' - '); return i>0?x.slice(0,i):x; }); if(pre.every(function(x){ return x===pre[0]; })) return pre[0]; }
+      return best; }
+    function buildLinks(){
+      LK={byRec:{},byUnit:{},unmatched:[],auto:0,manual:0}; var api=FA(); if(!DATA||!api) return;
+      var idx={};
+      api.all().forEach(function(F){ var a=sn(F.info&&F.info.sgk); if(a.length>=5&&!idx[a]) idx[a]={fid:F.id,sube:''};
+        (F.sb||[]).forEach(function(n){ var b=sn(F.sbi&&F.sbi[n]&&F.sbi[n].sgk); if(b.length>=5&&!idx[b]) idx[b]={fid:F.id,sube:n}; }); });
+      DATA.f.forEach(function(r){
+        var m=LINKS[r.sicil], how='elle'; if(m&&!api.byId(m.fid)) m=null;
+        if(!m){ var k=sn(r.sicil); if(k&&idx[k]){ m=idx[k]; how='sgk'; } }
+        if(m){ var key=m.fid+'|'+(m.sube||''); LK.byRec[r.sicil]={fid:m.fid,sube:m.sube||'',how:how}; (LK.byUnit[key]||(LK.byUnit[key]=[])).push(r); if(how==='sgk') LK.auto++; else LK.manual++; }
+        else LK.unmatched.push(r); });
     }
-    function grp(k){ for(var i=0;i<NG.length;i++) if(NG[i].key===k) return NG[i]; return null; }
+    function buildNav(){
+      NSM={}; if(!DATA||!DATA.f.length){ LK={byRec:{},byUnit:{},unmatched:[],auto:0,manual:0}; return; }
+      summaryData(DATA,today()).rows.forEach(function(m){ NSM[m.f.sicil]=m; });
+      buildLinks();
+    }
+    function infoFor(fid){ if(!DATA||!DATA.f.length) return null; var recs=recsOf(fid); if(!recs.length) return {title:'',line:'Teksen kaydı eşleşmedi',warn:false};
+      var w=0; recs.forEach(function(r){ w+=warnOf(r); }); return {title:firmTitle(recs),line:recs.length+' Teksen kaydı · '+(w?w+' uyarı':'uyarı yok'),warn:w>0}; }
+    function unitsOf(F){
+      var out=[], seen={};
+      function add(sube,label){ var key=F.id+'|'+sube; seen[key]=1; var recs=LK.byUnit[key]||[]; out.push({key:key,fid:F.id,sube:sube,app:label,recs:recs,rec:recs[0]||null,info:sube?((F.sbi||{})[sube]||{}):(F.info||{})}); }
+      var sb=(F.sb||[]).filter(Boolean);
+      if(!sb.length||LK.byUnit[F.id+'|']) add('','Firma geneli');
+      sb.forEach(function(n){ add(n,n); });
+      Object.keys(LK.byUnit).forEach(function(k){ if(k.indexOf(F.id+'|')===0&&!seen[k]){ var n=k.slice(F.id.length+1); add(n,n||'Firma geneli'); } });
+      return out;
+    }
+    function saveLink(sicil,fid,sube){ LINKS[sicil]={fid:fid,sube:sube||''}; return putMany({meta:[{k:'link:'+sicil,sicil:sicil,fid:fid,sube:sube||'',t:Date.now()}]}); }
+    function delLink(sicil){ delete LINKS[sicil]; return openDb().then(function(db){ return new Promise(function(ok,no){ var tx=db.transaction('meta','readwrite'); tx.objectStore('meta').delete('link:'+sicil); tx.oncomplete=function(){ ok(); }; tx.onerror=function(){ no(tx.error); }; }); }); }
     function secs(f,full){
       var bugun=today(), out={};
       var v=visitStats(DATA,bugun).filter(function(x){ return String(x.f.sicil)===String(f.sicil); })[0];
@@ -5481,59 +5507,126 @@ window.__makePrev=function(host,fn){
     }
     function dl0(d){ return d.lines[0]; }
     var TABS=[['ozet','Özet'],['ziyaret','Ziyaret'],['uyg','Uygunsuzluk'],['dok','Doküman'],['egitim','Eğitim/Personel']];
-    function navGo(g,s,tab){ NAV.g=g; NAV.s=s; NAV.tab=tab||'ozet'; renderNav(); try{ pN.scrollIntoView({block:'start'}); }catch(e){} }
-    function renderCrumb(){
-      nCrumb.textContent='';
-      if(!NAV.g) return;
-      var g=grp(NAV.g); if(!g) return;
-      var b0=E('button','btn','‹ Firmalar'); b0.type='button'; b0.addEventListener('click',function(){ navGo(null,null); }); nCrumb.appendChild(b0);
-      if(NAV.s&&g.fs.length>1){ var b1=E('button','btn',g.ad); b1.type='button'; b1.addEventListener('click',function(){ navGo(g.key,null); }); nCrumb.appendChild(b1); }
-      var cur=E('b',null,NAV.s?kName(g.fs.filter(function(f){ return String(f.sicil)===String(NAV.s); })[0]||g.fs[0]):g.ad); nCrumb.appendChild(cur);
+    function navGo(fid,uk,tab,raw){ NAV.fid=fid||null; NAV.uk=uk||null; NAV.tab=tab||'ozet'; NAV.raw=raw||null; renderNav(); try{ root.scrollIntoView({block:'start'}); }catch(e){} }
+    function afterLink(){ var api=FA(); if(api&&api.rerender) api.rerender(); else renderAll(); }
+    function backBtn(){ var b=E('button','btn','‹ Firmalar'); b.type='button'; b.addEventListener('click',function(){ navGo(null); }); return b; }
+    function unitPicker(rec){
+      var api=FA(), box=E('div','tkp-i'); box.appendChild(E('div',null,'Kayıtlı firmaya bağla'));
+      box.appendChild(E('div','hint','Bu Teksen kaydı hangi kayıtlı firmaya ve şubeye ait? (Bağlantı yalnız bu cihazdaki Teksen verisinde saklanır; firma kaydınıza dokunulmaz.)'));
+      var fs=E('select'); fs.setAttribute('aria-label','Kayıtlı firma'); var o0=E('option',null,'— firma seçin —'); o0.value=''; fs.appendChild(o0);
+      api.all().slice().sort(function(x,y){ return String(api.label(x)).localeCompare(String(api.label(y)),'tr'); }).forEach(function(F){ var o=E('option',null,api.label(F)); o.value=F.id; fs.appendChild(o); });
+      var us=E('select'); us.setAttribute('aria-label','Şube'); us.hidden=true;
+      fs.addEventListener('change',function(){ us.textContent=''; us.hidden=!fs.value; if(!fs.value) return; var F=api.byId(fs.value), o1=E('option',null,'Firma geneli (şubesiz)'); o1.value=''; us.appendChild(o1); (F.sb||[]).filter(Boolean).forEach(function(n){ var o=E('option',null,n); o.value=n; us.appendChild(o); }); });
+      var go2=E('button','btn primary','Bağla'); go2.type='button';
+      go2.addEventListener('click',function(){ if(!fs.value) return; saveLink(rec.sicil,fs.value,us.value).then(function(){ var fid=fs.value, sube=us.value; buildNav(); afterLink(); navGo(fid,fid+'|'+sube); }); });
+      var r=E('div','tkp-row'); r.appendChild(fs); r.appendChild(us); r.appendChild(go2); box.appendChild(r); return box;
     }
-    function renderL1(){
-      nlst.textContent='';
-      var q=trd(nq.value).trim(), rows=NG.filter(function(g){ return !q||g.key.indexOf(q)>=0; });
-      rows.sort(function(a,b){ if(nso.value==='ad') return trd(a.ad).localeCompare(trd(b.ad),'tr'); return (b.pts-a.pts)||trd(a.ad).localeCompare(trd(b.ad),'tr'); });
-      var wf=NG.filter(function(g){ return g.warn>0; }).length;
-      nsum.textContent=NG.length+' firma, '+DATA.f.length+' firma/şube kaydı; '+wf+' firmada uyarı var. Bu aramada '+rows.length+' firma.';
-      rows.slice(0,NLIM).forEach(function(g){
-        var b=nBtn(); b.appendChild(E('b',null,g.ad));
-        b.appendChild(E('div',g.warn?'hint tkp-late':'hint',(g.fs.length>1?g.fs.length+' şube · ':'')+(g.warn?g.warn+' uyarı'+(g.why?' · '+g.why:''):'uyarı yok')));
-        b.addEventListener('click',function(){ navGo(g.key,g.fs.length===1?g.fs[0].sicil:null); }); nlst.appendChild(b);
-      });
-      nmore.hidden=!(rows.length>NLIM); if(rows.length>NLIM) nmore.textContent='Daha fazla firma göster ('+(rows.length-NLIM)+' firma daha)';
+    function recPicker(F,u){
+      var box=E('div','tkp-i'); box.appendChild(E('div',null,'Teksen kaydını bağla'));
+      box.appendChild(E('div','hint','Bu şube Teksen’de otomatik eşleşmedi. Kayıtlı firma/şube bilgilerine “SGK sicil no” yazarsanız kendiliğinden eşleşir; ya da aşağıdan elle seçin.'));
+      var q=E('input'); q.type='search'; q.placeholder='Teksen kaydı ara'; q.setAttribute('aria-label','Teksen kaydı ara');
+      var sel=E('select'); sel.setAttribute('aria-label','Teksen kaydı');
+      function fill(){ sel.textContent=''; var t=trd(q.value).trim(), n=0; LK.unmatched.slice().sort(function(x,y){ return trd(tkLabel(x)).localeCompare(trd(tkLabel(y)),'tr'); }).forEach(function(r){ if(t&&trd(tkLabel(r)+' '+r.sicil).indexOf(t)<0) return; if(n++>=200) return; var o=E('option',null,tkLabel(r)+' · sicil '+r.sicil); o.value=r.sicil; sel.appendChild(o); }); if(!n){ var o=E('option',null,'Eşleşmeyen kayıt yok'); o.value=''; sel.appendChild(o); } }
+      fill(); q.addEventListener('input',fill);
+      var go2=E('button','btn primary','Bağla'); go2.type='button';
+      go2.addEventListener('click',function(){ if(!sel.value) return; saveLink(sel.value,F.id,u.sube).then(function(){ buildNav(); afterLink(); }); });
+      var r=E('div','tkp-row'); r.appendChild(q); r.appendChild(sel); r.appendChild(go2); box.appendChild(r); return box;
     }
-    function renderL2(g){
-      nL2.textContent=''; nL2.appendChild(E('p','hint',g.fs.length+' şube/kayıt. Birine dokunun:'));
-      g.fs.forEach(function(f){ var m=NSM[f.sicil], b=nBtn(); b.appendChild(E('b',null,f.sube||'Şubesiz / merkez'));
-        b.appendChild(E('div',m&&m.why.length?'hint tkp-late':'hint',m&&m.why.length?m.why.slice(0,3).join(' · '):'uyarı yok'));
-        b.addEventListener('click',function(){ navGo(g.key,f.sicil); }); nL2.appendChild(b); });
-    }
-    function renderL3(g){
-      nL3.textContent='';
-      var f=null; g.fs.forEach(function(x){ if(String(x.sicil)===String(NAV.s)) f=x; }); if(!f) return;
-      var S=secs(f,NAV.tab!=='ozet');
-      var head=E('div','hint',[(f.tehlike?(TEHN[f.tehlike]||f.tehlike):'tehlike sınıfı bilinmiyor'),((parseInt(f.calisan,10)||0)+' çalışan'),(f.periyot?'periyot '+f.periyot:'periyot bilinmiyor')].join(' · ')); nL3.appendChild(head);
-      var tb=E('div','tkp-row'); TABS.forEach(function(t){ var b=E('button',t[0]===NAV.tab?'btn primary':'btn',t[1]); b.type='button'; b.addEventListener('click',function(){ NAV.tab=t[0]; renderNav(); }); tb.appendChild(b); }); nL3.appendChild(tb);
+    function tabsRow(withInfo){ var tb=E('div','tkp-row'); TABS.concat(withInfo?[['bilgi','Bilgiler']]:[]).forEach(function(t){ var b=E(t[0]===NAV.tab?'button':'button',t[0]===NAV.tab?'btn primary':'btn',t[1]); b.type='button'; b.addEventListener('click',function(){ NAV.tab=t[0]; renderNav(); }); tb.appendChild(b); }); return tb; }
+    function recBody(host,rec){
+      var S=secs(rec,NAV.tab!=='ozet');
       if(NAV.tab==='ozet'){
-        var m=NSM[f.sicil]; nL3.appendChild(E('div',m&&m.why.length?'hint tkp-late':'hint',m&&m.why.length?'Uyarılar: '+m.why.join(' · '):'Şu an uyarı yok.'));
-        ['ziyaret','uyg','dok','egitim'].forEach(function(k){ var x=S[k], b=nBtn(); b.appendChild(E('b',null,x.title)); b.appendChild(E('div',x.bad?'hint tkp-late':'hint',x.sumLine||x.lines[0])); b.addEventListener('click',function(){ NAV.tab=k; renderNav(); }); nL3.appendChild(b); });
-      } else { var x=S[NAV.tab]; var box=E('div','tkp-g'); x.lines.forEach(function(l,i){ box.appendChild(E('div',(x.bad&&i===0)?'tkp-i tkp-late':'tkp-i',l)); }); nL3.appendChild(box); }
+        var m=NSM[rec.sicil]; host.appendChild(E('div',m&&m.why.length?'hint tkp-late':'hint',m&&m.why.length?'Uyarılar: '+m.why.join(' · '):'Şu an uyarı yok.'));
+        ['ziyaret','uyg','dok','egitim'].forEach(function(k){ var x=S[k], b=nBtn(); b.appendChild(E('b',null,x.title)); b.appendChild(E('div',x.bad?'hint tkp-late':'hint',x.sumLine||x.lines[0])); b.addEventListener('click',function(){ NAV.tab=k; renderNav(); }); host.appendChild(b); });
+      } else { var x=S[NAV.tab]; if(!x) return; var box=E('div','tkp-g'); x.lines.forEach(function(l,i){ box.appendChild(E('div',(x.bad&&i===0)?'tkp-i tkp-late':'tkp-i',l)); }); host.appendChild(box); }
+    }
+    function recHead(rec){ return E('div','hint',[(rec.tehlike?(TEHN[rec.tehlike]||rec.tehlike):'tehlike sınıfı bilinmiyor'),((parseInt(rec.calisan,10)||0)+' çalışan'),(rec.periyot?'periyot '+rec.periyot:'periyot bilinmiyor')].join(' · ')); }
+    function actionRow(F){
+      var api=FA(), ac=E('div','tkp-row'); var be=E('button','btn','Firma ve şube bilgilerini düzenle'); be.type='button'; be.addEventListener('click',function(){ api.open(F.id); }); ac.appendChild(be);
+      var bp=E('button',api.cur()===F.id?'btn quiet':'btn',api.cur()===F.id?'Evrak için seçili firma ✓':'Evrak için bu firmayı seç'); bp.type='button'; bp.addEventListener('click',function(){ api.pick(F.id); renderNav(); }); ac.appendChild(bp); return ac;
+    }
+    function renderUnits(F,us){
+      var api=FA(), recs=recsOf(F.id), t=firmTitle(recs)||api.label(F);
+      var cr=E('div','tkp-row'); cr.appendChild(backBtn()); cr.appendChild(E('b',null,t)); navEl.appendChild(cr);
+      if(t!==api.label(F)) navEl.appendChild(E('div','hint','Kayıtlı ad: '+api.label(F)));
+      navEl.appendChild(actionRow(F));
+      navEl.appendChild(E('p','hint',us.length+' şube/kayıt. Birine dokunun:'));
+      var gl=E('div','flist'); us.forEach(function(u){ var r=E('div','frow'), mb=E('button','fmain'); mb.type='button';
+        var title=u.rec?tkLabel(u.rec):u.app, w=0; u.recs.forEach(function(x){ w+=warnOf(x); });
+        mb.appendChild(E('span','ft',title));
+        if(u.rec&&(u.sube||'Firma geneli')!==title) mb.appendChild(E('span','fw','Kayıtlı ad: '+(u.sube||'Firma geneli')));
+        mb.appendChild(E('span',u.rec&&w?'fw late':'fw',DATA&&DATA.f.length?(u.rec?(w?w+' uyarı':'uyarı yok'):'Teksen kaydı eşleşmedi'):'Teksen verisi alınmadı'));
+        mb.addEventListener('click',function(){ navGo(F.id,u.key); }); r.appendChild(mb); gl.appendChild(r); });
+      navEl.appendChild(gl);
+    }
+    function renderUnit(F,us,u){
+      var api=FA(), t=u.rec?tkLabel(u.rec):(F.name||'')+(u.sube?' · '+u.sube:'');
+      var cr=E('div','tkp-row'); cr.appendChild(backBtn());
+      if(us.length>1){ var b1=E('button','btn',firmTitle(recsOf(F.id))||api.label(F)); b1.type='button'; b1.addEventListener('click',function(){ navGo(F.id,null); }); cr.appendChild(b1); }
+      cr.appendChild(E('b',null,t)); navEl.appendChild(cr);
+      navEl.appendChild(actionRow(F));
+      if(u.rec) navEl.appendChild(recHead(u.rec));
+      navEl.appendChild(tabsRow(true));
+      var host=E('div'); navEl.appendChild(host);
+      if(NAV.tab==='bilgi'){
+        var inf=u.info||{}, L=[];
+        L.push(['Kayıtlı firma',api.label(F)]); L.push(['Şube',u.sube||'Firma geneli (şubesiz)']);
+        [['adr','Adres'],['sgk','SGK sicil no'],['nace','NACE kodu'],['isv','İşveren / vekili']].forEach(function(x){ if(inf[x[0]]) L.push([x[1],inf[x[0]]]); });
+        if(inf.hz) L.push(['Tehlike sınıfı',HZN[inf.hz]||inf.hz]);
+        var lk=u.rec&&LK.byRec[u.rec.sicil];
+        L.push(['Teksen kaydı',u.rec?tkLabel(u.rec)+' · sicil '+u.rec.sicil+' ('+(lk&&lk.how==='sgk'?'SGK sicil no ile eşleşti':'elle bağlandı')+')':'eşleşmedi']);
+        var box=E('div','tkp-g'); L.forEach(function(x){ box.appendChild(E('div','tkp-i',x[0]+': '+x[1])); }); host.appendChild(box);
+        var ac=E('div','tkp-row');
+        [['Personel evrakları','tab-evp'],['Firma evrak takımı','tab-evt']].forEach(function(x){ var b=E('button','btn',x[0]); b.type='button'; b.addEventListener('click',function(){ api.pick(F.id); var tt=document.getElementById(x[1]); if(tt) tt.click(); }); ac.appendChild(b); });
+        host.appendChild(ac);
+        host.appendChild(E('p','hint','Evrak sayfalarında şubeyi ayrıca seçmeniz gerekir; firma seçili gelir.'));
+        if(u.rec&&lk&&lk.how==='elle'){ var bd=E('button','btn quiet','Teksen bağlantısını kaldır'); bd.type='button'; bd.addEventListener('click',function(){ delLink(u.rec.sicil).then(function(){ buildNav(); afterLink(); }); }); host.appendChild(bd); }
+        if(!u.rec&&DATA&&DATA.f.length) host.appendChild(recPicker(F,u));
+        return;
+      }
+      if(!u.rec){
+        host.appendChild(E('p','hint',DATA&&DATA.f.length?'Bu şube Teksen kayıtlarıyla eşleşmedi.':'Teksen verisi henüz alınmadı. Aşağıdaki “Teksen verisini al” bölümünden alın.'));
+        if(DATA&&DATA.f.length) host.appendChild(recPicker(F,u)); return;
+      }
+      recBody(host,u.rec);
+    }
+    function renderRaw(){
+      var rec=null; if(DATA) DATA.f.forEach(function(x){ if(x.sicil===NAV.raw) rec=x; });
+      if(!rec){ NAV.raw=null; return false; }
+      var cr=E('div','tkp-row'); cr.appendChild(backBtn()); cr.appendChild(E('b',null,tkLabel(rec))); navEl.appendChild(cr);
+      navEl.appendChild(recHead(rec)); navEl.appendChild(E('p','hint','Bu Teksen kaydı kayıtlı bir firmayla eşleşmedi.'));
+      navEl.appendChild(tabsRow(false)); var host=E('div'); navEl.appendChild(host); recBody(host,rec);
+      if(FA()) navEl.appendChild(unitPicker(rec));
+      return true;
     }
     function renderNav(){
-      if(!DATA||!DATA.f.length){ nCrumb.textContent=''; nL1.hidden=false; nL2.hidden=true; nL3.hidden=true; nsum.textContent=''; nlst.textContent=''; nlst.appendChild(E('p','hint','Kayıtlı firma yok. Önce aşağıdaki “Teksen verisini al” bölümünden içe aktarın.')); nmore.hidden=true; return; }
-      var g=NAV.g?grp(NAV.g):null; if(!g){ NAV.g=null; NAV.s=null; }
-      if(g&&NAV.s&&!g.fs.some(function(f){ return String(f.sicil)===String(NAV.s); })) NAV.s=null;
-      renderCrumb();
-      nL1.hidden=!!g; nL2.hidden=!(g&&!NAV.s); nL3.hidden=!(g&&NAV.s);
-      if(!g) renderL1(); else if(!NAV.s) renderL2(g); else renderL3(g);
+      navEl.textContent=''; var api=FA(), drill=false;
+      if(NAV.raw) drill=renderRaw();
+      if(!drill&&NAV.fid){ var F=api&&api.byId(NAV.fid); if(!F){ NAV.fid=null; NAV.uk=null; }
+        else { drill=true; var us=unitsOf(F); if(!NAV.uk&&us.length===1) NAV.uk=us[0].key; var u=us.filter(function(x){ return x.key===NAV.uk; })[0]; if(NAV.uk&&!u) NAV.uk=null; if(u) renderUnit(F,us,u); else renderUnits(F,us); } }
+      tilesEl.hidden=drill; restEl.hidden=drill; topEl.hidden=drill; pS.hidden=drill||!SHOWBUG;
     }
-    nq.addEventListener('input',function(){ NLIM=30; renderNav(); }); nso.addEventListener('change',function(){ NLIM=30; renderNav(); });
-    nmore.addEventListener('click',function(){ NLIM+=30; renderNav(); });
-    pS.hidden=true; nBug.addEventListener('click',function(){ pS.hidden=!pS.hidden; nBug.setAttribute('aria-expanded',pS.hidden?'false':'true'); nBug.className=pS.hidden?'btn':'btn primary'; });
+    /* eşleşmeyen Teksen kayıtları */
+    var uD=E('details','tkp-g'), uSum=E('summary'), uBody=E('div'); uD.appendChild(uSum); uD.appendChild(uBody);
+    var uq=E('input'); uq.type='search'; uq.placeholder='Teksen kaydı ara'; uq.setAttribute('aria-label','Eşleşmeyen Teksen kaydı ara'); var ULIM=40;
+    function renderUnmatched(){
+      uBody.textContent=''; if(!DATA||!DATA.f.length){ uD.hidden=true; return; } uD.hidden=false;
+      var n=LK.unmatched.length; uSum.textContent='Teksen eşleşmesi: '+(DATA.f.length-n)+' / '+DATA.f.length+' kayıt eşleşti'+(n?' · '+n+' eşleşmeyen':'');
+      uBody.appendChild(E('p','hint','Kayıtlar kayıtlı firmalarla SGK sicil no ile eşleşir: '+LK.auto+' kayıt sicil no ile, '+LK.manual+' kayıt elle bağlandı. Eşleşmeyenler için firma veya şube bilgilerine “SGK sicil no” yazın ya da aşağıdan elle bağlayın.'));
+      if(!n) return; uBody.appendChild(uq);
+      var t=trd(uq.value).trim(), l=LK.unmatched.filter(function(r){ return !t||trd(tkLabel(r)+' '+r.sicil).indexOf(t)>=0; }).sort(function(x,y){ return trd(tkLabel(x)).localeCompare(trd(tkLabel(y)),'tr'); });
+      l.slice(0,ULIM).forEach(function(r){ var b=nBtn(); b.appendChild(E('b',null,tkLabel(r))); var w=warnOf(r); b.appendChild(E('div',w?'hint tkp-late':'hint','sicil '+r.sicil+' · '+(w?w+' uyarı':'uyarı yok'))); b.addEventListener('click',function(){ navGo(null,null,'ozet',r.sicil); }); uBody.appendChild(b); });
+      if(l.length>ULIM) uBody.appendChild(E('p','hint','… ve '+(l.length-ULIM)+' kayıt daha; aramayla daraltın.'));
+    }
+    uq.addEventListener('input',function(){ ULIM=40; var pos=uq.selectionStart; renderUnmatched(); uq.focus(); try{ uq.setSelectionRange(pos,pos); }catch(e){} });
+    function renderAll(){ if(!FA()) buildNav(); renderNav(); renderUnmatched(); }
+    var nTop=E('div','tkp-row'), nBug=E('button','btn','Bugün bakılacaklar'); nBug.type='button'; nBug.setAttribute('aria-expanded','false'); nTop.appendChild(nBug);
+    nBug.addEventListener('click',function(){ SHOWBUG=!SHOWBUG; pS.hidden=!SHOWBUG; nBug.setAttribute('aria-expanded',SHOWBUG?'true':'false'); nBug.className=SHOWBUG?'btn primary':'btn'; });
     var dG=E('details','tkp-g'); dG.appendChild(E('summary',null,'Genel listeler (tüm firmalar)')); dG.appendChild(p3); dG.appendChild(p4); dG.appendChild(p5); dG.appendChild(p6);
     var dI=E('details','tkp-g'); dI.appendChild(E('summary',null,'Teksen verisini al / kayıtlı veri')); dI.appendChild(p1); dI.appendChild(p2);
-    root.appendChild(pN); root.appendChild(pS); root.appendChild(dG); root.appendChild(dI);
+    topEl.appendChild(nTop); topEl.appendChild(pS); pS.hidden=true; restEl.appendChild(uD); restEl.appendChild(dG); restEl.appendChild(dI);
+    window.__firmNav={prepare:buildNav,info:infoFor,pick:function(id){ navGo(id,null); },search:function(id){ return recsOf(id).map(tkLabel).join(' '); }};
+    if(window.__firmApi&&window.__firmApi.hooks) window.__firmApi.hooks.push(renderAll);
 
     function line(parent,text){ parent.appendChild(E('div',null,text)); }
     function showErr(msg){ rep.textContent=''; var d=E('div','tkp-rep err'); line(d,msg); rep.appendChild(d); }
@@ -5551,7 +5644,7 @@ window.__makePrev=function(host,fn){
     function refresh(){
       return Promise.all([getAll('firms'),getAll('hizmet'),getAll('uyg'),getAll('meta'),getAll('docs')]).then(function(a){
         var bugun=today(), acik=0, gec=0; a[2].forEach(function(u){ if(u.state==='acik'){ acik++; if(u.termin&&u.termin<bugun) gec++; } });
-        var son=null; a[3].forEach(function(m){ if(m.k==='son') son=m; }); DATA={f:a[0],u:a[2],h:a[1],d:a[4]}; renderList(); renderVisits(); renderDocs(); renderStaff(); renderSummary(); buildNav(); renderNav(); if(!a[0].length) dI.open=true;
+        var son=null; a[3].forEach(function(m){ if(m.k==='son') son=m; }); DATA={f:a[0],u:a[2],h:a[1],d:a[4]}; renderList(); renderVisits(); renderDocs(); renderStaff(); renderSummary(); LINKS={}; a[3].forEach(function(m){ if(m&&String(m.k).indexOf('link:')===0) LINKS[m.sicil]={fid:m.fid,sube:m.sube||''}; }); if(window.__firmApi&&window.__firmApi.rerender) window.__firmApi.rerender(); else renderAll(); if(!a[0].length) dI.open=true;
         stats.textContent='';
         [['Firma / şube',a[0].length],['Hizmet kaydı',a[1].length],['Açık uygunsuzluk',acik],['Termini geçmiş',gec]].forEach(function(x){ var c=E('div','tkp-stat'); c.appendChild(E('b',null,String(x[1]))); c.appendChild(E('span',null,x[0])); stats.appendChild(c); });
         last.textContent=son?('Son alma: '+new Date(son.t).toLocaleString('tr-TR')):'Henüz Teksen verisi alınmadı.';
@@ -5576,11 +5669,11 @@ window.__makePrev=function(host,fn){
   })();
 
   /* ---------- sekmeler ---------- */
-  var tabs=['risk','cert','plan','firm','stamp','katilim','acilrehber','afis','sinav','ocr','rep','osgbd','osgbf','edp','rdr','evt','evp','tkp'];
-  var GRP=[['Firmalar',['tkp','firm','stamp']],['Evrak hazırla',['evt','evp']],['Belgeler',['risk','cert','plan','edp','rdr']],['Eğitim',['katilim','sinav','acilrehber','afis'],['katilim','sinav','acilrehber']],['Teksen OSGB',['osgbd','osgbf']],['Araçlar',['ocr','rep']]];
+  var tabs=['risk','cert','plan','firm','stamp','katilim','acilrehber','afis','sinav','ocr','rep','osgbd','osgbf','edp','rdr','evt','evp','ayar'];
+  var GRP=[['Firmalar',['firm']],['Evrak hazırla',['evt','evp']],['Belgeler',['risk','cert','plan','edp','rdr']],['Eğitim',['katilim','sinav','acilrehber','afis'],['katilim','sinav','acilrehber']],['Teksen OSGB',['osgbd','osgbf']],['Araçlar',['ocr','rep']],['Ayarlar',['stamp','ayar']]];
   var gbox=document.getElementById('groups'), gbtn=GRP.map(function(g){ var b=document.createElement('button'); b.type='button'; b.textContent=g[0]; b.addEventListener('click',function(){ var cur=null; try{ cur=localStorage.getItem('isg-tab-'+g[0]); }catch(e){} show(g[1].indexOf(cur)>=0?cur:g[1][0]); }); gbox.appendChild(b); return b; });
   function grpSync(n){ GRP.forEach(function(g,i){ var on=g[1].indexOf(n)>=0; gbtn[i].setAttribute('aria-pressed',on?'true':'false'); g[1].forEach(function(t){ document.getElementById('tab-'+t).hidden=!on||g[1].length<2; }); if(on){ var bar=document.querySelector('.tabs'); g[1].forEach(function(t){ bar.appendChild(document.getElementById('tab-'+t)); }); try{ localStorage.setItem('isg-tab-'+g[0],n); }catch(e){} document.querySelector('.tabs').style.display=g[1].length<2?'none':''; } }); }
-  var TT={tkp:['Firma takibi','Firma → şube → alan: uyarılar, ziyaret, doküman, eğitim. Teksen verisi buradan alınır'],risk:['Risk değerlendirmesi (RD)','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['Temel İSG Eğitim Belgesi (Sertifika)','Katılımcı için Temel İSG Eğitim Belgesi (sertifika) hazırla'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Tek bir eğitim için katılım formu; kişileri elle yaz ya da Personel evraklarından gönder'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar (bilgi, logo, yedek)','Firma bilgileri, logolar, işveren imzası, şubeler, yedek'],stamp:['İmza / Kaşe','Ortak uzman ve hekim imza örnekleri'],ocr:['Resimden yazıya','Fotoğraf veya PDF\'ten isim oku, büyük-küçük harfi düzenle'],evp:['Personel evrakları','Kişi listesini bir kez gir; işbaşı, talimat, katılım formu, sınav ve sertifika evraklarını toplu hazırla'],evt:['Firma evrak takımı','Firma bilgilerini bir kez gir; yönetmeliğe göre gereken evrakları hazırla (PDF, ZIP)'],edp:['Acil durum eylem planı','Firma ve şubeye özel acil durum planı (PDF)'],rdr:['Risk değerlendirme raporu','Firma ve şubeye özel rapor: amaç, kapsam, Fine-Kinney yöntemi (PDF)'],osgbd:['Evrak deposu','Teksen OSGB evraklarını klasörlere ayırıp sakla'],osgbf:['Form şablonları','Teksen OSGB için kendi form şablonlarını oluştur, doldur, PDF al'],rep:['Belge sayıları','Ay ay hazırlanan belge sayıları (firma bazında)']};
+  var TT={risk:['Risk değerlendirmesi (RD)','Araç plakası ve sürücü için risk değerlendirmesi hazırla'],cert:['Temel İSG Eğitim Belgesi (Sertifika)','Katılımcı için Temel İSG Eğitim Belgesi (sertifika) hazırla'],plan:['Yıllık plan','Yıllık eğitim ve çalışma planı'],katilim:['Katılım formu','Tek bir eğitim için katılım formu; kişileri elle yaz ya da Personel evraklarından gönder'],acilrehber:['Acil durum rehberi','Acil durum bilgileri ve rehber'],afis:['Görsel afiş','Eğitim ve acil durum afişleri'],sinav:['Sınav hazırla','Eğitim sınavı ve cevap anahtarı'],firm:['Firmalar','Firma → şube → alan: bilgiler, uyarılar, ziyaret, doküman, eğitim. Teksen verisi burada'],ayar:['Varsayılanlar, logolar, yedek','Kurum varsayılanları, kayıtlı logolar, yedek al / yükle'],stamp:['İmza / Kaşe','Ortak uzman ve hekim imza örnekleri; kullanıcıyla ilgili ayarlar'],ocr:['Resimden yazıya','Fotoğraf veya PDF\'ten isim oku, büyük-küçük harfi düzenle'],evp:['Personel evrakları','Kişi listesini bir kez gir; işbaşı, talimat, katılım formu, sınav ve sertifika evraklarını toplu hazırla'],evt:['Firma evrak takımı','Firma bilgilerini bir kez gir; yönetmeliğe göre gereken evrakları hazırla (PDF, ZIP)'],edp:['Acil durum eylem planı','Firma ve şubeye özel acil durum planı (PDF)'],rdr:['Risk değerlendirme raporu','Firma ve şubeye özel rapor: amaç, kapsam, Fine-Kinney yöntemi (PDF)'],osgbd:['Evrak deposu','Teksen OSGB evraklarını klasörlere ayırıp sakla'],osgbf:['Form şablonları','Teksen OSGB için kendi form şablonlarını oluştur, doldur, PDF al'],rep:['Belge sayıları','Ay ay hazırlanan belge sayıları (firma bazında)']};
   var TL={acilrehber:['Acil durum rehberi ve afiş','Ne yapılır rehberi ve asılacak resimli afişler (iki sekme)']};
   var homeEl=document.getElementById('p-home'), navwrap=document.getElementById('navwrap'), pageSel=document.getElementById('page-sel'), innerPushed=false;
   (function(){ var box=document.getElementById('home-tiles');
