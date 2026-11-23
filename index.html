@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 202 · 23.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 203 · 23.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5533,12 +5533,36 @@ window.__makePrev=function(host,fn){
       var r=E('div','tkp-row'); r.appendChild(q); r.appendChild(sel); r.appendChild(go2); box.appendChild(r); return box;
     }
     function tabsRow(withInfo){ var tb=E('div','tkp-row'); TABS.concat(withInfo?[['bilgi','Bilgiler']]:[]).forEach(function(t){ var b=E(t[0]===NAV.tab?'button':'button',t[0]===NAV.tab?'btn primary':'btn',t[1]); b.type='button'; b.addEventListener('click',function(){ NAV.tab=t[0]; renderNav(); }); tb.appendChild(b); }); return tb; }
+    /* ---- Uygunsuzluk ayrıntısı (v203): Teksen'den alınan tüm alanlar (fotoğraf hariç), durum süzgeçli; yalnız okuma ---- */
+    var UYF={f:'acik',n:30};
+    function uyTr(x){ var d=vDate(x); return d?vTr(d):(x||''); }
+    function uygDetail(host,rec){
+      var bugun=today(), hz={}; (DATA.h||[]).forEach(function(h){ hz[String(h.id)]=h; });
+      var all=DATA.u.filter(function(u){ return String(u.sicil)===String(rec.sicil); });
+      function uyS(u){ if(String(u.silindi)==='1') return 'sil'; if(u.state!=='acik') return 'kapali'; return (u.termin&&u.termin<bugun)?'gec':'acik'; }
+      var c={acik:0,gec:0,kapali:0,sil:0}; all.forEach(function(u){ c[uyS(u)]++; });
+      var bar=E('div','tkp-row');
+      [['acik','Açık',c.acik+c.gec],['gec','Termini geçmiş',c.gec],['kapali','Kapalı',c.kapali],['sil','Silinmiş',c.sil],['hepsi','Tümü',all.length]].forEach(function(x){ var b=E('button',UYF.f===x[0]?'btn primary':'btn',x[1]+' ('+x[2]+')'); b.type='button'; b.addEventListener('click',function(){ UYF.f=x[0]; UYF.n=30; renderNav(); }); bar.appendChild(b); });
+      host.appendChild(bar);
+      var l=all.filter(function(u){ var s=uyS(u); return UYF.f==='hepsi'||(UYF.f==='acik'?(s==='acik'||s==='gec'):UYF.f===s); });
+      l.sort(function(a,b){ var sa=uyS(a), sb=uyS(b), oa=(sa==='acik'||sa==='gec')?0:1, ob=(sb==='acik'||sb==='gec')?0:1; if(oa!==ob) return oa-ob; if(oa===0){ var x=a.termin||'9999', y=b.termin||'9999'; return x<y?-1:(x>y?1:0); } var p=b.kapatma||b.tespit||'', q=a.kapatma||a.tespit||''; return p<q?-1:(p>q?1:0); });
+      if(!l.length) host.appendChild(E('p','hint',all.length?'Bu süzgeçte kayıt yok.':'Bu firma için uygunsuzluk kaydı yok.'));
+      var box=E('div','tkp-g'), DN={acik:'Açık',gec:'Açık, termini geçmiş',kapali:'Kapalı',sil:'Silinmiş'};
+      l.slice(0,UYF.n).forEach(function(u){
+        var s=uyS(u), h=hz[String(u.hizmet_id)], it=E('div','tkp-i');
+        it.appendChild(E('b',s==='gec'?'tkp-late':null,(u.onem?'['+u.onem+'] ':'')+(u.tanim||'(tanım yok)')));
+        [['Durum',DN[s]+(u.gorunmuyor?' (son almada Teksen listesinde görünmedi)':'')],['Hizmet tarihi',h?uyTr(h.tarih||(h.veri&&h.veri.hizmet_tarihi)):''],['Tespit',uyTr(u.tespit)],['Termin',u.termin?uyTr(u.termin):'girilmemiş'],['Kapatma',uyTr(u.kapatma)],['Sorumlu',u.sorumlu],['Öneri',u.oneri],['Açıklama',u.aciklama],['Teksen kaydı oluşturma',uyTr(u.olusturma)],['Teksen son değişiklik',uyTr(u.guncellemeZ)],['Uygulamada ilk / son görülme',[u.ilkGorulme,u.sonGorulme].filter(Boolean).map(uyTr).join(' / ')]].forEach(function(r){ if(r[1]) it.appendChild(E('div','hint',r[0]+': '+r[1])); });
+        box.appendChild(it);
+      });
+      host.appendChild(box);
+      if(l.length>UYF.n){ var mb=E('button','btn','Daha fazla göster ('+(l.length-UYF.n)+' kayıt daha)'); mb.type='button'; mb.addEventListener('click',function(){ UYF.n+=30; renderNav(); }); host.appendChild(mb); }
+    }
     function recBody(host,rec){
       var S=secs(rec,NAV.tab!=='ozet');
       if(NAV.tab==='ozet'){
         var m=NSM[rec.sicil]; host.appendChild(E('div',m&&m.why.length?'hint tkp-late':'hint',m&&m.why.length?'Uyarılar: '+m.why.join(' · '):'Şu an uyarı yok.'));
         ['ziyaret','uyg','dok','egitim'].forEach(function(k){ var x=S[k], b=nBtn(); b.appendChild(E('b',null,x.title)); b.appendChild(E('div',x.bad?'hint tkp-late':'hint',x.sumLine||x.lines[0])); b.addEventListener('click',function(){ NAV.tab=k; renderNav(); }); host.appendChild(b); });
-      } else { var x=S[NAV.tab]; if(!x) return; var box=E('div','tkp-g'); x.lines.forEach(function(l,i){ box.appendChild(E('div',(x.bad&&i===0)?'tkp-i tkp-late':'tkp-i',l)); }); host.appendChild(box); }
+      } else if(NAV.tab==='uyg'){ uygDetail(host,rec); } else { var x=S[NAV.tab]; if(!x) return; var box=E('div','tkp-g'); x.lines.forEach(function(l,i){ box.appendChild(E('div',(x.bad&&i===0)?'tkp-i tkp-late':'tkp-i',l)); }); host.appendChild(box); }
     }
     function recHead(rec){ return E('div','hint',[(rec.tehlike?(TEHN[rec.tehlike]||rec.tehlike):'tehlike sınıfı bilinmiyor'),((parseInt(rec.calisan,10)||0)+' çalışan'),(rec.periyot?'periyot '+rec.periyot:'periyot bilinmiyor')].join(' · ')); }
     function actionRow(F){
