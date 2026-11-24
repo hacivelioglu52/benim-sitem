@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 204 · 23.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 205 · 24.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1986,7 +1986,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var no=el('button','btn quiet','Vazgeç'); no.type='button'; no.addEventListener('click', function(){ pend.textContent=''; }); pend.appendChild(no);
       }catch(e){ setStatus(e.message||'Yedek dosyası okunamadı.','bad'); }
     });
-    a6.appendChild(bb); a6.appendChild(br); p6.appendChild(a6); p6.appendChild(rf); p6.appendChild(pend); host.appendChild(p6);  }
+    a6.appendChild(bb); a6.appendChild(br); p6.appendChild(a6); p6.appendChild(rf); p6.appendChild(pend); host.appendChild(p6);
+    var pc=dp('Kayıtlı firmaları temizle (Akkurtlar hariç)');
+    pc.appendChild(el('p','hint','Akkurtlar dışındaki tüm kayıtlı firmaları, şubelerini ve bunlara ait evrak takımı, personel ve plan kayıtlarını siler. Akkurtlar firması (RD, sertifika, imza/kaşe, logo ve ayarları) ve Teksen verisi olduğu gibi kalır. Silmeden önce otomatik yedek indirilir; yedeği indirdiğinizden emin olun. Silmeden sonra sayfa yenilenir.'));
+    var cl=el('button','btn','Akkurtlar dışındaki kayıtlı firmaları sil'), clArm=false; cl.type='button';
+    cl.addEventListener('click', async function(){
+      var isAk=function(x){ return /AKKURT/i.test(x.name||''); };
+      var gone=FM.list.filter(function(x){ return !isAk(x); }).map(function(x){ return x.id; });
+      if(!gone.length){ setStatus('Silinecek başka kayıtlı firma yok.','ok'); return; }
+      if(!clArm){ clArm=true; cl.textContent='Emin misiniz? '+gone.length+' firma silinecek; önce yedek inecek. Tekrar basın'; setTimeout(function(){ clArm=false; cl.textContent='Akkurtlar dışındaki kayıtlı firmaları sil'; },5000); return; }
+      clArm=false; cl.disabled=true;
+      try{ await doBackup(); }catch(e){ setStatus('Yedek alınamadı; hiçbir şey silinmedi.','bad'); cl.disabled=false; return; }
+      await new Promise(function(r){ setTimeout(r,1200); });
+      var isGone=function(k){ var p=String(k).split('|')[0]; return gone.indexOf(p)>=0; };
+      ['isg-evrak-v1','isg-evrakp-v1','isg-evrakp-set-v1','isg-edp-v1','isg-plan-v2'].forEach(function(key){ try{ var raw=localStorage.getItem(key); if(!raw) return; var o=JSON.parse(raw); if(!o||typeof o!=='object') return; Object.keys(o).forEach(function(k){ if(isGone(k)) delete o[k]; }); localStorage.setItem(key,JSON.stringify(o)); }catch(e){} });
+      FM.list=FM.list.filter(isAk);
+      if(!FM.list.some(function(x){ return x.id===FM.cur; })) FM.cur=FM.list[0]?FM.list[0].id:'';
+      saveFirms();
+      setStatus(gone.length+' kayıtlı firma silindi (Akkurtlar kaldı). Sayfa yenileniyor…','ok');
+      setTimeout(function(){ location.reload(); },800);
+    });
+    pc.appendChild(cl); host.appendChild(pc);  }
 
   function renderFirmTab(){
     renderMgr(); if(!dlg.open) return;
