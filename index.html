@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 211 · 25.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 212 · 25.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5124,6 +5124,17 @@ window.__makePrev=function(host,fn){
     fS.addEventListener('change',function(){ st.f=fById(fS.value); lastDel=null; fillS(''); }); sS.addEventListener('change',function(){ st.sb=sS.value; st.sel={}; lastDel=null; loadSet(); render(); });
     try{ new MutationObserver(function(){ if(root.hidden) return; var q=window.__EVP_SEL; window.__EVP_SEL=null; if(q&&fById(q.fid)){ fillF(q.fid); if(st.f&&st.f.id===q.fid&&q.sb!==undefined&&(q.sb===''||(st.f.sb||[]).indexOf(q.sb)>=0)) fillS(q.sb); } else fillF(null,true); }).observe(root,{attributes:true,attributeFilter:['hidden']}); }catch(e){}
     fillF(); loadSet();
+    /* Firmalar sayfasından personel okuma/ekleme/silme köprüsü (v212) */
+    window.__evpApi={
+      get:function(fid,sb){ var f=fById(fid); return f?getL(f,sb||'').slice():[]; },
+      add:function(fid,sb,arr){ var f=fById(fid); if(!f) return 0; var cur=getL(f,sb||''), have={}, n=0; cur.forEach(function(x){ have[U2(x.ad)]=1; });
+        (arr||[]).forEach(function(a){ var ad=U2(a.ad); if(!ad||have[ad]) return; have[ad]=1; cur.push({id:uid3(),ad:ad,tc:'',gorev:U2(a.gorev||''),giris:''}); n++; });
+        if(n){ putL(f,sb||'',cur); if(st.f&&st.f.id===fid&&(st.sb||'')===(sb||'')) render(); } return n; },
+      del:function(fid,sb,id){ var f=fById(fid); if(!f) return 0; var l=getL(f,sb||''), d=l.filter(function(x){ return x.id===id; }); if(!d.length) return 0;
+        putL(f,sb||'',l.filter(function(x){ return x.id!==id; }));
+        try{ window.__trash.add('kisi','Personel: '+d[0].ad+' · '+nmFS(f,sb||''),{fid:fid,sb:sb||'',list:d},d[0].ad+' silindi'); }catch(e){}
+        if(st.f&&st.f.id===fid&&(st.sb||'')===(sb||'')) render(); return 1; }
+    };
   })();
 
   /* ---------- Takip merkezi: Teksen verisini al (v186) ---------- */
@@ -5770,16 +5781,39 @@ window.__makePrev=function(host,fn){
       navEl.appendChild(gl);
     }
     var PERN=30;
+    function tkNames(rec){
+      var seen={}, out=[]; if(!rec||!DATA) return out;
+      (DATA.h||[]).forEach(function(h){ if(h.sicil!==rec.sicil) return; var t=(h.veri&&h.veri.egitim_alan_kisiler)||''; String(t).split(/[,;\n\/]+/).forEach(function(x){ var n=x.replace(/\s+/g,' ').trim(); if(n.length<3||!/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(n)) return; var k=window.__up(n); if(!seen[k]){ seen[k]=1; out.push(k); } }); });
+      return out;
+    }
     function persBlock(host,F,u){
-      var all=[]; try{ var o=JSON.parse(localStorage.getItem('isg-evrakp-v1')||'{}'); all=(o&&o[F.id+'|'+(u.sube||'')])||[]; }catch(e){}
-      var box=E('div','tkp-g'); box.appendChild(E('b',null,'Kayıtlı personel listesi ('+all.length+' kişi)'));
-      if(!all.length) box.appendChild(E('div','hint','Bu firma/şube için henüz personel girilmemiş. “Personel evrakları” sayfasından ekleyebilirsiniz.'));
-      all.slice().sort(function(a,b){ return String(a.ad||'').localeCompare(String(b.ad||''),'tr'); }).slice(0,PERN).forEach(function(x){
-        box.appendChild(E('div','tkp-i',[x.ad||'',x.gorev||'',x.giris?'işe giriş '+vTr(x.giris):''].filter(Boolean).join(' · '))); });
-      if(all.length>PERN) box.appendChild(E('div','hint','İlk '+PERN+' kişi gösteriliyor; tamamı Personel evrakları sayfasında.'));
-      var b=E('button','btn','Personel listesini düzenle'); b.type='button'; b.addEventListener('click',function(){ var api=FA(); api.pick(F.id); window.__EVP_SEL={fid:F.id,sb:u.sube||''}; var tt=document.getElementById('tab-evp'); if(tt) tt.click(); }); box.appendChild(b);
-      box.appendChild(E('div','hint','Liste yalnız okunur. T.C. kimlik no gibi kişisel veriler burada gösterilmez; yalnız bu cihazda saklanır.'));
-      host.appendChild(box);
+      var P=window.__evpApi; if(!P){ return; }
+      var sb=u.sube||'', box=E('div','tkp-g'); host.appendChild(box);
+      function draw(){
+        box.textContent=''; var all=P.get(F.id,sb);
+        box.appendChild(E('b',null,'Kayıtlı personel listesi ('+all.length+' kişi)'));
+        if(!all.length) box.appendChild(E('div','hint','Bu firma/şube için henüz personel girilmemiş. Aşağıdan ekleyebilir ya da Teksen’deki eğitim alan adlarından seçebilirsiniz.'));
+        all.slice().sort(function(a,b){ return String(a.ad||'').localeCompare(String(b.ad||''),'tr'); }).slice(0,PERN).forEach(function(x){
+          var r=E('div','tkp-i tkp-row'); r.appendChild(E('span',null,[x.ad||'',x.gorev||'',x.giris?'işe giriş '+vTr(x.giris):''].filter(Boolean).join(' · ')));
+          var d=E('button','btn quiet sm','Sil'); d.type='button'; var arm=false,t; d.addEventListener('click',function(){ if(!arm){ arm=true; d.textContent='Silinsin mi?'; t=setTimeout(function(){ arm=false; d.textContent='Sil'; },3500); return; } clearTimeout(t); P.del(F.id,sb,x.id); draw(); });
+          r.appendChild(d); box.appendChild(r); });
+        if(all.length>PERN) box.appendChild(E('div','hint','İlk '+PERN+' kişi gösteriliyor; tamamı Personel evrakları sayfasında.'));
+        var fr=E('div','tkp-row'); var ia=E('input'); ia.placeholder='Ad soyad'; ia.setAttribute('aria-label','Ad soyad'); var ig=E('input'); ig.placeholder='Görevi (isteğe bağlı)'; ig.setAttribute('aria-label','Görevi');
+        var ba=E('button','btn primary','Personel ekle'); ba.type='button'; ba.addEventListener('click',function(){ if(!ia.value.trim()){ ia.focus(); return; } P.add(F.id,sb,[{ad:ia.value,gorev:ig.value}]); draw(); });
+        fr.appendChild(ia); fr.appendChild(ig); fr.appendChild(ba); box.appendChild(fr);
+        var cand=tkNames(u.rec).filter(function(n){ return !all.some(function(x){ return window.__up(x.ad)===n; }); });
+        if(u.rec){
+          var sg=E('div','tkp-i'); sg.appendChild(E('div',null,'Teksen’deki eğitim kayıtlarından ('+cand.length+' yeni ad)'));
+          if(!cand.length) sg.appendChild(E('div','hint',tkNames(u.rec).length?'Teksen’de görünen tüm adlar listede.':'Teksen hizmet kayıtlarında eğitim alan kişi adı yok.'));
+          else { cand.slice(0,40).forEach(function(n){ var r=E('div','tkp-row'); r.appendChild(E('span',null,n)); var b=E('button','btn sm','Listeye ekle'); b.type='button'; b.addEventListener('click',function(){ P.add(F.id,sb,[{ad:n}]); draw(); }); r.appendChild(b); sg.appendChild(r); });
+            if(cand.length>1){ var ball=E('button','btn',cand.length+' adın hepsini ekle'); ball.type='button'; ball.addEventListener('click',function(){ P.add(F.id,sb,cand.map(function(n){ return {ad:n}; })); draw(); }); sg.appendChild(ball); }
+            sg.appendChild(E('div','hint','Bunlar yalnız öneridir; siz “Listeye ekle”ye basana kadar listeye girmez. Teksen yalnız eğitim alanları verir, almayanları vermez; eksik kişileri elle ekleyin.')); }
+          box.appendChild(sg);
+        }
+        box.appendChild(E('div','hint','T.C. kimlik no gibi kişisel veriler bu görünümde gösterilmez; “Personel evrakları” sayfasında girilir. Veriler yalnız bu cihazda saklanır.'));
+        var b2=E('button','btn quiet','Personel evrakları sayfasında aç'); b2.type='button'; b2.addEventListener('click',function(){ var api=FA(); api.pick(F.id); window.__EVP_SEL={fid:F.id,sb:sb}; var tt=document.getElementById('tab-evp'); if(tt) tt.click(); }); box.appendChild(b2);
+      }
+      draw();
     }
     function renderUnit(F,us,u){
       var api=FA(), t=u.rec?tkLabel(u.rec):(F.name||'')+(u.sube?' · '+u.sube:'');
@@ -5818,7 +5852,7 @@ window.__makePrev=function(host,fn){
       if(!rec){ NAV.raw=null; return false; }
       var cr=E('div','tkp-row'); cr.appendChild(backBtn()); cr.appendChild(E('b',null,recTitle(rec))); navEl.appendChild(cr);
       navEl.appendChild(E('div','hint',tkLabel(rec)+' · sicil '+rec.sicil));
-      navEl.appendChild(recHead(rec)); navEl.appendChild(E('p','hint','Bu Teksen kaydı kayıtlı bir firmayla eşleşmedi.')); var dr=E('button','btn quiet','Bu Teksen kaydını sil'); dr.type='button'; dr.addEventListener('click',function(){ askDel([rec.sicil],'“'+recTitle(rec)+'” kaydı',function(){ NAV.raw=null; renderAll(); renderNav(); }); }); navEl.appendChild(dr);
+      navEl.appendChild(recHead(rec)); navEl.appendChild(E('p','hint','Bu Teksen kaydı kayıtlı bir firmayla eşleşmedi. Personel listesi kayıtlı firmaya bağlı tutulur: personel eklemek için aşağıdan bu kaydı bir kayıtlı firmaya bağlayın.')); var dr=E('button','btn quiet','Bu Teksen kaydını sil'); dr.type='button'; dr.addEventListener('click',function(){ askDel([rec.sicil],'“'+recTitle(rec)+'” kaydı',function(){ NAV.raw=null; renderAll(); renderNav(); }); }); navEl.appendChild(dr);
       navEl.appendChild(tabsRow(false)); var host=E('div'); navEl.appendChild(host); recBody(host,rec);
       if(FA()) navEl.appendChild(unitPicker(rec));
       return true;
