@@ -5501,6 +5501,8 @@ window.__makePrev=function(host,fn){
         tx.oncomplete=function(){ ok(); }; tx.onerror=function(){ no(tx.error); }; tx.onabort=function(){ no(tx.error||new Error('Silme iptal edildi')); }; }); }); }
     function askDel(sicils,what,after){ if(!sicils.length) return; if(!confirm(what+' bu cihazdan silinsin mi? ('+sicils.length+' Teksen kaydı ve bunlara ait hizmet, uygunsuzluk, doküman verisi.) Teksen’deki veriye dokunulmaz; istersen yeniden alabilirsin.')) return;
       delRecs(sicils).then(function(){ return refresh(); }).then(function(){ if(after) after(); }).catch(function(e){ alert('Silinemedi: '+(e&&e.message||e)); }); }
+    function recTitle(r){ var a=String(r.adres||'').replace(/\s+/g,' ').trim(); return a||tkLabel(r); }
+    function recSub(r){ var p=[]; if(r.sube) p.push(r.sube); if(r.il) p.push(r.il); return p.join(' · '); }
     function gKey(r){ var t=trd(String(r.ad||'')).replace(/[^a-z0-9ığüşöç ]/g,' ').split(/\s+/).filter(Boolean); return t.slice(0,2).join(' ')||'?'; }
     function gTitle(r){ return String(r.ad||'(adsız)').trim().split(/\s+/).slice(0,2).join(' '); }
     function delLink(sicil){ delete LINKS[sicil]; return openDb().then(function(db){ return new Promise(function(ok,no){ var tx=db.transaction('meta','readwrite'); tx.objectStore('meta').delete('link:'+sicil); tx.oncomplete=function(){ ok(); }; tx.onerror=function(){ no(tx.error); }; }); }); }
@@ -5641,8 +5643,9 @@ window.__makePrev=function(host,fn){
     function renderRaw(){
       var rec=null; if(DATA) DATA.f.forEach(function(x){ if(x.sicil===NAV.raw) rec=x; });
       if(!rec){ NAV.raw=null; return false; }
-      var cr=E('div','tkp-row'); cr.appendChild(backBtn()); cr.appendChild(E('b',null,tkLabel(rec))); navEl.appendChild(cr);
-      navEl.appendChild(recHead(rec)); navEl.appendChild(E('p','hint','Bu Teksen kaydı kayıtlı bir firmayla eşleşmedi.')); var dr=E('button','btn quiet','Bu Teksen kaydını sil'); dr.type='button'; dr.addEventListener('click',function(){ askDel([rec.sicil],'“'+tkLabel(rec)+'” kaydı',function(){ NAV.raw=null; renderAll(); renderNav(); }); }); navEl.appendChild(dr);
+      var cr=E('div','tkp-row'); cr.appendChild(backBtn()); cr.appendChild(E('b',null,recTitle(rec))); navEl.appendChild(cr);
+      navEl.appendChild(E('div','hint',tkLabel(rec)+' · sicil '+rec.sicil));
+      navEl.appendChild(recHead(rec)); navEl.appendChild(E('p','hint','Bu Teksen kaydı kayıtlı bir firmayla eşleşmedi.')); var dr=E('button','btn quiet','Bu Teksen kaydını sil'); dr.type='button'; dr.addEventListener('click',function(){ askDel([rec.sicil],'“'+recTitle(rec)+'” kaydı',function(){ NAV.raw=null; renderAll(); renderNav(); }); }); navEl.appendChild(dr);
       navEl.appendChild(tabsRow(false)); var host=E('div'); navEl.appendChild(host); recBody(host,rec);
       if(FA()) navEl.appendChild(unitPicker(rec));
       return true;
@@ -5653,10 +5656,10 @@ window.__makePrev=function(host,fn){
       var da=E('button','btn','Bu firmanın '+recs.length+' kaydını da sil'); da.type='button'; da.addEventListener('click',function(){ askDel(recs.map(function(r){ return r.sicil; }),'“'+gTitle(recs[0])+'” firmasının tüm Teksen kayıtları',function(){ NAV.grp=null; renderAll(); renderNav(); }); });
       var ar=E('div','tkp-row'); ar.appendChild(da); navEl.appendChild(ar);
       navEl.appendChild(E('p','hint',recs.length+' şube/kayıt. Birine dokunun:'));
-      var gl=E('div','flist'); recs.sort(function(x,y){ return trd(tkLabel(x)).localeCompare(trd(tkLabel(y)),'tr'); }).forEach(function(r){ var row=E('div','frow'), mb=E('button','fmain'); mb.type='button'; var w=warnOf(r);
-        mb.appendChild(E('span','ft',tkLabel(r))); mb.appendChild(E('span',w?'fw late':'fw',(w?w+' uyarı':'uyarı yok')+' · sicil '+r.sicil));
+      var gl=E('div','flist'); recs.sort(function(x,y){ return trd(recTitle(x)).localeCompare(trd(recTitle(y)),'tr'); }).forEach(function(r){ var row=E('div','frow'), mb=E('button','fmain'); mb.type='button'; var w=warnOf(r);
+        mb.appendChild(E('span','ft',recTitle(r))); if(recSub(r)) mb.appendChild(E('span','fw',recSub(r))); mb.appendChild(E('span',w?'fw late':'fw',(w?w+' uyarı':'uyarı yok')+' · sicil '+r.sicil));
         mb.addEventListener('click',function(){ navGo(null,null,'ozet',r.sicil); });
-        var db=E('button','btn quiet','Sil'); db.type='button'; db.setAttribute('aria-label',tkLabel(r)+' kaydını sil'); db.addEventListener('click',function(){ askDel([r.sicil],'“'+tkLabel(r)+'” kaydı',function(){ renderAll(); renderNav(); }); });
+        var db=E('button','btn quiet','Sil'); db.type='button'; db.setAttribute('aria-label',tkLabel(r)+' kaydını sil'); db.addEventListener('click',function(){ askDel([r.sicil],'“'+recTitle(r)+'” kaydı',function(){ renderAll(); renderNav(); }); });
         row.appendChild(mb); row.appendChild(db); gl.appendChild(row); }); navEl.appendChild(gl); return true;
     }
     function renderNav(){
