@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 221 · 25.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 222 · 25.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5766,12 +5766,16 @@ window.__makePrev=function(host,fn){
     }
     var RQL={hazir:'Hazır',eksik:'Eksik',gerekli:'Gerekli (Teksen’de takip yok)',uyg:'Uygulanamaz',bil:'Veri yok'};
     function reqCount(rr){ var n={hazir:0,eksik:0,gerekli:0,uyg:0,bil:0}; rr.rows.forEach(function(x){ n[x.s]++; }); n.line=rr.rows.length+' madde: '+n.hazir+' hazır, '+n.eksik+' eksik, '+n.gerekli+' Teksen’de takip edilmiyor, '+n.uyg+' uygulanamaz'+(n.bil?', '+n.bil+' veri yok':''); return n; }
+    var PREP={'Risk değerlendirmesi':['rdr','Risk değerlendirme raporunu hazırla'],'Acil durum planı':['edp','Acil durum planını hazırla'],'Yıllık çalışma planı':['evt','Firma evrak takımında hazırla'],'Yıllık eğitim planı':['evt','Firma evrak takımında hazırla'],'Temel İSG eğitimi':['evp','Personel evraklarında hazırla']};
+    function prepare(tab){ var api=FA(), fid=NAV.fid, sb=(NAV.uk||'').split('|').slice(1).join('|'); if(!api||!fid) return; api.pick(fid); window.__EVT_SEL={fid:fid,sb:sb}; window.__EVP_SEL={fid:fid,sb:sb}; var t=document.getElementById('tab-'+tab); if(t) t.click(); }
     function reqView(host,rec){
       var rr=reqRows(rec), n=reqCount(rr);
       host.appendChild(E('div','hint',rr.hz+' · '+rr.c+' çalışan. Yalnız okuma: Teksen’de kayıtlı bilgiyle karşılaştırılır, hiçbir şey yazılmaz.'));
       host.appendChild(E('div',n.eksik?'tkp-i tkp-late':'tkp-i',n.line));
       function item(x,box){ var r=E('div','tkp-i'); var h=E('div',x.s==='eksik'?'tkp-late':null); h.appendChild(E('b',null,x.t)); h.appendChild(document.createTextNode(' — '+RQL[x.s])); r.appendChild(h);
-        if(x.note) r.appendChild(E('div','hint',x.note)); r.appendChild(E('div','hint','Kural: '+x.rule+(x.src?' ('+x.src+')':''))); box.appendChild(r); }
+        if(x.note) r.appendChild(E('div','hint',x.note)); r.appendChild(E('div','hint','Kural: '+x.rule+(x.src?' ('+x.src+')':'')));
+        var tg=PREP[x.t]; if(tg&&NAV.fid&&(x.s==='eksik'||x.s==='gerekli')){ var pb=E('button','btn sm',tg[1]); pb.type='button'; pb.addEventListener('click',function(){ prepare(tg[0]); }); r.appendChild(pb); }
+        box.appendChild(r); }
       [['eksik','Eksik',true],['gerekli','Gerekli, Teksen’de takip edilmiyor',true],['bil','Veri yok',false],['hazir','Hazır',false],['uyg','Uygulanamaz',false]].forEach(function(g){
         var l=rr.rows.filter(function(x){ return x.s===g[0]; }); if(!l.length) return;
         var d=E('details','tkp-g'), sm=E('summary'); sm.appendChild(E('b',null,g[1]+' ('+l.length+')')); d.appendChild(sm); if(g[2]) d.open=true; l.forEach(function(x){ item(x,d); }); host.appendChild(d); });
