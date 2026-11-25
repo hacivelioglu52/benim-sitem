@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 218 · 25.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 219 · 25.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5643,12 +5643,12 @@ window.__makePrev=function(host,fn){
       else if(!st.pers.length) el2.push('Personel görevlendirme: tümü gerekli sayıda.');
       else el2.push('Personel görevlendirme eksik: '+st.pers.map(function(p){ return p.t+' '+p.mev+' / '+p.gerekli; }).join(' · '));
       el2.push(st.tatbikat?'Son tatbikat: '+vTr(st.tatbikat):'Hizmet kayıtlarında tatbikat bilgisi yok.');
-      out.egitim={title:'Eğitim/Personel',lines:el2,bad:!st.egitim||st.pers.length>0||st.egitim.eksik>0||!!st.egEski};
+      out.egitim={title:'Personel',lines:el2,bad:!st.egitim||st.pers.length>0||st.egitim.eksik>0||!!st.egEski};
       out.ziyaret.sumLine=vl[0]; out.egitim.sumLine=el2[0]; if(!out.dok.sumLine) out.dok.sumLine=dl0(out.dok);
       return out;
     }
     function dl0(d){ return d.lines[0]; }
-    var TABS=[['ozet','Özet'],['ziyaret','Ziyaret'],['uyg','Uygunsuzluk'],['dok','Doküman'],['egitim','Eğitim/Personel'],['gerekli','Gerekli evrak']];
+    var TABS=[['ozet','Özet'],['ziyaret','Ziyaret'],['uyg','Uygunsuzluk'],['dok','Doküman'],['egitim','Personel'],['gerekli','Gerekli evrak']];
     function navGo(fid,uk,tab,raw){ NAV.grp=null; NAV.fid=fid||null; NAV.uk=uk||null; NAV.tab=tab||'ozet'; NAV.raw=raw||null; renderNav(); try{ root.scrollIntoView({block:'start'}); }catch(e){} }
     function afterLink(){ var api=FA(); if(api&&api.rerender) api.rerender(); else renderAll(); }
     function backBtn(){ var b=E('button','btn','‹ Firmalar'); b.type='button'; b.addEventListener('click',function(){ navGo(null); }); return b; }
@@ -5689,7 +5689,10 @@ window.__makePrev=function(host,fn){
       var go2=E('button','btn primary','Bağla'); go2.type='button'; go2.disabled=true; sel.addEventListener('change',function(){ go2.disabled=!sel.value; }); q.addEventListener('input',function(){ go2.disabled=!sel.value; }); go2.addEventListener('click',function(){ if(!sel.value) return; saveLink(sel.value,F.id,u.sube).then(function(){ buildNav(); afterLink(); }); });
       var r=E('div','tkp-row'); r.appendChild(q); r.appendChild(sel); r.appendChild(go2); box.appendChild(r); return box;
     }
-    function tabsRow(withInfo){ var tb=E('div','tkp-row'); TABS.concat(withInfo?[['bilgi','Bilgiler']]:[]).forEach(function(t){ var b=E(t[0]===NAV.tab?'button':'button',t[0]===NAV.tab?'btn primary':'btn',t[1]); b.type='button'; b.addEventListener('click',function(){ NAV.tab=t[0]; renderNav(); }); tb.appendChild(b); }); return tb; }
+    var TK3=['ziyaret','uyg','dok'];
+    function tabsRow(withInfo){ var tb=E('div','tkp-row'), TT5=[['ozet','Özet'],['ziyaret','Teksen takibi'],['egitim','Personel'],['gerekli','Gerekli evrak']].concat(withInfo?[['bilgi','Bilgiler']]:[]);
+      TT5.forEach(function(t){ var on=(t[0]==='ziyaret')?TK3.indexOf(NAV.tab)>=0:t[0]===NAV.tab; var b=E('button',on?'btn primary':'btn',t[1]); b.type='button'; b.addEventListener('click',function(){ NAV.tab=(t[0]==='ziyaret'&&TK3.indexOf(NAV.tab)>=0)?NAV.tab:t[0]; renderNav(); }); tb.appendChild(b); }); return tb; }
+    function tk3Row(){ var r=E('div','tkp-row'); [['ziyaret','Ziyaret'],['uyg','Uygunsuzluk'],['dok','Doküman']].forEach(function(t){ var b=E('button',t[0]===NAV.tab?'btn primary sm':'btn quiet sm',t[1]); b.type='button'; b.addEventListener('click',function(){ NAV.tab=t[0]; renderNav(); }); r.appendChild(b); }); return r; }
 
     /* ---- Gerekli evrak matrisi (v206): tehlike sınıfı ve çalışan sayısına göre; yalnız okuma. Kurallar resmî mevzuat metinlerinden doğrulandı (24.11.2026) ---- */
     function reqRows(rec){
@@ -5792,6 +5795,7 @@ window.__makePrev=function(host,fn){
     }
     function recBody(host,rec){
       var S=secs(rec,NAV.tab!=='ozet');
+      if(TK3.indexOf(NAV.tab)>=0) host.appendChild(tk3Row());
       if(NAV.tab==='ozet'){
         var m=NSM[rec.sicil]; host.appendChild(E('div',m&&m.why.length?'hint tkp-late':'hint',m&&m.why.length?'Uyarılar: '+m.why.join(' · '):'Şu an uyarı yok.'));
         ['ziyaret','uyg','dok','egitim'].forEach(function(k){ var x=S[k], b=nBtn(); b.appendChild(E('b',null,x.title)); b.appendChild(E('div',x.bad?'hint tkp-late':'hint',x.sumLine||x.lines[0])); b.addEventListener('click',function(){ NAV.tab=k; renderNav(); }); host.appendChild(b); });
@@ -5932,7 +5936,7 @@ window.__makePrev=function(host,fn){
       var api0=FA(), ex=api0&&api0.sameName?api0.sameName(name):null; if(ex) label='Kayıtlı “'+(ex.name||'')+'” firmasına şube olarak ekle';
       var b=E('button','btn primary',label); b.type='button'; var arm=false,t;
       b.addEventListener('click',function(){ if(!arm){ arm=true; b.dataset.o=b.textContent; b.textContent=ex?'Emin misiniz? Aynı adlı kayıtlı firma var; şube olarak eklenecek, yeni firma açılmaz. Tekrar basın':'Emin misiniz? “'+window.__up(name)+'” adıyla kayıtlı firma oluşturulacak. Tekrar basın'; t=setTimeout(function(){ arm=false; b.textContent=b.dataset.o; },5000); return; } clearTimeout(t); makeFirm(recs,name); });
-      var w=E('div'); w.appendChild(b); w.appendChild(E('div','hint','Teksen’deki ad, şube ve SGK sicil no ile yeni bir kayıtlı firma eklenir ve bu kayıt kendiliğinden ona bağlanır. Sonra Eğitim/Personel sekmesinden personel ekleyebilirsiniz. Aynı adlı kayıtlı firma varsa yeni firma açılmaz, şube olarak o firmaya eklenir (mevcut şube bilgileri değişmez; Akkurtlar hariç). Yanlış olursa firmayı silip çöp kutusundan geri alabilirsiniz.')); return w;
+      var w=E('div'); w.appendChild(b); w.appendChild(E('div','hint','Teksen’deki ad, şube ve SGK sicil no ile yeni bir kayıtlı firma eklenir ve bu kayıt kendiliğinden ona bağlanır. Sonra Personel sekmesinden personel ekleyebilirsiniz. Aynı adlı kayıtlı firma varsa yeni firma açılmaz, şube olarak o firmaya eklenir (mevcut şube bilgileri değişmez; Akkurtlar hariç). Yanlış olursa firmayı silip çöp kutusundan geri alabilirsiniz.')); return w;
     }
     function renderRaw(){
       var rec=null; if(DATA) DATA.f.forEach(function(x){ if(x.sicil===NAV.raw) rec=x; });
