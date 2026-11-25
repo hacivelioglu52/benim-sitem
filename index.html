@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 214 · 25.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 215 · 25.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5145,6 +5145,7 @@ window.__makePrev=function(host,fn){
       add:function(fid,sb,arr){ var f=fById(fid); if(!f) return 0; var cur=getL(f,sb||''), have={}, n=0; cur.forEach(function(x){ have[U2(x.ad)]=1; });
         (arr||[]).forEach(function(a){ var ad=U2(a.ad); if(!ad||have[ad]) return; have[ad]=1; cur.push({id:uid3(),ad:ad,tc:'',gorev:U2(a.gorev||''),giris:''}); n++; });
         if(n){ putL(f,sb||'',cur); if(st.f&&st.f.id===fid&&(st.sb||'')===(sb||'')) render(); } return n; },
+      setEgt:function(fid,sb,id,arr){ var f=fById(fid); if(!f) return 0; var l=getL(f,sb||''), n=0; l.forEach(function(x){ if(x.id===id){ x.egt=arr; n++; } }); if(n){ putL(f,sb||'',l); if(st.f&&st.f.id===fid&&(st.sb||'')===(sb||'')) render(); } return n; },
       del:function(fid,sb,id){ var f=fById(fid); if(!f) return 0; var l=getL(f,sb||''), d=l.filter(function(x){ return x.id===id; }); if(!d.length) return 0;
         putL(f,sb||'',l.filter(function(x){ return x.id!==id; }));
         try{ window.__trash.add('kisi','Personel: '+d[0].ad+' · '+nmFS(f,sb||''),{fid:fid,sb:sb||'',list:d},d[0].ad+' silindi'); }catch(e){}
@@ -5813,17 +5814,44 @@ window.__makePrev=function(host,fn){
       (DATA.h||[]).forEach(function(h){ if(h.sicil!==rec.sicil) return; nameList(h.veri&&h.veri.egitim_alan_kisiler).forEach(function(n){ if(!seen[n]){ seen[n]=1; out.push({ad:n,gorev:'',src:'Eğitim kaydı'}); } }); });
       return out;
     }
+    function tzKey(u){ var t=u&&u.rec&&u.rec.tehlike; t=window.__trn(String(t||'')).replace(/ç/g,'c').replace(/[^a-z]/g,''); return EGY[t]?t:''; }
     function persBlock(host,F,u){
       var P=window.__evpApi; if(!P){ return; }
       var sb=u.sube||'', box=E('div','tkp-g'); host.appendChild(box);
+      function egSaat(){ return {aztehlikeli:8,tehlikeli:12,coktehlikeli:16}[tzKey(u)]||0; }
+      function egState(x){ var g=(x.egt||[]).filter(function(y){ return y&&y.t; }), yy=EGY[tzKey(u)];
+        if(!g.length) return {k:'yok',cls:'hint late',msg:'Eğitim kaydı yok.'};
+        var last=g.map(function(y){ return y.t; }).sort().pop();
+        if(!yy) return {k:'ok',cls:'hint',msg:'Son eğitim '+vTr(last)+' (tehlike sınıfı bilinmediği için yenileme tarihi hesaplanamadı).'};
+        var due=(+last.slice(0,4)+yy)+last.slice(4,10), kal=dayNum(due)-dayNum(today());
+        if(kal<=0) return {k:'eski',cls:'hint late',msg:'Son eğitim '+vTr(last)+' · yenilenmeli (yenileme tarihi '+vTr(due)+' geçti).'};
+        if(kal<=60) return {k:'yakin',cls:'hint late',msg:'Son eğitim '+vTr(last)+' · yenileme '+vTr(due)+' ('+kal+' gün kaldı).'};
+        return {k:'ok',cls:'hint',msg:'Son eğitim '+vTr(last)+' · yenileme '+vTr(due)+'.'}; }
       function draw(){
         box.textContent=''; var all=P.get(F.id,sb);
         box.appendChild(E('b',null,'Kayıtlı personel listesi ('+all.length+' kişi)'));
+        if(all.length){ var c={yok:0,eski:0,yakin:0}; all.forEach(function(x){ var k=egState(x).k; if(c[k]!==undefined) c[k]++; });
+          var sm=[]; if(c.yok) sm.push(c.yok+' kişide eğitim kaydı yok'); if(c.eski) sm.push(c.eski+' kişide eğitim yenilenmeli'); if(c.yakin) sm.push(c.yakin+' kişide yenileme yaklaşıyor');
+          box.appendChild(E('div',sm.length?'hint late':'hint',sm.length?sm.join(' · ')+'.':'Tüm kişilerin eğitimi güncel.')); }
+        var bulk=[]; if(u.rec&&all.length){ (DATA.h||[]).forEach(function(h){ if(h.sicil!==u.rec.sicil) return; var v=h.veri||{}, t=vDate(v.egitim_tarih); if(!t) return; nameList(v.egitim_alan_kisiler).forEach(function(n){ var p=all.filter(function(y){ return window.__up(y.ad)===n; })[0]; if(p&&!(p.egt||[]).some(function(g){ return g.t===t; })) bulk.push({p:p,t:t}); }); }); }
+        if(bulk.length){ var bb=E('button','btn','Teksen’deki eğitim tarihlerini kişilere işle ('+bulk.length+' kayıt)'); bb.type='button'; var arm2=false,t2;
+          bb.addEventListener('click',function(){ if(!arm2){ arm2=true; bb.textContent='Emin misiniz? '+bulk.length+' eğitim kaydı kişilere işlenecek. Tekrar basın'; t2=setTimeout(function(){ arm2=false; bb.textContent='Teksen’deki eğitim tarihlerini kişilere işle ('+bulk.length+' kayıt)'; },5000); return; } clearTimeout(t2);
+            var by={}; bulk.forEach(function(b){ (by[b.p.id]=by[b.p.id]||{p:b.p,add:[]}).add.push({id:'g'+b.t+b.p.id,t:b.t,konu:'İSG EĞİTİMİ (TEKSEN KAYDI)',sure:'',kay:'Teksen'}); });
+            Object.keys(by).forEach(function(k){ P.setEgt(F.id,sb,k,(by[k].p.egt||[]).concat(by[k].add)); }); draw(); });
+          box.appendChild(bb); box.appendChild(E('div','hint','Yalnız Teksen’de adı geçen ve listede bulunan kişilere işlenir.')); }
         if(!all.length) box.appendChild(E('div','hint','Bu firma/şube için henüz personel girilmemiş. Aşağıdan ekleyebilir ya da Teksen’deki eğitim alan adlarından seçebilirsiniz.'));
         all.slice().sort(function(a,b){ return String(a.ad||'').localeCompare(String(b.ad||''),'tr'); }).slice(0,PERN).forEach(function(x){
-          var r=E('div','tkp-i tkp-row'); r.appendChild(E('span',null,[x.ad||'',x.gorev||'',x.giris?'işe giriş '+vTr(x.giris):''].filter(Boolean).join(' · ')));
+          var wrap=E('div','tkp-i'), r=E('div','tkp-row'); r.appendChild(E('span',null,[x.ad||'',x.gorev||'',x.giris?'işe giriş '+vTr(x.giris):''].filter(Boolean).join(' · ')));
           var d=E('button','btn quiet sm','Sil'); d.type='button'; var arm=false,t; d.addEventListener('click',function(){ if(!arm){ arm=true; d.textContent='Silinsin mi?'; t=setTimeout(function(){ arm=false; d.textContent='Sil'; },3500); return; } clearTimeout(t); P.del(F.id,sb,x.id); draw(); });
-          r.appendChild(d); box.appendChild(r); });
+          r.appendChild(d); wrap.appendChild(r);
+          var es=egState(x), el1=E('div',es.cls,es.msg); wrap.appendChild(el1);
+          (x.egt||[]).slice().sort(function(a,b){ return a.t<b.t?1:-1; }).forEach(function(g){ var gr=E('div','tkp-row'); gr.appendChild(E('span','hint',vTr(g.t)+' · '+(g.konu||'Eğitim')+(g.sure?' · '+g.sure+' saat':'')+' · '+(g.kay||'Elle')));
+            var gd=E('button','btn quiet sm','×'); gd.type='button'; gd.setAttribute('aria-label','Bu eğitim kaydını sil'); gd.addEventListener('click',function(){ P.setEgt(F.id,sb,x.id,(x.egt||[]).filter(function(y){ return y!==g&&y.id!==g.id; })); draw(); }); gr.appendChild(gd); wrap.appendChild(gr); });
+          var ef=E('div','tkp-row'); ef.hidden=true; var it=E('input'); it.type='date'; it.value=today(); it.setAttribute('aria-label','Eğitim tarihi'); var ik=E('input'); ik.value='TEMEL İSG EĞİTİMİ'; ik.setAttribute('aria-label','Eğitim konusu'); var is=E('input'); is.type='number'; is.min='0'; is.value=String(egSaat()||''); is.setAttribute('aria-label','Süre (saat)'); is.style.maxWidth='5em';
+          var ok=E('button','btn primary sm','Kaydet'); ok.type='button'; ok.addEventListener('click',function(){ if(!it.value){ it.focus(); return; } var a=(x.egt||[]).slice(); a.push({id:'g'+Date.now().toString(36),t:it.value,konu:ik.value.trim(),sure:is.value,kay:'Elle'}); P.setEgt(F.id,sb,x.id,a); draw(); });
+          ef.appendChild(it); ef.appendChild(ik); ef.appendChild(is); ef.appendChild(E('span','hint','saat')); ef.appendChild(ok);
+          var eb=E('button','btn quiet sm','Eğitim ekle'); eb.type='button'; eb.addEventListener('click',function(){ ef.hidden=!ef.hidden; }); wrap.appendChild(eb); wrap.appendChild(ef);
+          box.appendChild(wrap); });
         if(all.length>PERN) box.appendChild(E('div','hint','İlk '+PERN+' kişi gösteriliyor; tamamı Personel evrakları sayfasında.'));
         var fr=E('div','tkp-row'); var ia=E('input'); ia.placeholder='Ad soyad'; ia.setAttribute('aria-label','Ad soyad'); var ig=E('input'); ig.placeholder='Görevi (isteğe bağlı)'; ig.setAttribute('aria-label','Görevi');
         var ba=E('button','btn primary','Personel ekle'); ba.type='button'; ba.addEventListener('click',function(){ if(!ia.value.trim()){ ia.focus(); return; } P.add(F.id,sb,[{ad:ia.value,gorev:ig.value}]); draw(); });
