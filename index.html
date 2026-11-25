@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 223 · 25.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 224 · 25.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1958,8 +1958,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(grpOf(f)&&FV.mode!=='grp') mb.appendChild(el('span','fgb',grpOf(f)));
     if(nv&&nv.title&&nv.title!==firmLabel(f)) mb.appendChild(el('span','fw','Kayıtlı ad: '+firmLabel(f)));
     mb.appendChild(el('span','fm',firmMeta(f)));
-    try{ var ps=window.__psCache||(window.__psCache=JSON.parse(localStorage.getItem('isg-evrakp-v1')||'{}')||{}), nS=Math.max(1,(f.sb||[]).filter(Boolean).length), nP=0; Object.keys(ps).forEach(function(k){ if(k.indexOf(f.id+'|')===0) nP+=(ps[k]||[]).length; }); mb.appendChild(el('span','fw',nS+' şube · '+nP+' personel')); }catch(e){}
-    if(nv&&nv.line) mb.appendChild(el('span',nv.warn?'fw late':'fw',nv.line));
+    var bits=[], wn=false; try{ var ps=window.__psCache||(window.__psCache=JSON.parse(localStorage.getItem('isg-evrakp-v1')||'{}')||{}), nS=Math.max(1,(f.sb||[]).filter(Boolean).length), nP=0; Object.keys(ps).forEach(function(k){ if(k.indexOf(f.id+'|')===0) nP+=(ps[k]||[]).length; }); bits.push(nS+' şube'); bits.push(nP+' personel'); }catch(e){}
+    if(nv&&nv.line){ if(nv.warn){ wn=true; bits.push(nv.line.split(' · ').pop()); } else if(/eşleşmedi/.test(nv.line)){ bits.push('Teksen eşleşmedi'); } else bits.push('uyarı yok'); }
+    if(bits.length) mb.appendChild(el('span',wn?'fw late':'fw',bits.join(' · ')));
     mb.addEventListener('click', function(){ if(window.__firmNav&&window.__firmNav.pick) window.__firmNav.pick(f.id); else openEditor(f.id); });
     r.appendChild(mb);
     return r; }
