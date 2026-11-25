@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 215 · 25.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 216 · 25.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5650,6 +5650,25 @@ window.__makePrev=function(host,fn){
     function navGo(fid,uk,tab,raw){ NAV.grp=null; NAV.fid=fid||null; NAV.uk=uk||null; NAV.tab=tab||'ozet'; NAV.raw=raw||null; renderNav(); try{ root.scrollIntoView({block:'start'}); }catch(e){} }
     function afterLink(){ var api=FA(); if(api&&api.rerender) api.rerender(); else renderAll(); }
     function backBtn(){ var b=E('button','btn','‹ Firmalar'); b.type='button'; b.addEventListener('click',function(){ navGo(null); }); return b; }
+    function assignBox(rec){
+      var api=FA(), box=E('div','tkp-i'); box.appendChild(E('b',null,'Bu kayıt hangi firmaya ait?'));
+      box.appendChild(E('div','hint','Kayıt kayıtlı bir firmayla eşleşmedi. Listeden firmayı seçin (adı benzeyen ★ ile başlar), yoksa “Yeni firma olarak ekle”yi seçin. Seçince personel ve evrak işleri o firmadan yapılır.'));
+      var tg=trd(tkLabel(rec)+' '+(rec.ad||'')).split(/[^\p{L}\p{N}]+/u).filter(function(w){ return w.length>=3; });
+      function sc(F){ var lb=trd(api.label(F)), k=0; tg.forEach(function(w){ if(lb.indexOf(w)>=0) k++; }); return k; }
+      var fs=E('select'); fs.setAttribute('aria-label','Kayıtlı firma'); var o0=E('option',null,'— seçin —'); o0.value=''; fs.appendChild(o0);
+      var list=api.vis().map(function(F){ return {F:F,s:sc(F)}; }).sort(function(x,y){ return (y.s-x.s)||String(api.label(x.F)).localeCompare(String(api.label(y.F)),'tr'); });
+      list.forEach(function(z){ var o=E('option',null,(z.s>0?'★ ':'')+api.label(z.F)); o.value=z.F.id; fs.appendChild(o); });
+      var on=E('option',null,'➕ Yeni firma olarak ekle'); on.value='__new'; fs.appendChild(on);
+      if(list.length&&list[0].s>0) fs.value=list[0].F.id;
+      var us=E('select'); us.setAttribute('aria-label','Şube'); us.hidden=true;
+      function fillU(){ us.textContent=''; var id=fs.value; us.hidden=!id||id==='__new'; if(us.hidden) return; var F=api.byId(id), o1=E('option',null,'Firma geneli (şubesiz)'); o1.value=''; us.appendChild(o1); var rs=trd(rec.sube||rec.il||'');
+        (F.sb||[]).filter(Boolean).forEach(function(n){ var o=E('option',null,n); o.value=n; us.appendChild(o); if(rs&&trd(n)===rs) us.value=n; }); }
+      fs.addEventListener('change',function(){ fillU(); go.disabled=!fs.value; }); 
+      var go=E('button','btn primary','Kaydet'); go.type='button'; go.disabled=!fs.value;
+      go.addEventListener('click',function(){ if(!fs.value) return; if(fs.value==='__new'){ makeFirm([rec],rec.ad||tkLabel(rec)); return; }
+        var fid=fs.value, sube=us.value; saveLink(rec.sicil,fid,sube).then(function(){ buildNav(); afterLink(); navGo(fid,fid+'|'+sube,'egitim'); }); });
+      fillU(); var r=E('div','tkp-row'); r.appendChild(fs); r.appendChild(us); r.appendChild(go); box.appendChild(r); return box;
+    }
     function unitPicker(rec){
       var api=FA(), box=E('div','tkp-i'); box.appendChild(E('div',null,'Kayıtlı firmaya bağla'));
       box.appendChild(E('div','hint','Bu Teksen kaydı hangi kayıtlı firmaya ve şubeye ait? (Bağlantı yalnız bu cihazdaki Teksen verisinde saklanır; firma kaydınıza dokunulmaz.)'));
@@ -5918,9 +5937,9 @@ window.__makePrev=function(host,fn){
       if(!rec){ NAV.raw=null; return false; }
       var cr=E('div','tkp-row'); cr.appendChild(backBtn()); cr.appendChild(E('b',null,recTitle(rec))); navEl.appendChild(cr);
       navEl.appendChild(E('div','hint',tkLabel(rec)+' · sicil '+rec.sicil));
-      navEl.appendChild(recHead(rec)); navEl.appendChild(E('p','hint','Bu Teksen kaydı kayıtlı bir firmayla eşleşmedi. Personel listesi kayıtlı firmaya bağlı tutulur: personel eklemek için bu kaydı kayıtlı firma olarak ekleyin ya da aşağıdan mevcut bir firmaya bağlayın.')); if(FA()&&FA().create) navEl.appendChild(createBox([rec],rec.ad||tkLabel(rec),'Bu kaydı kayıtlı firma olarak ekle')); var dr=E('button','btn quiet','Bu Teksen kaydını sil'); dr.type='button'; dr.addEventListener('click',function(){ askDel([rec.sicil],'“'+recTitle(rec)+'” kaydı',function(){ NAV.raw=null; renderAll(); renderNav(); }); }); navEl.appendChild(dr);
+      navEl.appendChild(recHead(rec)); if(FA()) navEl.appendChild(assignBox(rec));
       navEl.appendChild(tabsRow(false)); var host=E('div'); navEl.appendChild(host); recBody(host,rec);
-      if(FA()) navEl.appendChild(unitPicker(rec));
+      var dr=E('button','btn quiet','Bu Teksen kaydını sil'); dr.type='button'; dr.addEventListener('click',function(){ askDel([rec.sicil],'“'+recTitle(rec)+'” kaydı',function(){ NAV.raw=null; renderAll(); renderNav(); }); }); var dw=E('div','tkp-row'); dw.appendChild(dr); navEl.appendChild(dw);
       return true;
     }
     function renderGrp(){
