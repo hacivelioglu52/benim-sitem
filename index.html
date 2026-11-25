@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 222 · 25.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 223 · 25.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5554,7 +5554,11 @@ window.__makePrev=function(host,fn){
         if(st){ if(st.pers.length){ m.pts+=1; m.why.push('personel görevlendirmesi eksik'); } if(!st.egitim){ m.eyok=true; m.pts+=1; m.why.push('eğitim kaydı yok'); } else if(st.egitim.eksik>0){ m.why.push(st.egitim.eksik+' kişi eğitim almadı'); } if(st.egitim&&st.egEski){ m.pts+=1; m.eyen=true; m.why.push('eğitim yenilenmeli ('+st.egYil+' yılda bir; son eğitim '+vTr(st.egitim.d)+')'); } }
       });
       var arr=Object.keys(M).map(function(k){ return M[k]; });
-      return {rows:arr, c:{gec:arr.filter(function(m){return m.v.state==='gec';}).length, yok:arr.filter(function(m){return m.v.state==='yok';}).length, ug:arr.filter(function(m){return m.ug>0;}).length, doc:arr.filter(function(m){return m.docBad>0;}).length, pers:arr.filter(function(m){return m.st&&m.st.pers.length;}).length, egy:arr.filter(function(m){return m.eyok;}).length, eyen:arr.filter(function(m){return m.eyen;}).length}};
+      try{ if(DATAx===DATA&&window.__evpApi){ buildLinks(); var seenU={}; arr.forEach(function(m){ var lk=LK.byRec[m.f.sicil]; if(!lk) return; var key=lk.fid+'|'+(lk.sube||''); if(seenU[key]) return; seenU[key]=1;
+        var yy=EGY[m.f.tehlike], L=window.__evpApi.get(lk.fid,lk.sube||''), c={n:L.length,yok:0,eski:0,yakin:0}; if(!L.length) return;
+        L.forEach(function(x){ var g=(x.egt||[]).filter(function(y){ return y&&y.t; }); if(!g.length){ c.yok++; return; } if(!yy) return; var last=g.map(function(y){ return y.t; }).sort().pop(), due=(+last.slice(0,4)+yy)+last.slice(4,10), kal=dayNum(due)-dayNum(bugun); if(kal<=0) c.eski++; else if(kal<=60) c.yakin++; });
+        m.pk=c; if(c.eski){ m.kyen=true; m.pts+=1; m.why.push(c.eski+' kişinin eğitimi yenilenmeli (kişi kayıtları)'); } if(c.yakin) m.why.push(c.yakin+' kişide eğitim yenilemesi yaklaşıyor (60 gün içinde)'); if(c.yok) m.why.push(c.yok+' kişide eğitim kaydı girilmemiş'); }); } }catch(e){}
+      return {rows:arr, c:{kyen:arr.filter(function(m){return m.kyen;}).length, gec:arr.filter(function(m){return m.v.state==='gec';}).length, yok:arr.filter(function(m){return m.v.state==='yok';}).length, ug:arr.filter(function(m){return m.ug>0;}).length, doc:arr.filter(function(m){return m.docBad>0;}).length, pers:arr.filter(function(m){return m.st&&m.st.pers.length;}).length, egy:arr.filter(function(m){return m.eyok;}).length, eyen:arr.filter(function(m){return m.eyen;}).length}};
     }
     var pS=E('div','panel'); pS.appendChild(E('h2',null,'Bugün bakılacaklar'));
     pS.appendChild(E('p','hint','Aşağıdaki dört panelin uyarılarının özeti. Önceliklendirme: gecikmiş ziyaret ve yüksek/kritik uygunsuzluk en ağır, sonra diğer uyarılar. Doküman uyarısında yalnız Risk, Acil Durum, Çalışma, Eğitim Planı ve Sözleşme sayılır (Değerlendirme ve Tatbikat Planı çoğu firmada hiç yok, ayrıntı Doküman durumu panelinde). Yalnız okuma.'));
@@ -5564,7 +5568,7 @@ window.__makePrev=function(host,fn){
       sStats.textContent=''; sList.textContent='';
       if(!DATA||!DATA.f.length){ sList.appendChild(E('p','hint','Kayıtlı firma yok. Önce yukarıdan Teksen verisini içe aktarın.')); sMore.hidden=true; return; }
       var R=summaryData(DATA,today()), rows=R.rows.filter(function(m){ return m.pts>0; }).sort(function(a,b){ return (b.pts-a.pts)||trd(a.f.ad||'').localeCompare(trd(b.f.ad||''),'tr'); });
-      [['Ziyareti gecikmiş',R.c.gec],['Hiç ziyareti yok',R.c.yok],['Termini geçmiş uygunsuzluğu olan',R.c.ug],['Doküman uyarısı olan',R.c.doc],['Personel görevlendirmesi eksik',R.c.pers],['Hiç eğitim kaydı yok',R.c.egy],['Eğitimi yenilenmesi gereken',R.c.eyen]].forEach(function(x){ var c=E('div','tkp-stat'); c.appendChild(E('b',null,String(x[1]))); c.appendChild(E('span',null,x[0]+' (firma)')); sStats.appendChild(c); });
+      [['Ziyareti gecikmiş',R.c.gec],['Hiç ziyareti yok',R.c.yok],['Termini geçmiş uygunsuzluğu olan',R.c.ug],['Doküman uyarısı olan',R.c.doc],['Personel görevlendirmesi eksik',R.c.pers],['Hiç eğitim kaydı yok',R.c.egy],['Eğitimi yenilenmesi gereken',R.c.eyen],['Kişi kaydına göre eğitimi yenilenmesi gereken',R.c.kyen]].forEach(function(x){ var c=E('div','tkp-stat'); c.appendChild(E('b',null,String(x[1]))); c.appendChild(E('span',null,x[0]+' (firma)')); sStats.appendChild(c); });
       try{ if(window.__homeStrip) window.__homeStrip(R.c); }catch(e){}
       sList.appendChild(E('p','hint',rows.length+' firma/şubenin en az bir uyarısı var; en önemlilerden başlayarak:'));
       rows.slice(0,SMLIM).forEach(function(m){ var d=E('div','tkp-g'); d.appendChild(E('b',null,(m.f.ad||'(adsız)')+(m.f.sube?' · '+m.f.sube:''))); d.appendChild(E('div','hint',m.why.join(' · '))); sList.appendChild(d); });
@@ -6177,7 +6181,7 @@ window.__makePrev=function(host,fn){
       var lb=0; try{ lb=parseInt(localStorage.getItem('isg-lastbk')||'0',10)||0; }catch(e){}
       var days=lb?Math.floor((Date.now()-lb)/864e5):null;
       if(days===null||days>=7) card('yedek','Yedek hatırlatması',[days===null?'Henüz yedek alınmadı. Veriler yalnız bu tarayıcıda durur; ara sıra yedek almanız önerilir.':'Son yedek '+days+' gün önce ('+new Date(lb).toLocaleDateString('tr-TR')+'). Veriler yalnız bu tarayıcıda durur.'],[['Yedeği indir',function(){ doBackup(); },true]]);
-      if(LAST){ var c=LAST, ls=[]; if(c.gec) ls.push(c.gec+' firmada ziyaret gecikmiş'); if(c.ug) ls.push(c.ug+' firmada açık uygunsuzluk'); if(c.eyen) ls.push(c.eyen+' firmada eğitim yenilenmeli'); if(c.pers) ls.push(c.pers+' firmada personel görevlendirmesi eksik'); if(c.doc) ls.push(c.doc+' firmada doküman eksik/yenilenmeli');
+      if(LAST){ var c=LAST, ls=[]; if(c.gec) ls.push(c.gec+' firmada ziyaret gecikmiş'); if(c.ug) ls.push(c.ug+' firmada açık uygunsuzluk'); if(c.eyen) ls.push(c.eyen+' firmada eğitim yenilenmeli'); if(c.kyen) ls.push(c.kyen+' firmada kişi kaydına göre eğitim yenilenmeli'); if(c.pers) ls.push(c.pers+' firmada personel görevlendirmesi eksik'); if(c.doc) ls.push(c.doc+' firmada doküman eksik/yenilenmeli');
         if(ls.length) card('bugun','Bugün bakılacaklar',ls.slice(0,5),[['Firmalar’da aç',function(){ show('firm'); setTimeout(function(){ try{ if(window.__showTool) window.__showTool('bug'); }catch(e){} },80); },true]]); } }
     window.__homeStrip=function(c){ if(c) LAST=c; draw(); }; draw(); })();
   (function(){ var box=document.getElementById('home-tiles');
