@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 230 · 26.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 231 · 26.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -1981,8 +1981,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var canMove=FV.mode!=='az' && !qq;
       if(FV.mode==='grp'){ var gs=[], mp={}; l.forEach(function(f){ var g=grpOf(f)||'Grupsuz'; if(!mp[g]){ mp[g]=[]; gs.push(g); } mp[g].push(f); });
         gs.forEach(function(g){ var d=el('details','fgrp'); d.open=true; d.appendChild(el('summary',null,g+' ('+mp[g].length+')')); mp[g].forEach(function(f){ d.appendChild(mgrRow(f,mp[g],canMove)); }); fl.appendChild(d); }); }
-      else l.forEach(function(f){ fl.appendChild(mgrRow(f,l,canMove)); }); }
-    q.addEventListener('input', function(){ FV.q=q.value; draw(); });
+      else { var LIMF=window.__flim||12, full=l, rest=0; if(!qq&&l.length>LIMF){ rest=l.length-LIMF; l=l.slice(0,LIMF); canMove=false; } l.forEach(function(f){ fl.appendChild(mgrRow(f,l,canMove)); });
+        if(rest){ var mb=el('button','btn','Diğer '+rest+' firmayı göster'); mb.type='button'; mb.style.cssText='grid-column:1/-1;margin-top:8px'; mb.addEventListener('click',function(){ window.__flim=(window.__flim||12)+20; draw(); }); fl.appendChild(mb); } } }
+    q.addEventListener('input', function(){ FV.q=q.value; window.__flim=12; draw(); });
     sel.addEventListener('change', function(){ FV.mode=sel.value; lsSet(FVKEY,{mode:FV.mode}); renderFirmBar(); renderMgr(); });
     draw(); if(FM.list.filter(function(f){ return !firmBlank(f); }).length<=1) pn.appendChild(el('p','hint','Bu cihazda yalnızca 1 firma kayıtlı. Firmalar her cihazda ayrı tutulur. Başka cihazdaki firmaları getirmek için orada Ayarlar › Varsayılanlar, logolar, yedek bölümünde Yedek al, burada Yedekten yükle’yi kullanın.')); mgrRoot.appendChild(pn); setRoot.textContent=''; renderDefaults(setRoot); renderLogosPanel(setRoot); renderBackup(setRoot); ((window.__firmApi||{}).hooks||[]).forEach(function(fn){ try{ fn(); }catch(e){} }); }
   function renderLogosPanel(host){
