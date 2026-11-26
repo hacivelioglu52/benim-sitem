@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 226 · 25.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 227 · 26.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -6072,7 +6072,7 @@ window.__makePrev=function(host,fn){
     }
     /* eşleşmeyen Teksen kayıtları */
     var uD=E('details','tkp-g'), uSum=E('summary'), uBody=E('div'); uD.appendChild(uSum); uD.appendChild(uBody);
-    var uq=E('input'); uq.type='search'; uq.placeholder='Teksen kaydı ara'; uq.setAttribute('aria-label','Eşleşmeyen Teksen kaydı ara'); var ULIM=40;
+    var uq=E('input'); uq.type='search'; uq.placeholder='Teksen kaydı ara'; uq.setAttribute('aria-label','Eşleşmeyen Teksen kaydı ara'); var ULIM=10;
     function renderUnmatched(){
       uBody.textContent=''; if(!DATA||!DATA.f.length){ uD.hidden=true; return; } uD.hidden=false;
       var n=LK.unmatched.length; uSum.textContent='Teksen eşleşmesi: '+(DATA.f.length-n)+' / '+DATA.f.length+' kayıt eşleşti'+(n?' · '+n+' eşleşmeyen':'');
@@ -6080,9 +6080,9 @@ window.__makePrev=function(host,fn){
       if(!n) return; uBody.appendChild(uq);
       var t=trd(uq.value).trim(), l=LK.unmatched.filter(function(r){ return !t||trd(tkLabel(r)+' '+r.sicil).indexOf(t)>=0; }).sort(function(x,y){ return trd(tkLabel(x)).localeCompare(trd(tkLabel(y)),'tr'); });
       l.slice(0,ULIM).forEach(function(r){ var b=nBtn(); b.appendChild(E('b',null,tkLabel(r))); var w=warnOf(r); b.appendChild(E('div',w?'hint tkp-late':'hint','sicil '+r.sicil+' · '+(w?w+' uyarı':'uyarı yok'))); b.addEventListener('click',function(){ navGo(null,null,'ozet',r.sicil); }); uBody.appendChild(b); });
-      if(l.length>ULIM) uBody.appendChild(E('p','hint','… ve '+(l.length-ULIM)+' kayıt daha; aramayla daraltın.'));
+      if(l.length>ULIM){ var um=E('button','btn','Daha fazla göster ('+(l.length-ULIM)+' kayıt kaldı)'); um.type='button'; um.addEventListener('click',function(){ ULIM+=20; renderUnmatched(); }); uBody.appendChild(um); }
     }
-    uq.addEventListener('input',function(){ ULIM=40; var pos=uq.selectionStart; renderUnmatched(); uq.focus(); try{ uq.setSelectionRange(pos,pos); }catch(e){} });
+    uq.addEventListener('input',function(){ ULIM=10; var pos=uq.selectionStart; renderUnmatched(); uq.focus(); try{ uq.setSelectionRange(pos,pos); }catch(e){} });
     var grpEl=E('div'); tilesEl.parentNode.insertBefore(grpEl,tilesEl.nextSibling);
     function renderGroups(){
       grpEl.textContent=''; if(!DATA||!LK.unmatched.length) return; var g={}, order=[];
@@ -6179,9 +6179,9 @@ window.__makePrev=function(host,fn){
     });
     window.__plan={parse:plParse,calc:plCalc,render:plRender,state:function(){ return {PLAN:PLAN,PNM:PNM}; }};
     var stEl=E('div','tkp-stats'); topEl.appendChild(stEl);
-    var wal=E('div'); wal.appendChild(uD); wal.appendChild(dI);
+    var wal=E('div'); wal.appendChild(dI); wal.appendChild(uD);
     var TOOLS=[['bug','Bugün bakılacaklar',pS],['plan','Aylık plan karşılaştırması',plD],['gen','Genel listeler',dG],['al','Teksen verisini al / eşleşme',wal]], OPEN=null, tbar=E('div','tkp-row'), slot=E('div'), tbtn={};
-    [plD,dG,dI,uD].forEach(function(d){ d.open=true; var sm=d.querySelector('summary'); if(sm&&d!==uD) sm.style.display='none'; });
+    [plD,dG,dI,uD].forEach(function(d){ d.open=(d!==uD); var sm=d.querySelector('summary'); if(sm&&d!==uD) sm.style.display='none'; });
     function showTool(k){ OPEN=(OPEN===k)?null:k; SHOWBUG=(OPEN==='bug'); TOOLS.forEach(function(t){ t[2].hidden=(t[0]!==OPEN); tbtn[t[0]].className=(t[0]===OPEN)?'btn primary':'btn'; tbtn[t[0]].setAttribute('aria-expanded',t[0]===OPEN?'true':'false'); }); }
     TOOLS.forEach(function(t){ var b=E('button','btn',t[1]); b.type='button'; b.setAttribute('aria-expanded','false'); b.addEventListener('click',function(){ showTool(t[0]); }); tbtn[t[0]]=b; tbar.appendChild(b); slot.appendChild(t[2]); t[2].hidden=true; });
     topEl.appendChild(tbar); topEl.appendChild(slot); window.__showTool=showTool;
