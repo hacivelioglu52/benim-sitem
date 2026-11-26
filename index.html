@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 229 · 26.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 230 · 26.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -6039,7 +6039,7 @@ window.__makePrev=function(host,fn){
         LK.unmatched.forEach(function(r){ if(/AKKURT/i.test(r.ad||'')) return; var k=xk(r); if(!k) return; if(!g[k]){ g[k]=[]; order.push(k); } g[k].push(r); });
         order.forEach(function(k){ var recs=g[k], best=String(recs[0].ad||'').replace(/\s+/g,' ').trim(); if(!best) return;
           var ex=api.sameName?api.sameName(best):null, taken={}; if(ex) (ex.sb||[]).forEach(function(x){ taken[window.__up(String(x).replace(/\s+/g,' ').trim())]=1; });
-          var units=recs.map(function(r){ var sb=String(r.sube||'').replace(/\s+/g,' ').trim(); if(!sb&&(recs.length>1||ex)) sb=String(r.adres||'').replace(/\s+/g,' ').trim().slice(0,40)||'ŞUBE';
+          var units=recs.map(function(r){ var sb=String(r.sube||'').replace(/\s+/g,' ').trim(); if(sb&&trd(sb)===trd(String(r.il||''))) sb=''; if(!sb&&(recs.length>1||ex)) sb=String(r.adres||'').replace(/\s+/g,' ').trim().slice(0,40)||'ŞUBE';
             if(sb){ var base=window.__up(sb), nm=base, c=1; while(taken[nm]){ c++; nm=base+' ('+c+')'; } taken[nm]=1; sb=nm; }
             return {sube:sb,sgk:r.sicil,adr:r.adres||''}; });
           try{ api.create({name:best,units:units}); n+=recs.length; }catch(e){} });
