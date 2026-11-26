@@ -330,7 +330,7 @@ details.dpanel[open]>summary{margin-bottom:10px}
 <div class="wrap">
   <header>
     <h1>Kerem Sertifika</h1>
-    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 232 · 26.11.2026</strong></p>
+    <p class="lede">Risk, Temel İSG Eğitim Belgesi, eğitim ve sınav evrakları hazırlayıcı. <strong id="appver" style="white-space:nowrap;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85em">Sürüm 233 · 27.11.2026</strong></p>
   </header>
 
   <div class="firmbar" id="firm-bar"><label for="firm-btn">Firma</label><button type="button" class="firmbtn" id="firm-btn" aria-haspopup="dialog" aria-label="Çalışılan firma: seçmek için dokunun (siz değiştirene kadar seçili kalır)"></button><select id="firm-sel" hidden aria-hidden="true" tabindex="-1"></select></div>
@@ -5856,20 +5856,24 @@ window.__makePrev=function(host,fn){
     var PREP={'Risk değerlendirmesi':['rdr','Risk değerlendirme raporunu hazırla'],'Acil durum planı':['edp','Acil durum planını hazırla'],'Yıllık çalışma planı':['evt','Firma evrak takımında hazırla'],'Yıllık eğitim planı':['evt','Firma evrak takımında hazırla'],'Temel İSG eğitimi':['evp','Personel evraklarında hazırla']};
     function prepare(tab){ var api=FA(), fid=NAV.fid, sb=(NAV.uk||'').split('|').slice(1).join('|'); if(!api||!fid) return; api.pick(fid); window.__EVT_SEL={fid:fid,sb:sb}; window.__EVP_SEL={fid:fid,sb:sb}; var t=document.getElementById('tab-'+tab); if(t) t.click(); }
     /* ---- Pano (v232): tek bakışta şube durumu; yalnız okuma ---- */
-    function panoCss(){ if(document.getElementById('pano-css')) return; var st=document.createElement('style'); st.id='pano-css'; st.textContent='.pano-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;align-items:start}.pano-c{background:#fff;border:1px solid #d6dde8;border-radius:10px;overflow:hidden}.pano-c h3{margin:0;padding:9px 12px;background:#dbe6f4;font-size:.95em}.pano-r{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;padding:8px 12px;border-top:1px solid #eef1f6}.pano-r .pt{flex:1;min-width:0}.pano-r .pt small{display:block;color:#5b6577}.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.8em;font-weight:600;white-space:nowrap}.chip.ok{background:#d9f3df;color:#14632b}.chip.bad{background:#fadcdc;color:#a01818}.chip.warn{background:#fdeccb;color:#8a5a00}.chip.na{background:#e8ebf1;color:#4a5365}'; document.head.appendChild(st); }
+    function panoCss(){ if(document.getElementById('pano-css')) return; var st=document.createElement('style'); st.id='pano-css'; st.textContent='.pano-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;align-items:start}.pano-c{background:#fff;border:1px solid #d6dde8;border-radius:10px;overflow:hidden}.pano-c h3{margin:0;padding:9px 12px;background:#dbe6f4;font-size:.95em}.pano-r{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;padding:8px 12px;border-top:1px solid #eef1f6}.pano-r .pt{flex:1;min-width:0}.pano-r .pt small{display:block;color:#5b6577}.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.8em;font-weight:600;white-space:nowrap}.chip.ok{background:#d9f3df;color:#14632b}.chip.bad{background:#fadcdc;color:#a01818}.chip.warn{background:#fdeccb;color:#8a5a00}.chip.na{background:#e8ebf1;color:#4a5365}.ptiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:10px}.ptile{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;background:#fff;border:1px solid #d6dde8;border-left-width:5px;border-radius:10px;padding:9px 10px;cursor:pointer;font:inherit;color:inherit;min-height:64px}.ptile:hover{background:#f4f7fc}.ptile b{font-size:.92em;line-height:1.25}.ptile.ok{border-left-color:#2e9e4f}.ptile.bad{border-left-color:#d23b3b}.ptile.warn{border-left-color:#e0a21a}.ptile.na{border-left-color:#9aa3b2}.pdlg{border:0;border-radius:12px;padding:0;max-width:min(520px,94vw);width:100%;box-shadow:0 10px 40px rgba(0,0,0,.35)}.pdlg::backdrop{background:rgba(15,23,42,.45)}.pdlg .pb{padding:16px}.pdlg .pb h3{margin:0 0 8px}.pdlg .pb p{margin:6px 0}'; document.head.appendChild(st); }
     function chip(cls,t){ return E('span','chip '+cls,t); }
-    function panoRow(box,title,sub,cls,label){ var r=E('div','pano-r'), l=E('div','pt'); l.appendChild(E('b',null,title)); if(sub) l.appendChild(E('small',null,sub)); r.appendChild(l); r.appendChild(chip(cls,label)); box.appendChild(r); }
+    function openDlg(title,cls,label,lines,btn){ var dg=document.createElement('dialog'); dg.className='pdlg'; var pb=E('div','pb'); pb.appendChild(E('h3',null,title)); pb.appendChild(chip(cls,label)); (lines||[]).forEach(function(l){ if(l) pb.appendChild(E('p','hint',l)); });
+      var row=E('div','tkp-row'); if(btn){ var b=E('button','btn primary',btn[0]); b.type='button'; b.addEventListener('click',function(){ dg.close(); btn[1](); }); row.appendChild(b); } var c=E('button','btn','Kapat'); c.type='button'; c.addEventListener('click',function(){ dg.close(); }); row.appendChild(c); pb.appendChild(row); dg.appendChild(pb);
+      dg.addEventListener('close',function(){ dg.remove(); }); dg.addEventListener('click',function(e){ if(e.target===dg) dg.close(); }); document.body.appendChild(dg); dg.showModal(); }
+    function tile(box,title,cls,label,onclick){ var b=E('button','ptile '+cls); b.type='button'; b.appendChild(E('b',null,title)); b.appendChild(chip(cls,label)); b.addEventListener('click',onclick); box.appendChild(b); return b; }
+    function reqTile(box,x){ var CL={hazir:'ok',eksik:'bad',gerekli:'warn',bil:'na',uyg:'na'}, lb=x.s==='gerekli'?'Takip yok':RQL[x.s]; tile(box,x.t,CL[x.s],lb,function(){ var tg=PREP[x.t], btn=(tg&&NAV.fid&&(x.s==='eksik'||x.s==='gerekli'))?[tg[1],function(){ prepare(tg[0]); }]:null; openDlg(x.t,CL[x.s],RQL[x.s],[x.note,'Kural: '+x.rule+(x.src?' ('+x.src+')':'')],btn); }); }
+    function panoRow(box,title,sub,cls,label){ if(!box.__t){ box.__t=E('div','ptiles'); box.appendChild(box.__t); } tile(box.__t,title,cls,label,function(){ openDlg(title,cls,label,[sub],null); }); }
     function panoView(host,rec){ panoCss(); var bugun=today(), rr=reqRows(rec), st=staffStats({f:[rec],h:DATA.h||[]},bugun)[0]||{};
       host.appendChild(E('div','hint',(rec.adres?recTitle(rec)+' · ':'')+rr.hz+' · '+rr.c+' çalışan. Yalnız okuma.'));
       var g=E('div','pano-g');
       var a=E('div','pano-c'); a.appendChild(E('h3',null,'Şube evrakları ('+reqCount(rr).line.replace(/^\d+ madde: /,'')+')'));
       var CL={hazir:'ok',eksik:'bad',gerekli:'warn',bil:'na',uyg:'na'};
       var srt=rr.rows.filter(function(x){ return x.s!=='uyg'; }).sort(function(x,y){ var o={eksik:0,gerekli:1,bil:2,hazir:3}; return (o[x.s]||0)-(o[y.s]||0); }), hz=srt.filter(function(x){ return x.s==='hazir'; });
-      srt.filter(function(x){ return x.s!=='hazir'; }).forEach(function(x){ panoRow(a,x.t,x.note,CL[x.s],x.s==='gerekli'?'Takip yok':RQL[x.s]); });
-      if(hz.length){ var dh=E('details'); dh.appendChild(E('summary',null,'Hazır olanlar ('+hz.length+')')); dh.firstChild.style.cssText='padding:8px 12px;cursor:pointer;border-top:1px solid #eef1f6'; hz.forEach(function(x){ panoRow(dh,x.t,x.note,'ok','Hazır'); }); a.appendChild(dh); }
+      var tg1=E('div','ptiles'); srt.forEach(function(x){ reqTile(tg1,x); }); a.appendChild(tg1);
       g.appendChild(a);
       var b=E('div','pano-c'); b.appendChild(E('h3',null,'Görevli personel')); var v=(st.son&&st.son.v)||{}, need=reqP(rec.calisan,rec.tehlike), F2={ilkyardimci:'ilk_yardimcilar',destek_elemani:'destek_elemanlari',calisan_temsilcisi:'calisan_temsilcileri',yanginci:'yangincilar',arama_kurtarma:'arama_kurtarmacilar'};
-      if(!st.son) b.appendChild(E('div','pano-r','Teksen hizmet kaydı yok.'));
+      if(!st.son) b.appendChild(E('div','hint','Teksen hizmet kaydı yok.'));
       PERS.forEach(function(p){ var nm=String(v[F2[p[0]]]||'').split(/\s+-\s+/).filter(Boolean), gr=need[p[0]]||0, mev=parseInt(v['gerekli_'+p[0]],10)||0; if(!st.son) return; var ok=mev>=gr; panoRow(b,p[1],nm.length?nm.join(', '):'Kayıtlı isim yok',gr?(ok?'ok':'bad'):'na',gr?(mev+' / '+gr):'Gerekmez'); });
       g.appendChild(b);
       var c=E('div','pano-c'); c.appendChild(E('h3',null,'Eğitim ve uygunsuzluk'));
@@ -5880,7 +5884,7 @@ window.__makePrev=function(host,fn){
       g.appendChild(c); host.appendChild(g);
     }
     function reqView(host,rec){
-      var rr=reqRows(rec), n=reqCount(rr);
+      panoCss(); var rr=reqRows(rec), n=reqCount(rr);
       host.appendChild(E('div','hint',rr.hz+' · '+rr.c+' çalışan. Yalnız okuma: Teksen’de kayıtlı bilgiyle karşılaştırılır, hiçbir şey yazılmaz.'));
       host.appendChild(E('div',n.eksik?'tkp-i tkp-late':'tkp-i',n.line));
       function item(x,box){ var r=E('div','tkp-i'); var h=E('div',x.s==='eksik'?'tkp-late':null); h.appendChild(E('b',null,x.t)); h.appendChild(document.createTextNode(' — '+RQL[x.s])); r.appendChild(h);
@@ -5889,7 +5893,7 @@ window.__makePrev=function(host,fn){
         box.appendChild(r); }
       [['eksik','Eksik',true],['gerekli','Gerekli, Teksen’de takip edilmiyor',true],['bil','Veri yok',false],['hazir','Hazır',false],['uyg','Uygulanamaz',false]].forEach(function(g){
         var l=rr.rows.filter(function(x){ return x.s===g[0]; }); if(!l.length) return;
-        var d=E('details','tkp-g'), sm=E('summary'); sm.appendChild(E('b',null,g[1]+' ('+l.length+')')); d.appendChild(sm); if(g[2]) d.open=true; l.forEach(function(x){ item(x,d); }); host.appendChild(d); });
+        var d=E('details','tkp-g'), sm=E('summary'); sm.appendChild(E('b',null,g[1]+' ('+l.length+')')); d.appendChild(sm); if(g[2]) d.open=true; var tgx=E('div','ptiles'); l.forEach(function(x){ reqTile(tgx,x); }); d.appendChild(tgx); host.appendChild(d); });
       host.appendChild(E('p','hint','Kurallar 6331 sayılı Kanun ve ilgili yönetmeliklerin resmî metinlerinden 24.11.2026’da doğrulandı. Bilgi amaçlıdır; kesin değerlendirme için güncel mevzuata bakın.'));
     }
     /* ---- Uygunsuzluk ayrıntısı (v203): Teksen'den alınan tüm alanlar (fotoğraf hariç), durum süzgeçli; yalnız okuma ---- */
