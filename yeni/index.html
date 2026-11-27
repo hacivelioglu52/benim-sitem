@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1B4FBF">
+<meta name="robots" content="noindex">
+<title>Kerem İGU</title>
+<style>
+:root{--zemin:#F2F4F7;--yuzey:#fff;--yazi:#17202e;--soluk:#586275;--cizgi:#d8dde6;--ana:#1B4FBF;--uyari:#b45309;--iyi:#15803d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--zemin);color:var(--yazi);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--ana);color:#fff;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
+.ust,main,footer{max-width:960px;margin:0 auto}
+.ust{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.marka{font-weight:700;font-size:18px}
+.sekmeler{display:flex;gap:6px}
+.sekmeler a{color:#fff;text-decoration:none;padding:9px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.45)}
+.sekmeler a[aria-current]{background:#fff;color:var(--ana);font-weight:700}
+main{padding:14px}
+h1{font-size:22px;margin:4px 0 2px;overflow-wrap:anywhere}
+.aciklama{margin:0 0 14px;color:var(--soluk)}
+.yol{display:flex;gap:16px;flex-wrap:wrap}
+.yol a{color:var(--ana);text-decoration:none;padding:6px 0}
+.kutular{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.kutu{display:flex;flex-direction:column;gap:3px;min-height:92px;padding:12px;background:var(--yuzey);border:1px solid var(--cizgi);border-left:4px solid var(--cizgi);border-radius:12px;color:inherit;text-decoration:none;text-align:left;font:inherit}
+a.kutu,button.kutu{cursor:pointer}
+.kutu.uyari{border-left-color:var(--uyari)}
+.kutu.iyi{border-left-color:var(--iyi)}
+.kutu .sayi{font-size:28px;font-weight:700;line-height:1.1}
+.kutu.uyari .sayi{color:var(--uyari)}
+.kutu .ad{font-weight:600;overflow-wrap:anywhere}
+.kutu .alt{font-size:13px;color:var(--soluk);overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.ara{width:100%;padding:11px 12px;margin-bottom:10px;border:1px solid var(--cizgi);border-radius:10px;font:inherit}
+.secim{display:block;margin-bottom:10px;font-size:14px;color:var(--soluk)}
+.bilgi{grid-column:1/-1;background:var(--yuzey);border:1px solid var(--cizgi);border-radius:10px;padding:12px}
+.bilgi.uyari{border-color:var(--uyari)}
+.not,footer{font-size:13px;color:var(--soluk)}
+footer{padding:6px 14px 24px}
+footer a{color:var(--ana)}
+dialog{width:min(640px,94vw);max-height:86vh;padding:0;border:1px solid var(--cizgi);border-radius:14px;color:var(--yazi)}
+dialog[open]{display:flex;flex-direction:column}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.pencere-ust{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--cizgi)}
+.pencere-ust h2{font-size:17px;margin:0}
+.pencere-ust button{font:inherit;padding:8px 14px;border:1px solid var(--cizgi);border-radius:8px;background:#fff;cursor:pointer}
+#pencere-icerik{overflow:auto;padding:4px 14px 14px}
+.satir{display:block;padding:10px 0;border-bottom:1px solid var(--cizgi);color:inherit;text-decoration:none;overflow-wrap:anywhere}
+.satir b{display:block;font-weight:600}
+.satir span{font-size:14px;color:var(--soluk)}
+a.satir b{color:var(--ana)}
+</style>
+</head>
+<body>
+<header><div class="ust">
+  <span class="marka">Kerem İGU</span>
+  <nav class="sekmeler" aria-label="Sayfalar"><a href="#bugun" data-sekme="bugun">Bugün</a><a href="#firmalar" data-sekme="firmalar">Firmalar</a></nav>
+</div></header>
+<main id="ana"><p>Veriler okunuyor…</p></main>
+<footer>
+  Bu sürüm kayıtlarınızı yalnızca okur; değişiklik için <a href="../index.html">eski uygulamayı</a> kullanın.<br>
+  <span id="appver">Yeni sürüm 1 · 27.11.2026</span>
+</footer>
+<dialog id="pencere" aria-labelledby="pencere-baslik">
+  <div class="pencere-ust"><h2 id="pencere-baslik"></h2><button type="button" id="pencere-kapat">Kapat</button></div>
+  <div id="pencere-icerik"></div>
+</dialog>
+<script src="hesap.js?v=1"></script>
+<script src="veri.js?v=1"></script>
+<script src="uygulama.js?v=1"></script>
+</body>
+</html>
