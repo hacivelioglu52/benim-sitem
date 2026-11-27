@@ -17,3 +17,14 @@ Her sayfa aynı şablon: başlık + tek cümle açıklama + yan yana küçük ku
 
 ## Koton 2026 Yıl Sonu Raporu (bitiş Aralık sonu)
 Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim). Dosyalar çalışma dizininde yoksa Kerem'den yeniden iste. Mağaza adı=Teksen adresi; uygunsuzluk sayıları 2026. Kerem periyodik kontrol, ölçüm vb. belgeleri yükleyecek; eksikleri raporla, genel değerlendirme taslağı yaz.
+
+## Durum (27.11.2026)
+- `/yeni/` yayına yüklendi: ad geçici olarak "Kerem İGU". Yeni sürüm 3. Eski uygulama v235.
+- Hazır: Bugün, Firmalar → Şube → Pano; Teksen'e göre otomatik firma/şube kaydı (yalnız eksikler eklenir, yedek onayından sonra); elle firma/şube/personel ekleme ve düzenleme; internetsiz kullanım.
+- Yeni uygulamada yok: silme, şube adı değiştirme, Teksen verisi alma (eski uygulamada). Akkurtlar kaydı yalnız görüntülenir.
+- Sürüm kuralı: `yeni/index.html` içinde #appver ve `?v=`; `yeni/sw.js` içinde CACHE ve `?v=` birlikte artar.
+- `yeni/hesap.js` eski uygulamadaki uyarı kurallarının kopyasıdır; biri değişirse diğeri de değişmeli. `yeni/kayit.js` otomatik kayıt kuralı eskideki ile aynı olmalı.
+- v235: eski uygulama, firma listesi başka sekmede değiştiyse üzerine yazmaz. `isg-firms-v1` yazan yeni kod `firmaYaz()` / `saveFirms()` kullanmalı.
+- Tespit (değiştirilmedi): index.html içinde `window.__PWA=false` olduğu için eski uygulama sw.js'yi yeni cihazda kaydetmiyor.
+- GERI_DON.md'de yazan `yedek-v234-2026-11-26` etiketi uzak depoda görünmüyor; `yedek-v234` dalı var.
+- Sonraki aşama: Personel, Evrak, Raporlar.
