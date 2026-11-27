@@ -51,5 +51,5 @@ window.Veri=(function(){
       return {firmalar:firmalar, kisiler:P, data:data, lk:baglantilar(firmalar,data), hata:hata};
     });
   }
-  return {oku:oku};
+  return {oku:oku,teksen:teksen};
 })();

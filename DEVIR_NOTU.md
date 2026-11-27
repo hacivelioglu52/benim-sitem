@@ -63,3 +63,11 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 ### Testler
 - Önceki testler çalışma ortamındaki geçici klasördeydi, depoda yok; yeni sohbette gerekirse yeniden yazılmalı. `yeni/hesap.js` üreten betik de (eski index.html'den işlevleri birebir kopyalar) aynı durumda.
 - Gerçek telefonda ve gerçek veriyle deneme yapılmadı. Kerem, yeni "Bugün" sayılarının eskiyle aynı olduğunu henüz doğrulamadı.
+
+## Yeni sürüm 6: Teksen verisi alma (27.11.2026)
+- Kerem onayladı: sürüm 6 planı, Akkurtlar'ın mevcut Teksen kayıtlarının değişmemesi, silme sınırlamalı sürüm 7 planı. (Yukarıdaki "plan onay bekliyor" notu geçersiz.)
+- Yapıldı: `yeni/teksen.js` + Ana sayfa / Bugün / Ayarlar'da "Teksen verisi al". Özet → yedek indirme → onay → tek işlemde yazma → otomatik firma/şube kaydı. İrtibat varsayılan kapalı.
+- teksen.js içindeki "KOPYA" bölümü eski index.html'den harfi harfine alındı; eskide değişirse burada da değişmeli.
+- Akkurtlar: ada, SGK numarasına veya elle bağa göre Akkurtlar'a ait girdiler hiç yazılmaz (yeni kayıtlar da). Güncelleme eski uygulamadan.
+- Uydurma veriyle tarayıcı testi geçti (eski/yeni kayıt karşılaştırması dahil). Gerçek veriyle ve telefonda denenmedi.
+- Sürüm 7: test sonucu Kerem'e bildirilecek, **onayı olmadan yüklenmeyecek.**
