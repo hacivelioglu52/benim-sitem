@@ -1,7 +1,7 @@
 /* Teksen verisi alma.
    "KOPYA" işaretleri arasındaki bölüm eski uygulamadan (index.html v235, Takip merkezi) harfi harfine kopyalanmıştır;
    eskide bir kural değişirse burada da değişmeli.
-   Yeni uygulamanın eki: Akkurtlar'a ait Teksen kayıtları bu uygulamadan hiç yazılmaz. Alma işlemi hiçbir kaydı silmez. */
+   Yeni uygulamanın eki: seçmeli alma (veri türü, belge türü, firma/şube, dönem) ve Akkurtlar'a ait Teksen kayıtları bu uygulamadan hiç yazılmaz. Alma işlemi hiçbir kaydı silmez. */
 window.Teksen=(function(){
     /* ---- KOPYA başı ---- */
     function today(){ return new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10); }
@@ -97,12 +97,103 @@ window.Teksen=(function(){
     return function(sicil){ var k=rakam(sicil); return !!(no[nSic(sicil)]||(k.length>=5&&no[k])); };
   }
 
+  /* ---- Seçmeli alma (yeni uygulamaya özgü; kopya bölümün dışındadır) ----
+     secim yoksa her şey alınır. secim = {firma, hizmet, uyg, belge:{anahtar:true}, siciller:{sicil:true}|null, donem:{bas,son}|null}
+     Seçilmeyen veri yazılmaz; kayıtlı hali aynen kalır. */
+  var BELGELER=[['risk_analizi_dosya','Risk Analizi'],['acil_durum_dosya','Acil Durum Planı'],['calisma_plani_dosya','Çalışma Planı'],['degerlendirme_plani_dosya','Değerlendirme Planı'],['egitim_plani_dosya','Eğitim Planı'],['tatbikat_plani_dosya','Tatbikat Planı'],['sozlesme_dosya','İSG Katip Sözleşmesi'],['personel_belgeleri','Personel belgeleri']];
+  function gunOku(s){
+    s=String(s==null?'':s).trim(); var m=s.match(/^(\d{4})-(\d{2})-(\d{2})/), y,a,g;
+    if(m){ y=+m[1]; a=+m[2]; g=+m[3]; } else { m=s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})/); if(!m) return ''; y=+m[3]; a=+m[2]; g=+m[1]; }
+    var d=new Date(Date.UTC(y,a-1,g)); if(y<1900||d.getUTCMonth()!==a-1||d.getUTCDate()!==g) return '';
+    return d.toISOString().slice(0,10);
+  }
+  /* tur: tum | buyil | gecenyil | son12 | aralik */
+  function donem(tur,bugun,bas,son){
+    var y=+bugun.slice(0,4);
+    if(tur==='buyil') return {bas:y+'-01-01',son:y+'-12-31'};
+    if(tur==='gecenyil') return {bas:(y-1)+'-01-01',son:(y-1)+'-12-31'};
+    if(tur==='son12'){ var g=bugun.slice(5)==='02-29'?'02-28':bugun.slice(5); return {bas:(y-1)+'-'+g,son:bugun}; }
+    if(tur==='aralik'){ if(!gunOku(bas)||!gunOku(son)) throw new Error('İki tarihi de seçin.'); if(bas>son) throw new Error('Başlangıç tarihi bitiş tarihinden sonra olamaz.'); return {bas:bas,son:son}; }
+    return null;
+  }
+  /* Seçim ekranındaki firma/şube listesi; Akkurtlar listede yer almaz */
+  function liste(P,ex,firmalar){
+    var bizim=akkurtSiciller(firmalar,ex), rows=listeSatirlari(P.liste), var_={}, gor={}, out=[];
+    ex.firms.forEach(function(x){ var_[x.sicil]=1; });
+    P.firmalar.forEach(function(e){
+      var f=(e&&e.firma)||{}, s=nSic(f.sgksicil);
+      if(!s||gor[s]||akkurt(f.firmaadi)||bizim(s)) return; gor[s]=1;
+      out.push({sicil:s,ad:f.firmaadi||'(adsız)',sube:(rows[s]&&rows[s].sube)||'',yeni:!var_[s]});
+    });
+    return out.sort(function(a,b){ return trd(a.ad+' '+a.sube).localeCompare(trd(b.ad+' '+b.sube),'tr'); });
+  }
+  function tamVeri(sc){ return !!(sc.firma&&sc.hizmet&&sc.uyg&&!sc.donem&&BELGELER.every(function(b){ return sc.belge[b[0]]; })); }
+  function secimUygula(out,sc,ex,bugun){
+    var W=out.W, R=out.R, eski={firms:{},hizmet:{},uyg:{},docs:{}};
+    ex.firms.forEach(function(x){ eski.firms[x.sicil]=x; }); ex.docs.forEach(function(x){ eski.docs[x.sicil]=x; });
+    ex.hizmet.forEach(function(x){ eski.hizmet[x.id]=x; }); ex.uyg.forEach(function(x){ eski.uyg[x.id]=x; });
+    var d=sc.donem, tarihsiz={hizmet:{},uyg:{}};
+    function icinde(g){ return g>=d.bas&&g<=d.son; }
+
+    /* Firma bilgisi seçilmediyse yalnız yeni kayıtların temel bilgisi yazılır (diğer veriler bu kayda bağlanır) */
+    var temel={};
+    if(!sc.firma) W.firms=W.firms.filter(function(x){ if(eski.firms[x.sicil]) return false; temel[x.sicil]=1; return true; });
+
+    W.hizmet=!sc.hizmet?[]:W.hizmet.filter(function(x){
+      if(!d) return true; var g=gunOku(x.tarih); if(!g){ tarihsiz.hizmet[x.id]=1; return true; } return icinde(g);
+    });
+    /* Açık olanlar ve kayıtta açık görünenler (sonradan kapananlar) döneme bakılmadan alınır */
+    W.uyg=!sc.uyg?[]:W.uyg.filter(function(x){
+      if(!d) return true; var g=gunOku(x.tespit), o=eski.uyg[x.id];
+      if(x.state==='acik'||(o&&o.state==='acik')) return true;
+      if(!g){ tarihsiz.uyg[x.id]=1; return true; } return icinde(g);
+    });
+
+    var secili=BELGELER.filter(function(b){ return sc.belge[b[0]]; }), zorunluBelge={};
+    if(!secili.length) W.docs=[];
+    else if(secili.length<BELGELER.length) W.docs=W.docs.map(function(x){
+      var o=eski.docs[x.sicil];
+      /* Daha önce belge bilgisi yoksa tamamı yazılır: yoksa seçilmeyenler yanlışlıkla “yüklenmemiş” görünür */
+      if(!o||!o.docs||!Object.keys(o.docs).length){ zorunluBelge[x.sicil]=1; return x; }
+      var yeni=Object.assign({},o.docs);
+      secili.forEach(function(b){ if(Object.prototype.hasOwnProperty.call(x.docs,b[0])) yeni[b[0]]=x.docs[b[0]]; else delete yeni[b[0]]; });
+      return Object.assign({},o,{docs:yeni});
+    });
+
+    /* Rapor sayıları yalnız yazılacaklara göre yeniden hesaplanır */
+    function tekil(l){ var m={}; l.forEach(function(x){ m[x.id]=x; }); return m; }
+    R.firmaGuncel=0; var gorulen={};
+    W.firms.forEach(function(x){ if(eski.firms[x.sicil]&&!gorulen[x.sicil]) R.firmaGuncel++; gorulen[x.sicil]=1; });
+    R.hizmetYeni=0; R.hizmetDegisen=0;
+    var h=tekil(W.hizmet); Object.keys(h).forEach(function(id){ var o=eski.hizmet[id]; if(!o) R.hizmetYeni++; else if(String((o.veri||{}).guncelleme_tarihi||'')!==String(h[id].veri.guncelleme_tarihi||'')) R.hizmetDegisen++; });
+    R.uygYeni=0; R.uygKapanan=0; R.uygYenidenAcilan=0; R.uygGorunmeyen=0;
+    var u=tekil(W.uyg); Object.keys(u).forEach(function(id){ var o=eski.uyg[id], x=u[id]; if(x.gorunmuyor) R.uygGorunmeyen++; if(!o) R.uygYeni++; else if(o.state==='acik'&&x.state!=='acik') R.uygKapanan++; else if(o.state!=='acik'&&x.state==='acik') R.uygYenidenAcilan++; });
+    var son=Object.assign({},eski.uyg,u); R.acik=0; R.gecikmis=0;
+    Object.keys(son).forEach(function(id){ var o=son[id]; if(o.state==='acik'){ R.acik++; if(o.termin&&o.termin<bugun) R.gecikmis++; } });
+
+    R.zorunluTemel=Object.keys(temel).length; R.zorunluBelge=Object.keys(zorunluBelge).length;
+    R.tarihsizHizmet=Object.keys(tarihsiz.hizmet).length; R.tarihsizUyg=Object.keys(tarihsiz.uyg).length;
+    R.yeniHizmetsiz=(!sc.hizmet||d)?W.firms.filter(function(x){ return !eski.firms[x.sicil]; }).length:0;
+    var kismi=[];
+    if(!tamVeri(sc)){
+      R.degisim=[];
+      var ad=[]; if(sc.firma) ad.push('firma/şube bilgisi'); if(sc.hizmet) ad.push('hizmet'); if(sc.uyg) ad.push('uygunsuzluk');
+      if(secili.length) ad.push(secili.length===BELGELER.length?'tüm belge bilgileri':secili.map(function(b){ return b[1]; }).join(', '));
+      kismi.push('veri: '+(ad.join(', ')||'yok'));
+      if(d) kismi.push('dönem: '+d.bas.split('-').reverse().join('.')+' – '+d.son.split('-').reverse().join('.'));
+    }
+    if(R.secilmeyen) kismi.push(R.secilmeyen+' firma/şube seçilmedi');
+    R.kismi=kismi.join(' · ');
+    return out;
+  }
+
   /* plan() çağrılmadan önce Akkurtlar girdileri ayıklanır; sonuçta da Akkurtlar'a ait hiçbir satır bırakılmaz */
   function hesapla(P,opt,ex,firmalar,bugun){
-    var bizim=akkurtSiciller(firmalar,ex), atlanan=[];
+    var bizim=akkurtSiciller(firmalar,ex), atlanan=[], sc=opt.secim||null, secilmeyen={};
     var kalan=P.firmalar.filter(function(e){
       var f=(e&&e.firma)||{}, s=nSic(f.sgksicil);
       if(akkurt(f.firmaadi)||(s&&bizim(s))){ atlanan.push(f.firmaadi||s); return false; }
+      if(sc&&sc.siciller&&s&&!sc.siciller[s]){ secilmeyen[s]=1; return false; }
       return true;
     });
     var out=plan(Object.assign({},P,{firmalar:kalan}),opt,ex,bugun);
@@ -112,11 +203,12 @@ window.Teksen=(function(){
       out.W[n]=out.W[n].filter(function(x){ return !korunan[x.id]&&!bizim(x.sicil); });
     });
     out.R.akkurtAtlanan=atlanan.length;
+    if(sc){ out.R.secilmeyen=Object.keys(secilmeyen).length; secimUygula(out,sc,ex,bugun); }
     return out;
   }
 
   /* Yazılacak bir şey yoksa kayıt yapılmaz */
-  function bos(out){ return !out.W.firms.length; }
+  function bos(out){ return !['firms','hizmet','uyg','docs'].some(function(n){ return out.W[n].length; }); }
 
   /* Okuma ve yazma aynı işlem içinde yapılır: arada başka sekme değişiklik yapamaz; ya tamamı yazılır ya hiçbiri */
   function kaydet(P,opt,firmalar){
@@ -149,5 +241,5 @@ window.Teksen=(function(){
       };
     });
   }
-  return {parse:parse,periyot:periyot,plan:plan,hesapla:hesapla,bos:bos,kaydet:kaydet,today:today};
+  return {BELGELER:BELGELER,donem:donem,liste:liste,parse:parse,periyot:periyot,plan:plan,hesapla:hesapla,bos:bos,kaydet:kaydet,today:today};
 })();

@@ -102,3 +102,22 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - Uydurma veriyle tarayıcı testi geçti (sürüm 7 ile Bugün kutuları aynı, kayıtlar değişmedi). Gerçek veriyle ve telefonda henüz denenmedi.
 - Bilinen sınır: Ana sayfada "Belge uyarısı" kutusu yalnız sayısı sıfırdan büyükse görünür; Bugün sayfasında hep görünür.
 - **Açık soru:** Kerem "ayrıca toplu veri almada olsun" dedi; ne kastettiği netleşmedi. Netleşmeden yapılmayacak.
+
+## Yeni sürüm 9: seçmeli Teksen alma (28.11.2026, Kerem onayıyla)
+- Veri türü (firma/şube, hizmet, uygunsuzluk), 8 belge türü, firma/şube seçimi; tümünü seç/kaldır. İrtibat kapalı başlar ve yalnız firma/şube bilgisiyle alınır.
+- Dönem: tüm zamanlar / bu yıl / geçen yıl / son 12 ay / iki tarih arası. Yalnız hizmet ve uygunsuzluğa uygulanır. Açık ve kayıtta açık görünüp kapanan uygunsuzluklar her dönemde alınır. Tarihi okunamayanlar alınır ve sayılır.
+- Seçilmeyen veri yazılmaz. Zorunlu istisnalar: yeni kayıtta temel firma bilgisi; belge geçmişi olmayan kayıtta bir belge türü bile seçilirse tüm belge bilgileri.
+- Kısmi alma `meta son R.kismi` içine yazılır; yeni uygulamada gösterilir, eski uygulama bu notu göstermez. Veri türü/dönem kısıtlıysa ayrıntılı değişiklik listesi tutulmaz.
+- Kod: `yeni/teksen.js` içinde `secimUygula` (KOPYA bölümünün dışında; kopya değişmedi). teksen.js artık elle düzenleniyor, üreten betikle ezilmemeli.
+- Uydurma veriyle tarayıcı testi geçti (tam seçimde kayıtlar, meta hariç, sürüm 8 ile aynı). Gerçek veri, gerçek yer imi çıktısı ve telefonda denenmedi. Betikler depoda değil.
+- Kerem: yer iminden ek veri istemiyor. Sürüm 8 belge listelerine henüz bakmadı. D hâlâ beklemede (Teksen).
+
+### Onaylı sıradaki iş: sürüm 10, rapor
+- Uygulamada kayıtlı veriden, veri türü + firma/şube kutularıyla seçmeli rapor; **PDF, Excel ve Word** seçenekleri. Zaman dilimi seçilebilir. Akkurtlar rapora girmez. İrtibat seçilmedikçe girmez, TC no hiç yazılmaz. Rapor kayıt değiştirmez; verinin alınma tarihi ve kısmi alma notu yazılır.
+- Önceki planda PDF için yazdırma ekranı ("PDF olarak kaydet") önerilip onaylandı. Telefonda denenmeli.
+- PDF'den veri aktarma: Kerem "zaten yapılıyor" dedi; yeni iş açılmadı.
+
+### Netleşmemiş (cevap gelmeden başlanmayacak)
+- Kerem: uygunsuzluk kapanışı Teksen'i izlesin ("Teksen'de kapandıktan sonra kapanacak, burada işlem yapmayacağım") "yine de burada da işlem yapabileyim". Elle işlemin kapsamı belirsiz. Yeni uygulamada elle kapatma yok.
+- Teksen'e yüklü belge dosyalarını indirme: cevap "b şuan için gerek gibi" ("gerek yok" mu "gerekli" mi belirsiz).
+- Daha eski "toplu veri alma" sorusu netleşti: seçmeli alma (sürüm 9) ve rapor (sürüm 10).

@@ -73,6 +73,13 @@ main h2{font-size:15px;margin:18px 0 8px;color:var(--soluk)}
 .onizle input[type=checkbox]{width:20px;height:20px}
 .onizle input[type=date]{grid-column:2/-1}
 .onizle small{grid-column:2/-1;color:var(--uyari)}
+.secimler{border:0;padding:0;margin:0;min-width:0}
+.kutucuk{display:flex;gap:8px;align-items:flex-start;padding:5px 0;margin:0;color:var(--yazi);font-size:15px}
+.kutucuk[hidden]{display:none}
+.kutucuk input{width:20px;height:20px;margin:0;flex:none}
+.kutucuk.icerde{margin-left:22px}
+.secim-liste{max-height:240px;overflow:auto}
+.form label[hidden]{display:none}
 .kutu[aria-pressed=true]{outline:2px solid var(--ana)}
 .dikkat{color:var(--uyari);font-weight:600}
 #pencere-icerik h3{font-size:15px;margin:14px 0 4px}
@@ -92,19 +99,19 @@ a.satir b{color:var(--ana)}
 <main id="ana"><p>Veriler okunuyor…</p></main>
 <footer>
   Şube adı değiştirme, toplu silme ve Teksen verisi silme işlemleri <a href="../index.html">eski uygulamada</a> yapılır.<br>
-  <span id="appver">Yeni sürüm 8 · 28.11.2026</span><span id="cevrimdisi"></span>
+  <span id="appver">Yeni sürüm 9 · 28.11.2026</span><span id="cevrimdisi"></span>
 </footer>
 <dialog id="pencere" aria-labelledby="pencere-baslik">
   <div class="pencere-ust"><h2 id="pencere-baslik"></h2><button type="button" id="pencere-kapat">Kapat</button></div>
   <div id="pencere-icerik"></div>
 </dialog>
-<script src="hesap.js?v=8"></script>
-<script src="veri.js?v=8"></script>
-<script src="kayit.js?v=8"></script>
-<script src="yedek.js?v=8"></script>
-<script src="personel.js?v=8"></script>
-<script src="teksen.js?v=8"></script>
-<script src="uygulama.js?v=8"></script>
+<script src="hesap.js?v=9"></script>
+<script src="veri.js?v=9"></script>
+<script src="kayit.js?v=9"></script>
+<script src="yedek.js?v=9"></script>
+<script src="personel.js?v=9"></script>
+<script src="teksen.js?v=9"></script>
+<script src="uygulama.js?v=9"></script>
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(r){

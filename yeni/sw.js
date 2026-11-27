@@ -1,6 +1,6 @@
 /* Yeni uygulamanın internetsiz kullanımı. Her sürümde CACHE adı ve ?v= numaraları artırılır. */
-const CACHE='kigu-v8';
-const FILES=['./','./index.html','./hesap.js?v=8','./veri.js?v=8','./kayit.js?v=8','./yedek.js?v=8','./personel.js?v=8','./teksen.js?v=8','./uygulama.js?v=8'];
+const CACHE='kigu-v9';
+const FILES=['./','./index.html','./hesap.js?v=9','./veri.js?v=9','./kayit.js?v=9','./yedek.js?v=9','./personel.js?v=9','./teksen.js?v=9','./uygulama.js?v=9'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))).then(()=>self.skipWaiting()));});
 /* Yalnız kendi eski önbellekleri silinir; eski uygulamanınkine dokunulmaz */
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('kigu-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
