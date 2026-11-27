@@ -56,9 +56,6 @@
   var SGKNOT='İsteğe bağlı. Yazarsanız aynı numaralı Teksen kaydı bu yere bağlanır.', KILIT='Teksen kaydı bu numarayla bağlı olduğu için değiştirilemez.';
   function bilgiAlan(inf,kilit){ inf=inf||{}; return [{k:'sgk',ad:'SGK sicil no',deger:inf.sgk,kilit:kilit,not:kilit?KILIT:SGKNOT},{k:'adr',ad:'Adres',deger:inf.adr}]; }
   function yazilabilir(F){ return K.onayli()&&!K.akkurt(F.name); }
-  function kisiForm(fid,sb,x,teksenSubesi){
-    form(x?'Kişiyi düzenle':'Kişi ekle',[{k:'ad',ad:'Ad soyad',deger:x&&x.ad},{k:'gorev',ad:'Görev',deger:x&&x.gorev},{k:'giris',ad:'İşe giriş tarihi',tur:'date',deger:x&&x.giris}],function(v){ v.teksenSubesi=teksenSubesi; K.kisiYaz(fid,sb,x?x.id:null,v); });
-  }
 
   function izgara(){ var g=E('div','kutular'); ana.appendChild(g); return g; }
   function kutu(g,o){
@@ -122,7 +119,8 @@
     g=bolum('İşler');
     var nF=V.firmalar.filter(function(f){ return !f.pasif; }).length;
     kutu(g,{ad:'Firmalar',alt:nF+' firma · şubeler ve panolar',href:'#firmalar'});
-    [['Personel','tüm kişiler ve eğitim tarihleri'],['Evrak','firma ve personel evrakları, planlar'],['Eğitim','katılım formu, sınav, rehber ve afiş'],['Raporlar','raporlar ve belge sayıları']].forEach(function(x){ kutu(g,{ad:x[0],alt:'Hazırlanıyor · '+x[1],ton:'bekliyor'}); });
+    kutu(g,{ad:'Personel',alt:window.Personel.say(UI)+' kişi · eğitim durumları',href:'#personel'});
+    [['Evrak','firma ve personel evrakları, planlar'],['Eğitim','katılım formu, sınav, rehber ve afiş'],['Raporlar','raporlar ve belge sayıları']].forEach(function(x){ kutu(g,{ad:x[0],alt:'Hazırlanıyor · '+x[1],ton:'bekliyor'}); });
     var gec=!sonYedek()||Date.now()-sonYedek()>=7*864e5;
     kutu(g,{ad:'Ayarlar ve yedek',alt:yedekYazi(),ton:gec?'uyari':'',href:'#ayarlar'});
   }
@@ -183,6 +181,8 @@
   }
 
   function duz(x){ return H.trd(x).replace(/ı/g,'i'); }
+  /* Aramada Türkçe harfler sade karşılıklarıyla da eşleşir */
+  function sade(x){ return H.trd(x).replace(/[çğıöşü]/g,function(c){ return 'cgiosu'['çğıöşü'.indexOf(c)]; }); }
 
   /* ---- Firmalar ---- */
   function firmalarSayfa(){
@@ -193,9 +193,9 @@
     if(K.onayli()) islem('+ Firma ekle',function(){ form('Firma ekle',[{k:'ad',ad:'Firma adı'}].concat(bilgiAlan()),function(v){ return '#firma/'+encodeURIComponent(K.firmaEkle(v)); }); });
     var g=izgara();
     function ciz(){
-      g.textContent=''; var s=duz(ARA).trim();
+      g.textContent=''; var s=sade(ARA).trim();
       var list=V.firmalar.filter(function(f){ return PASIF||!f.pasif; }).map(function(f){ return {f:f,ad:firmaAd(f),b:birimler(f)}; })
-        .filter(function(x){ return !s||duz(x.ad+' '+(x.f.name||'')+' '+x.b.map(function(u){ return u.ad+' '+u.recs.map(recAd).join(' '); }).join(' ')).indexOf(s)>=0; })
+        .filter(function(x){ return !s||sade(x.ad+' '+(x.f.name||'')+' '+x.b.map(function(u){ return u.ad+' '+u.recs.map(recAd).join(' '); }).join(' ')).indexOf(s)>=0; })
         .sort(function(a,b){ return a.ad.localeCompare(b.ad,'tr'); });
       list.forEach(function(x){
         var recs=[]; x.b.forEach(function(u){ recs=recs.concat(u.recs); }); var w=uyariSay(recs);
@@ -233,7 +233,6 @@
     sayfa(sb||'Firma geneli',firmaAd(F)+' için güncel durum özeti.',[['Firmalar','#firmalar'],['Şubeler','#firma/'+encodeURIComponent(fid)]]);
     var kayitliSube=!sb||(F.sb||[]).indexOf(sb)>=0;
     if(yazilabilir(F)){
-      islem('+ Kişi ekle',function(){ kisiForm(fid,sb,null,!kayitliSube); });
       if(kayitliSube) islem(sb?'Şube bilgisini düzenle':'Firma bilgisini düzenle',function(){ form(sb?'Şube bilgisi':'Firma bilgisi',bilgiAlan(sb?(F.sbi||{})[sb]:F.info,bagli(fid,sb)),function(v){ K.subeDuzenle(fid,sb,v); }); });
     }
     var g=izgara(), ad=function(r,x){ return cok?recAd(r)+' · '+x:x; };
@@ -272,17 +271,20 @@
       b(null,'Eğitim',egtSorun?'kontrol gerekli':'uyarı yok',egtSorun?'uyari':'iyi',egt);
       b(gorevEksik,'Görevlendirme','eksik görev türü',gorevEksik?'uyari':'',gorev);
     }
-    /* TC kimlik numarası bilerek gösterilmez */
-    kutu(g,{sayi:L.length,ad:'Personel',alt:'kayıtlı kişi',tik:function(){ ac('Personel',L.slice().sort(function(a,b){ return String(a.ad||'').localeCompare(String(b.ad||''),'tr'); }).map(function(x){ var yaz=yazilabilir(F); return {b:x.ad||'(adsız)',a:[x.gorev,x.giris?'işe giriş '+(/^\d{4}-\d{2}-\d{2}$/.test(x.giris)?H.vTr(x.giris):x.giris):'',yaz?'düzenlemek için dokunun':''].filter(Boolean).join(' · '),tik:yaz?function(){ kisiForm(fid,sb,x,!kayitliSube); }:null}; }),'Bu şubede kayıtlı kişi yok.'); }});
+    kutu(g,{sayi:L.length,ad:'Personel',alt:'kayıtlı kişi · eğitim durumları',href:'#personel/'+encodeURIComponent(fid)+'/'+encodeURIComponent(sb||'')});
     if(!recs.length) ana.appendChild(E('p','bilgi','Bu şubeye bağlı Teksen kaydı yok; ziyaret, uygunsuzluk ve belge kutuları bu yüzden görünmüyor.'));
   }
+
+  /* Personel sayfasının kullandığı ortak ekran parçaları */
+  var UI={E:E,sayfa:sayfa,izgara:izgara,kutu:kutu,islem:islem,firma:firma,firmaAd:firmaAd,birimler:birimler,panoAdres:panoAdres,
+    veri:function(){ return V; },pencere:function(b){ pencereAc(b); return penI; },kapat:function(){ pen.close(); },yenile:function(){ yukle(); },ciz:function(){ yonlendir(); }};
 
   function coz(x){ try{ return decodeURIComponent(x||''); }catch(e){ return ''; } }
   function yonlendir(){
     if(!V) return; if(pen.open) pen.close();
     var p=location.hash.slice(1).split('/'), s=p[0]||'ana';
-    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else anaSayfa();
-    document.querySelectorAll('[data-sekme]').forEach(function(a){ var on=a.getAttribute('data-sekme')===(s==='firma'||s==='pano'?'firmalar':(s==='firmalar'||s==='bugun'?s:'ana')); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='personel') window.Personel.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else anaSayfa();
+    document.querySelectorAll('[data-sekme]').forEach(function(a){ var on=a.getAttribute('data-sekme')===(s==='firma'||s==='pano'?'firmalar':(s==='firmalar'||s==='bugun'||s==='personel'?s:'ana')); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
     window.scrollTo(0,0);
   }
   var sira=0;

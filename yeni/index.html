@@ -14,7 +14,7 @@ header{background:var(--ana);color:#fff;padding:calc(10px + env(safe-area-inset-
 .ust,main,footer{max-width:960px;margin:0 auto}
 .ust{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
 .marka{font-weight:700;font-size:18px}
-.sekmeler{display:flex;gap:6px}
+.sekmeler{display:flex;flex-wrap:wrap;gap:6px}
 .sekmeler a{color:#fff;text-decoration:none;padding:9px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.45)}
 .sekmeler a[aria-current]{background:#fff;color:var(--ana);font-weight:700}
 main{padding:14px}
@@ -65,31 +65,45 @@ main h2{font-size:15px;margin:18px 0 8px;color:var(--soluk)}
 .durum.hata{color:#b91c1c}
 .dugme:disabled{opacity:.45;cursor:default}
 #pencere-icerik input[type=file]{margin:6px 0 10px;max-width:100%}
+.form select,.form textarea{width:100%;padding:11px;border:1px solid var(--cizgi);border-radius:10px;font:inherit;background:#fff}
+.form label.secim{margin-top:8px;color:var(--yazi);font-size:15px}
+.form label.secim input{width:auto;margin-right:4px}
+.onizle{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--cizgi)}
+.onizle input{min-width:0;width:100%;padding:8px;border:1px solid var(--cizgi);border-radius:8px;font:inherit}
+.onizle input[type=checkbox]{width:20px;height:20px}
+.onizle input[type=date]{grid-column:2/-1}
+.onizle small{grid-column:2/-1;color:var(--uyari)}
+.kutu[aria-pressed=true]{outline:2px solid var(--ana)}
+.dikkat{color:var(--uyari);font-weight:600}
+#pencere-icerik h3{font-size:15px;margin:14px 0 4px}
+#pencere-icerik .islemler{margin-top:14px}
 .satir{display:block;padding:10px 0;border-bottom:1px solid var(--cizgi);color:inherit;text-decoration:none;overflow-wrap:anywhere}
 .satir b{display:block;font-weight:600}
 .satir span{font-size:14px;color:var(--soluk)}
 a.satir b{color:var(--ana)}
+@media (max-width:430px){.sekmeler{gap:4px}.sekmeler a{padding:8px 9px;font-size:14px}}
 </style>
 </head>
 <body>
 <header><div class="ust">
   <span class="marka">Kerem İGU</span>
-  <nav class="sekmeler" aria-label="Sayfalar"><a href="#ana" data-sekme="ana">Ana sayfa</a><a href="#bugun" data-sekme="bugun">Bugün</a><a href="#firmalar" data-sekme="firmalar">Firmalar</a></nav>
+  <nav class="sekmeler" aria-label="Sayfalar"><a href="#ana" data-sekme="ana">Ana sayfa</a><a href="#bugun" data-sekme="bugun">Bugün</a><a href="#firmalar" data-sekme="firmalar">Firmalar</a><a href="#personel" data-sekme="personel">Personel</a></nav>
 </div></header>
 <main id="ana"><p>Veriler okunuyor…</p></main>
 <footer>
-  Teksen verisi alma ve silme işlemleri <a href="../index.html">eski uygulamada</a> yapılır.<br>
-  <span id="appver">Yeni sürüm 4 · 27.11.2026</span><span id="cevrimdisi"></span>
+  Teksen verisi alma ve firma/şube silme işlemleri <a href="../index.html">eski uygulamada</a> yapılır.<br>
+  <span id="appver">Yeni sürüm 5 · 27.11.2026</span><span id="cevrimdisi"></span>
 </footer>
 <dialog id="pencere" aria-labelledby="pencere-baslik">
   <div class="pencere-ust"><h2 id="pencere-baslik"></h2><button type="button" id="pencere-kapat">Kapat</button></div>
   <div id="pencere-icerik"></div>
 </dialog>
-<script src="hesap.js?v=4"></script>
-<script src="veri.js?v=4"></script>
-<script src="kayit.js?v=4"></script>
-<script src="yedek.js?v=4"></script>
-<script src="uygulama.js?v=4"></script>
+<script src="hesap.js?v=5"></script>
+<script src="veri.js?v=5"></script>
+<script src="kayit.js?v=5"></script>
+<script src="yedek.js?v=5"></script>
+<script src="personel.js?v=5"></script>
+<script src="uygulama.js?v=5"></script>
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(r){

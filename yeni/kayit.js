@@ -1,5 +1,5 @@
 /* Kayıt yazma. Her işlem önce güncel veriyi yeniden okur, sonra yazar.
-   Hiçbir işlem kayıt silmez. Akkurtlar firmasına yazılmaz. */
+   Tek silme işlemi kişi silmedir; geri alınabilir kopya kaydedilmeden silinmez. Akkurtlar firmasına yazılmaz. */
 window.Kayit=(function(){
   var FK='isg-firms-v1', PK='isg-evrakp-v1', ONAY='kigu-yedek-onay';
   function bosluk(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
@@ -94,5 +94,58 @@ window.Kayit=(function(){
     else L.push({id:kimlik('p'),ad:ad,tc:'',gorev:buyuk(v.gorev),giris:v.giris||''});
     a[key]=L; yaz(PK,a);
   }
-  return {onayli:onayli,onayla:onayla,otomatik:otomatik,firmaEkle:firmaEkle,firmaDuzenle:firmaDuzenle,subeEkle:subeEkle,subeDuzenle:subeDuzenle,kisiYaz:kisiYaz,akkurt:akkurt};
+  /* ---- Personel: toplu işlemler, eğitim, silme / geri alma ---- */
+  function kisiler(){ var raw=localStorage.getItem(PK); return raw?JSON.parse(raw):{}; }
+  /* O firmaya yazılabilir mi? (kayıt onayı var, firma duruyor, Akkurtlar değil) */
+  function yazilacak(fid){ gerekOnay(); return bul(firmaOku(),fid); }
+
+  /* Hepsi tek seferde yazılır; aynı adlı kişiler atlanır */
+  function topluEkle(fid,sube,satirlar){
+    yazilacak(fid); var a=kisiler(), key=fid+'|'+(sube||''), L=a[key]||[], var_={}, n=0, atlanan=0;
+    L.forEach(function(x){ var_[buyuk(x.ad)]=1; });
+    satirlar.forEach(function(s){ var ad=buyuk(s.ad); if(!ad||var_[ad]){ atlanan++; return; } var_[ad]=1; L.push({id:kimlik('p')+n,ad:ad,tc:'',gorev:buyuk(s.gorev),giris:s.giris||''}); n++; });
+    if(n){ a[key]=L; yaz(PK,a); }
+    return {eklenen:n,atlanan:atlanan};
+  }
+  /* Eğitim kaydı yalnız eklenir; aynı tarih ve konu varsa ikinci kez yazılmaz. Kayıt biçimi eski uygulamayla aynıdır. */
+  function egitimEkle(fid,sube,idler,v){
+    yazilacak(fid); var t=v.t||''; if(!/^\d{4}-\d{2}-\d{2}$/.test(t)) throw new Error('Eğitim tarihini seçin.');
+    if(t>window.Hesap.today()) throw new Error('Eğitim tarihi ileri bir tarih olamaz.');
+    var konu=bosluk(v.konu)||'TEMEL İSG EĞİTİMİ', sec={}; idler.forEach(function(i){ sec[i]=1; }); if(!idler.length) throw new Error('En az bir kişi seçin.');
+    var a=kisiler(), L=a[fid+'|'+(sube||'')]||[], n=0, vardi=0;
+    L.forEach(function(x,i){ if(!sec[x.id]) return; var g=x.egt||[]; if(g.some(function(y){ return y&&y.t===t&&duz(y.konu)===duz(konu); })){ vardi++; return; } x.egt=g.concat([{id:kimlik('g')+i,t:t,konu:konu,sure:bosluk(v.sure),kay:'Elle'}]); n++; });
+    if(n) yaz(PK,a);
+    return {eklenen:n,vardi:vardi};
+  }
+
+  /* Silinenler alanı eski uygulamayla ortaktır (kerem-trash, 30 gün) */
+  function cop(mod,fn){
+    return new Promise(function(ok,no){
+      var r=indexedDB.open('kerem-trash',1);
+      r.onupgradeneeded=function(){ r.result.createObjectStore('items',{keyPath:'id'}); };
+      r.onerror=function(){ no(r.error); };
+      r.onsuccess=function(){ var d=r.result, t, q; d.onversionchange=function(){ d.close(); };
+        try{ t=d.transaction('items',mod); q=fn(t.objectStore('items')); }catch(e){ d.close(); no(e); return; }
+        t.oncomplete=function(){ d.close(); ok(q&&q.result); }; t.onabort=function(){ d.close(); no(t.error||new Error('Silinenler alanına yazılamadı.')); };
+      };
+    });
+  }
+  async function kisiSil(fid,sube,pid,baslik){
+    yazilacak(fid); var key=fid+'|'+(sube||''), x=(kisiler()[key]||[]).filter(function(y){ return y.id===pid; })[0]; if(!x) throw new Error('Kişi bulunamadı.');
+    var id='t'+Date.now()+Math.random().toString(36).slice(2,6);
+    try{ await cop('readwrite',function(s){ return s.put({id:id,type:'kisi',title:'Personel: '+x.ad+' · '+baslik,t:Date.now(),data:{fid:fid,sb:sube||'',list:[x]}}); }); }
+    catch(e){ throw new Error('Geri alınabilir kopya kaydedilemediği için kişi silinmedi.'); }
+    var a=kisiler(); a[key]=(a[key]||[]).filter(function(y){ return y.id!==pid; });
+    try{ yaz(PK,a); }catch(e){ try{ await cop('readwrite',function(s){ return s.delete(id); }); }catch(z){} throw e; }
+    return id;
+  }
+  async function silinenler(){ var a=await cop('readonly',function(s){ return s.getAll(); }), sinir=Date.now()-30*864e5; return (a||[]).filter(function(x){ return x.type==='kisi'&&x.t>=sinir; }).sort(function(p,q){ return q.t-p.t; }); }
+  async function geriAl(id){
+    var it=(await silinenler()).filter(function(x){ return x.id===id; })[0]; if(!it) throw new Error('Kayıt bulunamadı.');
+    var d=it.data; yazilacak(d.fid);
+    var a=kisiler(), key=d.fid+'|'+(d.sb||''), L=a[key]||[], var_={}; L.forEach(function(x){ var_[x.id]=1; });
+    d.list.forEach(function(x){ if(!var_[x.id]) L.push(x); }); a[key]=L; yaz(PK,a);
+    await cop('readwrite',function(s){ return s.delete(id); });
+  }
+  return {topluEkle:topluEkle,egitimEkle:egitimEkle,kisiSil:kisiSil,silinenler:silinenler,geriAl:geriAl,onayli:onayli,onayla:onayla,otomatik:otomatik,firmaEkle:firmaEkle,firmaDuzenle:firmaDuzenle,subeEkle:subeEkle,subeDuzenle:subeDuzenle,kisiYaz:kisiYaz,akkurt:akkurt};
 })();

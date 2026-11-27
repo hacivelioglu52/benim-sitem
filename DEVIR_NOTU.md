@@ -36,3 +36,10 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - Koton belgeleri erken gelirse Koton raporu öne alınır.
 - Onay: her adım testten geçince ayrıca sormadan yüklenebilir. Eski uygulama, Akkurtlar veya veri silme riski taşıyan işlerde yine önce onay alınır.
 - Kaşe görselleri yeni uygulamanın koduna eklenmeyecek.
+
+## Yeni sürüm 5: Personel (27.11.2026)
+- Yapıldı: tüm kişiler / şube personeli, arama, eğitim durumu süzgeçleri, tekli ve yapıştırarak toplu ekleme (önizlemeli), tekli ve toplu eğitim tarihi girme, kişi silme ve geri alma (`yeni/personel.js`).
+- Silinenler eski uygulamayla ortak (`kerem-trash`, tür `kisi`, 30 gün). Yeni uygulama kopya kaydedilemezse silmez.
+- Kişi eğitim durumu kuralı eskideki `egState` ile aynı; biri değişirse diğeri de değişmeli.
+- Henüz yok: dosyadan (Excel/PDF/resim) toplu ekleme, Teksen'deki eğitim tarihlerini kişilere işleme, eğitim kaydı silme (eski uygulamada).
+- Sıradaki: (3) Teksen verisi alma ve kalan firma/şube işlemleri.

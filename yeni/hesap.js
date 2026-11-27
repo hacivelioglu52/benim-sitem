@@ -82,5 +82,5 @@ window.Hesap=(function(){
       return {rows:arr, c:{kyen:arr.filter(function(m){return m.kyen;}).length, gec:arr.filter(function(m){return m.v.state==='gec';}).length, yok:arr.filter(function(m){return m.v.state==='yok';}).length, ug:arr.filter(function(m){return m.ug>0;}).length, doc:arr.filter(function(m){return m.docBad>0;}).length, pers:arr.filter(function(m){return m.st&&m.st.pers.length;}).length, egy:arr.filter(function(m){return m.eyok;}).length, eyen:arr.filter(function(m){return m.eyen;}).length}};
     }
     function ozet(data,baglanti,bugun){ DATA=data; LK=baglanti; return summaryData(data,bugun); }
-    return {ozet:ozet,today:today,trd:trd,vTr:vTr,visitStats:visitStats,docEval:docEval,staffStats:staffStats,DTYPES:DTYPES,CORE:CORE};
+    return {ozet:ozet,today:today,trd:trd,vTr:vTr,visitStats:visitStats,docEval:docEval,staffStats:staffStats,DTYPES:DTYPES,CORE:CORE,EGY:EGY,dayNum:dayNum};
 })();
