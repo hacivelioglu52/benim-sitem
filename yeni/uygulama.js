@@ -261,6 +261,7 @@
     var pasifN=V.firmalar.filter(function(f){ return f.pasif; }).length+V.firmalar.reduce(function(t,f){ return t+Object.keys(f.sbp||{}).length; },0);
     if(pasifN){ var l=E('label','secim'), cb=E('input'); cb.type='checkbox'; cb.checked=PASIF; cb.addEventListener('change',function(){ PASIF=cb.checked; firmalarSayfa(); }); l.appendChild(cb); l.appendChild(document.createTextNode(' Pasif / arşiv olanları da göster ('+pasifN+')')); ana.appendChild(l); }
     if(K.onayli()) islem('+ Firma ekle',function(){ form('Firma ekle',[{k:'ad',ad:'Firma adı'}].concat(bilgiAlan()),function(v){ return '#firma/'+encodeURIComponent(K.firmaEkle(v)); }); });
+    if(K.onayli()) islem('Silinenler',silinenYerlerPenceresi);
     var g=izgara();
     function ciz(){
       g.textContent=''; var s=sade(ARA).trim();
@@ -270,7 +271,7 @@
       list.forEach(function(x){
         var recs=[]; x.b.forEach(function(u){ recs=recs.concat(u.recs); }); var w=uyariSay(recs);
         var sb=x.b.filter(function(u){ return u.sube; }).length;
-        kutu(g,{ad:x.ad,alt:(sb?sb+' şube':'şubesiz')+' · '+(!recs.length?'Teksen kaydı eşleşmedi':(w?w+' uyarı':'uyarı yok'))+(x.f.pasif?' · pasif':'')+(x.f.name&&duz(x.f.name)!==duz(x.ad)?' · kayıtlı ad: '+x.f.name:''),ton:w?'uyari':'',href:'#firma/'+encodeURIComponent(x.f.id)});
+        kutu(g,{ad:x.ad,alt:(sb?sb+' şube':'şubesiz')+' · '+(!recs.length?'Teksen kaydı eşleşmedi':(w?w+' uyarı':'uyarı yok'))+(x.f.arsiv?' · arşiv':x.f.pasif?' · pasif':'')+(x.f.name&&duz(x.f.name)!==duz(x.ad)?' · kayıtlı ad: '+x.f.name:''),ton:w?'uyari':'',href:'#firma/'+encodeURIComponent(x.f.id)});
       });
       if(!list.length) g.appendChild(E('p','bilgi',V.firmalar.length?'Aramaya uyan firma yok.':'Bu tarayıcıda kayıtlı firma yok. Bu sayfayı eski uygulamayla aynı adresten ve aynı tarayıcıda açın.'));
     }
@@ -280,6 +281,27 @@
   /* O yerdeki SGK numarasıyla eşleşen bir Teksen kaydı var mı? */
   function bagli(fid,sb){ var F=firma(fid), inf=(sb?(F.sbi||{})[sb]:F.info)||{}, k=String(inf.sgk||'').replace(/\D/g,''); return !!k&&(V.lk.byUnit[fid+'|'+sb]||[]).some(function(r){ return String(r.sicil).replace(/\D/g,'')===k; }); }
 
+  /* ---- Pasife alma, arşivleme, silme ---- */
+  function uygula(fn){ try{ fn(); }catch(e){ alert(e.message||e); } yukle(); }
+  function silDugmesi(F,sb){
+    var fid=F.id, ad=sb===null?F.name:F.name+' / '+sb;
+    if(K.teksenBagi(F,sb,V)){ ana.insertBefore(E('p','not',(sb===null?'Bu firmaya':'Bu şubeye')+' Teksen kaydı bağlı olduğu için silinemez; pasife alabilirsiniz.'),ana.querySelector('.islemler').nextSibling); return; }
+    islem(sb===null?'Firmayı sil':'Şubeyi sil',function(){
+      var n=0; Object.keys(V.kisiler).forEach(function(k){ if(sb===null?k.indexOf(fid+'|')===0:k===fid+'|'+sb) n+=(V.kisiler[k]||[]).length; });
+      if(!confirm(ad+' silinsin mi?'+(n?'\nDİKKAT: Burada '+n+' kişi kayıtlı. Kişiler, silinen kayıt geri alınana kadar görünmez.':'')+'\n30 gün içinde Firmalar sayfasındaki “Silinenler” bölümünden geri alabilirsiniz.')) return;
+      K.yerSil(fid,sb).then(function(){ history.replaceState(null,'',sb===null?'#firmalar':'#firma/'+encodeURIComponent(fid)); yukle(); },function(e){ alert(e.message||e); yukle(); });
+    });
+  }
+  function silinenYerlerPenceresi(){
+    pencereAc('Silinen firma ve şubeler'); penI.appendChild(E('p','not','Silinenler 30 gün saklanır. Geri almak için dokunun. Bu liste yedek dosyasına girmez.'));
+    var hata=E('p','hata'); hata.setAttribute('role','alert'); penI.appendChild(hata);
+    K.silinenYerler().then(function(a){
+      if(!a.length) penI.appendChild(E('p','bilgi','Silinen firma veya şube yok.'));
+      a.forEach(function(it){ var b=E('button','satir'); b.type='button'; b.appendChild(E('b',null,it.title)); b.appendChild(E('span',null,new Date(it.t).toLocaleString('tr-TR')+' tarihinde silindi'));
+        b.addEventListener('click',function(){ if(!confirm(it.title+' geri alınsın mı?')) return; b.disabled=true; K.yerGeriAl(it.id).then(function(){ pen.close(); yukle(); },function(e){ b.disabled=false; hata.textContent=e.message||String(e); }); }); penI.appendChild(b); });
+    },function(){ hata.textContent='Silinenler okunamadı.'; });
+  }
+
   /* ---- Şubeler ---- */
   function firmaSayfa(fid){
     var F=firma(fid); if(!F){ location.replace('#firmalar'); return; }
@@ -287,12 +309,19 @@
     if(yazilabilir(F)){
       islem('+ Şube ekle',function(){ form('Şube ekle',[{k:'ad',ad:'Şube adı',not:'Şube adı sonradan bu uygulamadan değiştirilemez.'}].concat(bilgiAlan()),function(v){ K.subeEkle(fid,v); }); });
       islem('Firmayı düzenle',function(){ var kilit=bagli(fid,''); form('Firmayı düzenle',[{k:'ad',ad:'Kayıtlı firma adı',deger:F.name,not:'Teksen kaydı bağlı firmalarda sayfa başlığı Teksen’deki addan gelir.'}].concat(bilgiAlan(F.info,kilit)),function(v){ K.firmaDuzenle(fid,v); }); });
+      if(F.pasif||F.arsiv) islem(F.arsiv?'Arşivden çıkar (aktif yap)':'Aktif yap',function(){ uygula(function(){ K.firmaDurum(fid,'aktif'); }); });
+      if(!F.pasif) islem('Pasife al',function(){ if(confirm(F.name+' pasife alınsın mı? Listede gizlenir, kayıtları silinmez.')) uygula(function(){ K.firmaDurum(fid,'pasif'); }); });
+      if(!F.arsiv) islem('Arşive al',function(){ if(confirm(F.name+' arşive alınsın mı? Listede gizlenir, kayıtları silinmez.')) uygula(function(){ K.firmaDurum(fid,'arsiv'); }); });
+      silDugmesi(F,null);
     }
+    if(F.pasif||F.arsiv) ana.appendChild(E('p','bilgi',F.arsiv?'Bu firma arşivde.':'Bu firma pasif.'));
     if(K.akkurt(F.name)) ana.appendChild(E('p','not','Akkurtlar kaydı bu uygulamada yalnızca görüntülenir.'));
-    var g=izgara();
-    birimler(F).forEach(function(u){
+    var g=izgara(), liste=birimler(F);
+    /* Pasif şubeler bu sayfada her zaman erişilebilir kalır, geri açılabilsin */
+    (F.sb||[]).forEach(function(n){ if(F.sbp&&F.sbp[n]&&!liste.some(function(u){ return u.sube===n; })) liste.push({fid:F.id,sube:n,ad:n,recs:V.lk.byUnit[F.id+'|'+n]||[]}); });
+    liste.forEach(function(u){
       var w=uyariSay(u.recs), n=kisiler(u.fid,u.sube).length, adres=u.recs[0]&&u.recs[0].adres;
-      kutu(g,{ad:u.ad,alt:(!u.recs.length?'Teksen kaydı yok':(w?w+' uyarı':'uyarı yok'))+' · '+n+' kişi'+(adres?' · '+adres:''),ton:w?'uyari':'',href:panoAdres(u.fid,u.sube)});
+      kutu(g,{ad:u.ad,alt:(u.sube&&F.sbp&&F.sbp[u.sube]?'pasif · ':'')+(!u.recs.length?'Teksen kaydı yok':(w?w+' uyarı':'uyarı yok'))+' · '+n+' kişi'+(adres?' · '+adres:''),ton:w?'uyari':'',href:panoAdres(u.fid,u.sube)});
     });
   }
 
@@ -304,6 +333,12 @@
     var kayitliSube=!sb||(F.sb||[]).indexOf(sb)>=0;
     if(yazilabilir(F)){
       if(kayitliSube) islem(sb?'Şube bilgisini düzenle':'Firma bilgisini düzenle',function(){ form(sb?'Şube bilgisi':'Firma bilgisi',bilgiAlan(sb?(F.sbi||{})[sb]:F.info,bagli(fid,sb)),function(v){ K.subeDuzenle(fid,sb,v); }); });
+      if(sb&&kayitliSube){
+        var pasif=!!(F.sbp&&F.sbp[sb]);
+        islem(pasif?'Şubeyi aktif yap':'Şubeyi pasife al',function(){ if(pasif||confirm(sb+' pasife alınsın mı? Listede gizlenir, kayıtları silinmez.')) uygula(function(){ K.subeDurum(fid,sb,!pasif); }); });
+        silDugmesi(F,sb);
+        if(pasif) ana.appendChild(E('p','bilgi','Bu şube pasif.'));
+      }
     }
     var g=izgara(), ad=function(r,x){ return cok?recAd(r)+' · '+x:x; };
     if(recs.length){

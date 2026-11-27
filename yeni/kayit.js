@@ -1,5 +1,5 @@
 /* Kayıt yazma. Her işlem önce güncel veriyi yeniden okur, sonra yazar.
-   Tek silme işlemi kişi silmedir; geri alınabilir kopya kaydedilmeden silinmez. Akkurtlar firmasına yazılmaz. */
+   Silme işlemleri (kişi; Teksen kaydı bağlı olmayan firma ve şube) geri alınabilir; geri alınabilir kopya kaydedilmeden silinmez. Akkurtlar firmasına yazılmaz. */
 window.Kayit=(function(){
   var FK='isg-firms-v1', PK='isg-evrakp-v1', ONAY='kigu-yedek-onay';
   function bosluk(s){ return String(s==null?'':s).replace(/\s+/g,' ').trim(); }
@@ -147,5 +147,64 @@ window.Kayit=(function(){
     d.list.forEach(function(x){ if(!var_[x.id]) L.push(x); }); a[key]=L; yaz(PK,a);
     await cop('readwrite',function(s){ return s.delete(id); });
   }
-  return {topluEkle:topluEkle,egitimEkle:egitimEkle,kisiSil:kisiSil,silinenler:silinenler,geriAl:geriAl,onayli:onayli,onayla:onayla,otomatik:otomatik,firmaEkle:firmaEkle,firmaDuzenle:firmaDuzenle,subeEkle:subeEkle,subeDuzenle:subeDuzenle,kisiYaz:kisiYaz,akkurt:akkurt};
+  /* ---- Firma / şube: pasife alma, arşivleme, silme. Alan adları ve silinen kayıt biçimi eski uygulamayla aynıdır ---- */
+  function aktifSec(o,f){ if(o.cur!==f.id) return; var n=o.list.filter(function(x){ return x!==f&&x.name&&!x.pasif; })[0]; if(n) o.cur=n.id; }
+  function firmaDurum(id,k){ firmaDegistir(function(o){ var f=bul(o,id);
+    if(k==='aktif'){ delete f.pasif; delete f.arsiv; return; }
+    if(k!=='pasif'&&k!=='arsiv') throw new Error('Bilinmeyen işlem.');
+    f.pasif=true; if(k==='arsiv') f.arsiv=true; else delete f.arsiv; aktifSec(o,f); }); }
+  function subeVar(f,s){ if(!s||(f.sb||[]).indexOf(s)<0) throw new Error('Şube bulunamadı.'); }
+  function subeDurum(id,s,pasif){ firmaDegistir(function(o){ var f=bul(o,id); subeVar(f,s); f.sbp=f.sbp||{}; if(pasif) f.sbp[s]=1; else delete f.sbp[s]; }); }
+
+  /* Firmaya (sube===null) ya da şubeye bağlı Teksen kaydı sayısı. Şüpheli her bağ sayılır: ekrandaki bağ, SGK no, elle kurulan bağ */
+  function teksenBagi(F,sube,v){
+    var no={}, elle={};
+    function ekle(s){ var k=rakam(s); if(k.length>=5) no[k]=1; }
+    if(sube===null){ ekle(F.info&&F.info.sgk); Object.keys(F.sbi||{}).forEach(function(n){ ekle(F.sbi[n]&&F.sbi[n].sgk); }); }
+    else ekle(F.sbi&&F.sbi[sube]&&F.sbi[sube].sgk);
+    v.data.meta.forEach(function(m){ if(m&&String(m.k).indexOf('link:')===0&&m.fid===F.id&&(sube===null||(m.sube||'')===sube)) elle[m.sicil]=1; });
+    return v.data.f.filter(function(r){ var l=v.lk.byRec[r.sicil]; return (l&&l.fid===F.id&&(sube===null||l.sube===sube))||!!no[rakam(r.sicil)]||!!elle[r.sicil]; }).length;
+  }
+  function copId(){ return 't'+Date.now()+Math.random().toString(36).slice(2,6); }
+  /* Sıra: güncel veriyi oku → bağ kontrolü → geri alınabilir kopyayı kaydet → sil */
+  async function yerSil(fid,sube){
+    gerekOnay();
+    var v=await window.Veri.oku(); if(v.hata.length) throw new Error('Veriler tam okunamadığı için silinmedi. '+v.hata.join(' '));
+    var o=firmaOku(), f=bul(o,fid); if(sube!==null) subeVar(f,sube); else if(o.list.length<2) throw new Error('Listedeki tek firma silinemez.');
+    if(teksenBagi(f,sube,v)) throw new Error('Bu kayda Teksen verisi bağlı olduğu için silinemez. Pasife alabilirsiniz.');
+    var once=JSON.stringify(f), id=copId(), it={id:id,t:Date.now()};
+    if(sube===null){ it.type='firm'; it.title='Firma: '+f.name; it.data={f:JSON.parse(once),ix:o.list.indexOf(f)}; }
+    else { it.type='sube'; it.title='Şube: '+f.name+' / '+sube; it.data={fid:fid,name:sube,ix:f.sb.indexOf(sube),info:(f.sbi||{})[sube]||null,pas:!!(f.sbp&&f.sbp[sube])}; }
+    try{ await cop('readwrite',function(s){ return s.put(it); }); }
+    catch(e){ throw new Error('Geri alınabilir kopya kaydedilemediği için silinmedi.'); }
+    try{
+      firmaDegistir(function(o){
+        var f=bul(o,fid); if(JSON.stringify(f)!==once) throw new Error('Kayıt bu sırada değişti, silinmedi. Yeniden deneyin.');
+        if(sube===null){ o.list=o.list.filter(function(x){ return x!==f; }); if(o.cur===fid) o.cur=o.list[0].id; }
+        else { f.sb=f.sb.filter(function(x){ return x!==sube; }); if(f.sbi) delete f.sbi[sube]; if(f.sbp) delete f.sbp[sube]; }
+      });
+    }catch(e){ try{ await cop('readwrite',function(s){ return s.delete(id); }); }catch(z){} throw e; }
+    return id;
+  }
+  async function silinenYerler(){ var a=await cop('readonly',function(s){ return s.getAll(); }), sinir=Date.now()-30*864e5; return (a||[]).filter(function(x){ return (x.type==='firm'||x.type==='sube')&&x.t>=sinir; }).sort(function(p,q){ return q.t-p.t; }); }
+  async function yerGeriAl(id){
+    var it=(await silinenYerler()).filter(function(x){ return x.id===id; })[0]; if(!it) throw new Error('Kayıt bulunamadı.');
+    var d=it.data;
+    firmaDegistir(function(o){
+      if(it.type==='firm'){
+        if(akkurt(d.f.name)) throw new Error('Akkurtlar kaydı bu uygulamadan değiştirilmez.');
+        if(o.list.some(function(x){ return x.id===d.f.id; })) throw new Error('Bu firma zaten listede.');
+        adKontrol(o,d.f.name,d.f.id);
+        sgkBos(o,d.f.info&&d.f.info.sgk); Object.keys(d.f.sbi||{}).forEach(function(n){ sgkBos(o,d.f.sbi[n]&&d.f.sbi[n].sgk); });
+        o.list.splice(Math.max(0,Math.min(d.ix,o.list.length)),0,d.f); return;
+      }
+      if(!o.list.some(function(x){ return x.id===d.fid; })) throw new Error('Firma artık yok; önce firmayı geri alın.');
+      var f=bul(o,d.fid); f.sb=f.sb||[]; f.sbi=f.sbi||{};
+      if(f.sb.some(function(x){ return duz(x)===duz(d.name); })) throw new Error('Bu adla bir şube zaten var; eski kayıt üzerine yazılmadı.');
+      sgkBos(o,d.info&&d.info.sgk);
+      f.sb.splice(Math.max(0,Math.min(d.ix,f.sb.length)),0,d.name); if(d.info) f.sbi[d.name]=d.info; if(d.pas){ f.sbp=f.sbp||{}; f.sbp[d.name]=1; }
+    });
+    await cop('readwrite',function(s){ return s.delete(id); });
+  }
+  return {firmaDurum:firmaDurum,subeDurum:subeDurum,teksenBagi:teksenBagi,yerSil:yerSil,silinenYerler:silinenYerler,yerGeriAl:yerGeriAl,topluEkle:topluEkle,egitimEkle:egitimEkle,kisiSil:kisiSil,silinenler:silinenler,geriAl:geriAl,onayli:onayli,onayla:onayla,otomatik:otomatik,firmaEkle:firmaEkle,firmaDuzenle:firmaDuzenle,subeEkle:subeEkle,subeDuzenle:subeDuzenle,kisiYaz:kisiYaz,akkurt:akkurt};
 })();
