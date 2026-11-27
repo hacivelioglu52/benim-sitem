@@ -94,3 +94,11 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - Sade Türkçe. Önce açıkla, onay al, sonra yap, sonra rapor ver. Mesaj sonunda onay soruları numaralı.
 - Cevabı boş olan onay sorusu varsa o işe başlamadan önce sor.
 - Yeni sohbet kuralı: yukarıdaki "Yeni sohbet kuralı (Kerem)" maddesi.
+
+## Gerçek veriyle ilk deneme + yeni sürüm 8 (28.11.2026)
+- Kerem'in bildirdiği sonuç: A yapıldı. B: "Yedek aldım, kayıtları başlat" düğmesine basılmış; firma ve şubeler doğru görünüyor. C: "Bugün"deki tüm veriler eskiyle aynı.
+- D **beklemede**: Kerem sorunun Teksen tarafında olduğunu bildirdi. Teksen düzelince: yer imi → yenide "Teksen verisi al" → "Özeti göster"; kaydetmeden önce sayı ve uyarılar birlikte kontrol edilecek.
+- Sürüm 8 (Kerem onayladı): "Belge uyarısı" penceresinde Risk Analizi, Acil Durum Planı (Kerem: "ADEP"), Çalışma Planı, Eğitim Planı listeleri. Her listede "Eksik veya yenilenecek" ve ayrı "Kontrol edilmeli (tarih okunamadı)". "Tüm belge uyarıları" listesi de duruyor. Yalnız görüntüleme; `yeni/hesap.js` ve Bugün sayıları değişmedi.
+- Uydurma veriyle tarayıcı testi geçti (sürüm 7 ile Bugün kutuları aynı, kayıtlar değişmedi). Gerçek veriyle ve telefonda henüz denenmedi.
+- Bilinen sınır: Ana sayfada "Belge uyarısı" kutusu yalnız sayısı sıfırdan büyükse görünür; Bugün sayfasında hep görünür.
+- **Açık soru:** Kerem "ayrıca toplu veri almada olsun" dedi; ne kastettiği netleşmedi. Netleşmeden yapılmayacak.

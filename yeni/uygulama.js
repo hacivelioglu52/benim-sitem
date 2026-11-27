@@ -69,11 +69,12 @@
   function ac(baslik,satirlar,bosYazi){
     penB.textContent=baslik; penI.textContent='';
     if(!satirlar.length) penI.appendChild(E('p','bilgi',bosYazi||'Kayıt yok.'));
-    satirlar.forEach(function(s){
-      var d=E(s.href?'a':(s.tik?'button':'div'),'satir'); if(s.tik){ d.type='button'; d.addEventListener('click',s.tik); } if(s.href){ d.href=s.href; d.addEventListener('click',function(){ pen.close(); }); }
-      d.appendChild(E('b',null,s.b)); if(s.a) d.appendChild(E('span',null,s.a)); penI.appendChild(d);
-    });
-    pen.showModal(); penI.scrollTop=0;
+    satirlar.forEach(satirEkle);
+    if(!pen.open) pen.showModal(); penI.scrollTop=0;
+  }
+  function satirEkle(s){
+    var d=E(s.href?'a':(s.tik?'button':'div'),'satir'); if(s.tik){ d.type='button'; d.addEventListener('click',s.tik); } if(s.href){ d.href=s.href; d.addEventListener('click',function(){ pen.close(); }); }
+    d.appendChild(E('b',null,s.b)); if(s.a) d.appendChild(E('span',null,s.a)); penI.appendChild(d);
   }
   document.getElementById('pencere-kapat').addEventListener('click',function(){ if(!yukleniyor) pen.close(); });
   pen.addEventListener('click',function(e){ if(e.target===pen&&!yukleniyor) pen.close(); });
@@ -90,6 +91,37 @@
   }
 
   function sirali(){ return OZ.rows.slice().sort(function(a,b){ return (b.pts-a.pts)||H.trd(a.f.ad||'').localeCompare(H.trd(b.f.ad||''),'tr'); }); }
+  /* ---- Belge türüne göre listeler (yalnız görüntüleme; kural hesap.js docEval) ---- */
+  var BELGE=[['risk_analizi_dosya','Risk Analizi'],['acil_durum_dosya','Acil Durum Planı'],['calisma_plani_dosya','Çalışma Planı'],['egitim_plani_dosya','Eğitim Planı']];
+  function belgeDurum(key){
+    var dM={}, bugun=H.today(), o={eksik:[],kontrol:[],verisiz:0};
+    V.data.d.forEach(function(x){ dM[x.sicil]=x.docs; });
+    sirali().sort(function(a,b){ return H.trd(recAd(a.f)).localeCompare(H.trd(recAd(b.f)),'tr'); }).forEach(function(m){
+      var dd=dM[m.f.sicil]; if(!dd||!Object.keys(dd).length){ o.verisiz++; return; }
+      var e=H.docEval(key,dd[key],m.f.tehlike,bugun), l=V.lk.byRec[m.f.sicil];
+      var s={b:recAd(m.f),a:e.msg+(e.last?' · son dosya '+H.vTr(e.last):''),href:l?panoAdres(l.fid,l.sube):null};
+      if(e.s==='yok'||e.s==='eski') o.eksik.push(s); else if(e.s==='bil') o.kontrol.push(s);
+    });
+    return o;
+  }
+  function belgePenceresi(tumu){
+    var satirlar=BELGE.map(function(t){ var d=belgeDurum(t[0]); return {b:t[1]+' ›',a:d.eksik.length+' eksik veya yenilenecek · '+d.kontrol.length+' kontrol edilmeli',tik:function(){ belgeListesi(t[1],d,tumu); }}; });
+    satirlar.push({b:'Tüm belge uyarıları ›',a:tumu.length+' firma/şube · sözleşme dahil',tik:function(){ ac('Tüm belge uyarıları',tumu,'Bu başlıkta uyarı yok.'); geriEkle(tumu); }});
+    ac('Belge uyarısı',satirlar);
+    var n=belgeDurum(BELGE[0][0]).verisiz;
+    if(n) penI.appendChild(E('p','not',n+' kaydın belge bilgisi alınmamış; bunlar dört listede sayılmadı.'));
+  }
+  function geriEkle(tumu){ var b=dugme('‹ Belge türleri',function(){ belgePenceresi(tumu); }); var s=E('div','islemler'); s.appendChild(b); penI.insertBefore(s,penI.firstChild); penI.scrollTop=0; }
+  function belgeListesi(ad,d,tumu){
+    ac(ad,[]); penI.textContent='';
+    [['Eksik veya yenilenecek',d.eksik],['Kontrol edilmeli (tarih okunamadı)',d.kontrol]].forEach(function(g){
+      penI.appendChild(E('h3',null,g[0]+' ('+g[1].length+')'));
+      if(!g[1].length) penI.appendChild(E('p','not','Bu bölümde kayıt yok.'));
+      g[1].forEach(function(s){ satirEkle(s); });
+    });
+    if(d.verisiz) penI.appendChild(E('p','not',d.verisiz+' kaydın belge bilgisi alınmamış; bu listede sayılmadı.'));
+    geriEkle(tumu);
+  }
   function kategoriler(){
     var c=OZ.c, uyarili=sirali().filter(function(m){ return m.why.length; });
     return [['Ziyareti gecikmiş',c.gec,function(m){ return m.v.state==='gec'; }],
@@ -100,7 +132,7 @@
      ['Eğitim kaydı yok',c.egy,function(m){ return m.eyok; }],
      ['Eğitim yenilenmeli',c.eyen,function(m){ return m.eyen; }],
      ['Kişi eğitimi yenilenmeli',c.kyen,function(m){ return m.kyen; }]
-    ].map(function(x){ return {ad:x[0],sayi:x[1],tik:function(){ ac(x[0],uyarili.filter(x[2]).map(recSatir),'Bu başlıkta uyarı yok.'); }}; });
+    ].map(function(x){ return {ad:x[0],sayi:x[1],tik:function(){ var l=uyarili.filter(x[2]).map(recSatir); if(x[0]==='Belge uyarısı') belgePenceresi(l); else ac(x[0],l,'Bu başlıkta uyarı yok.'); }}; });
   }
 
   /* ---- Ana sayfa ---- */
