@@ -72,15 +72,22 @@ a.satir b{color:var(--ana)}
 <main id="ana"><p>Veriler okunuyor…</p></main>
 <footer>
   Teksen verisi alma ve silme işlemleri <a href="../index.html">eski uygulamada</a> yapılır.<br>
-  <span id="appver">Yeni sürüm 2 · 27.11.2026</span>
+  <span id="appver">Yeni sürüm 3 · 27.11.2026</span><span id="cevrimdisi"></span>
 </footer>
 <dialog id="pencere" aria-labelledby="pencere-baslik">
   <div class="pencere-ust"><h2 id="pencere-baslik"></h2><button type="button" id="pencere-kapat">Kapat</button></div>
   <div id="pencere-icerik"></div>
 </dialog>
-<script src="hesap.js?v=2"></script>
-<script src="veri.js?v=2"></script>
-<script src="kayit.js?v=2"></script>
-<script src="uygulama.js?v=2"></script>
+<script src="hesap.js?v=3"></script>
+<script src="veri.js?v=3"></script>
+<script src="kayit.js?v=3"></script>
+<script src="uygulama.js?v=3"></script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(r){
+    if(r.scope===new URL('./',location.href).href) document.getElementById('cevrimdisi').textContent=' · İnternetsiz kullanıma hazır';
+  }).catch(function(){});
+}
+</script>
 </body>
 </html>
