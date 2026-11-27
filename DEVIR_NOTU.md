@@ -45,7 +45,7 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - Sıradaki: (3) Teksen verisi alma ve kalan firma/şube işlemleri.
 
 ## Yeni sohbete devir (27.11.2026, 14.02)
-- Kural (Kerem): Sohbet uzayınca yeni sohbet kuralı unutulmayacak. Kuralın tam metni bu notta yoktu; uygulanışı: sohbet uzadığında yeni sohbet önerilir, önce bu not güncellenir.
+- **Yeni sohbet kuralı (Kerem):** Sohbet uzarsa yeni sohbete geçilir. Bunun için: (1) bu not güncellenir ve yüklenir, (2) yeni sohbete yazılacak mesaj kopyalanabilir tek bir kutu içinde hazırlanır, (3) o mesaja bu kural da eklenir. Sohbeti asistan kendisi açamıyorsa bunu söyler; Kerem açar.
 - Güncel durum: `/yeni/` sürüm 5, eski uygulama v235. Adım 3'ün incelemesi bitti; uygulama dosyaları ve kayıtlar değiştirilmedi. **Aşağıdaki plan henüz onaylanmadı.**
 - Yeni uygulama kuralları: Akkurtlar yalnız görüntülenir (personeli ve Teksen kayıtları dahil). TC kimlik no gösterilmez ve istenmez; düzenlemede mevcut değer korunur. Kullanıcıdan yedek dosyasını GitHub'a ya da sohbete yüklemesi istenmez.
 
