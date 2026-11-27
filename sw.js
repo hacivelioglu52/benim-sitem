@@ -1,7 +1,7 @@
-const CACHE='kerem-sertifika-v234';
+const CACHE='kerem-sertifika-v235';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-180.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES).catch(()=>{})).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('kerem-sertifika-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 /* Önce ağ, olmazsa önbellek: çevrimiçiyken her zaman en yeni sürüm açılır, çevrimdışıyken kayıtlı sürüm çalışır. */
 self.addEventListener('fetch',e=>{
   if(e.request.method!=='GET'||new URL(e.request.url).origin!==self.location.origin) return;

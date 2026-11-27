@@ -1,4 +1,4 @@
-/* Veri okuma. Bu dosya hiçbir kaydı YAZMAZ, DEĞİŞTİRMEZ, SİLMEZ. */
+/* Veri okuma (yazma işlemleri kayit.js içindedir). Bu dosya hiçbir kaydı YAZMAZ, DEĞİŞTİRMEZ, SİLMEZ. */
 window.Veri=(function(){
   function json(k){ var raw=localStorage.getItem(k); if(!raw) return null; return JSON.parse(raw); }
   function dolu(v){ return !!(v&&String(v).trim()); }
@@ -34,6 +34,8 @@ window.Veri=(function(){
     data.f.forEach(function(r){
       var m=elle[r.sicil]; if(m&&!byId[m.fid]) m=null;
       if(!m){ var k=sn(r.sicil); if(k&&idx[k]) m=idx[k]; }
+      /* Akkurtlar adlı Teksen kayıtları yalnız ekranda Akkurtlar firmasının altında gösterilir; hiçbir şey yazılmaz */
+      if(!m&&/AKKURT/i.test(r.ad||'')){ var ak=firmalar.filter(function(F){ return /AKKURT/i.test(F.name||''); })[0]; if(ak) m={fid:ak.id,sube:''}; }
       if(!m){ LK.unmatched.push(r); return; }
       var key=m.fid+'|'+(m.sube||''); LK.byRec[r.sicil]={fid:m.fid,sube:m.sube||''}; (LK.byUnit[key]||(LK.byUnit[key]=[])).push(r);
     });

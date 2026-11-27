@@ -1,6 +1,6 @@
 /* Kerem İGU: ekranlar. Her sayfa aynı şablonu kullanır: başlık + tek cümle + kutular; ayrıntı açılır pencerede. */
 (function(){
-  var H=window.Hesap, V=null, OZ=null, UY={}, PASIF=false, ARA='';
+  var H=window.Hesap, K=window.Kayit, V=null, OZ=null, UY={}, PASIF=false, ARA='';
   var ana=document.getElementById('ana'), pen=document.getElementById('pencere'), penB=document.getElementById('pencere-baslik'), penI=document.getElementById('pencere-icerik');
 
   function E(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
@@ -34,7 +34,32 @@
     if(yol&&yol.length){ var n=E('nav','yol'); yol.forEach(function(y){ var a=E('a',null,'‹ '+y[0]); a.href=y[1]; n.appendChild(a); }); ana.appendChild(n); }
     ana.appendChild(E('h1',null,baslik)); ana.appendChild(E('p','aciklama',aciklama));
     V.hata.forEach(function(h){ ana.appendChild(E('p','bilgi uyari',h)); });
+    if(!K.onayli()) onayKutusu();
   }
+  function onayKutusu(){
+    var d=E('div','bilgi uyari');
+    d.appendChild(E('p',null,'Kayıt işlemleri kapalı. Açılınca Teksen’deki eksik firma ve şubeler otomatik kaydedilir, elle kayıt da yapabilirsiniz. Önce: (1) eski uygulamayı yenileyin ve altta “Sürüm 235” yazdığını görün, (2) oradan “Yedek al” ile yedek indirin, (3) eski uygulamanın açık diğer sekmelerini kapatın.'));
+    var b=E('button','dugme ana','Yedek aldım, kayıtları başlat'); b.type='button'; b.addEventListener('click',function(){ try{ K.onayla(); yukle(); }catch(e){ alert(e.message||e); } }); d.appendChild(b); ana.appendChild(d);
+  }
+  function islem(ad,fn){ var b=E('button','dugme ana',ad); b.type='button'; b.addEventListener('click',fn); var s=ana.querySelector('.islemler'); if(!s){ s=E('div','islemler'); ana.insertBefore(s,ana.querySelector('.aciklama').nextSibling); } s.appendChild(b); }
+  /* alanlar: [{k,ad,deger,tur,kilit,not}] ; kaydet(değerler) hata fırlatırsa pencerede gösterilir */
+  function form(baslik,alanlar,kaydet){
+    penB.textContent=baslik; penI.textContent='';
+    var f=E('form','form'), G={}, hata=E('p','hata'); hata.setAttribute('role','alert');
+    alanlar.forEach(function(a){ var l=E('label'); l.appendChild(E('span',null,a.ad)); var i=E('input'); i.type=a.tur||'text'; i.value=a.deger||''; i.autocomplete='off'; if(a.kilit) i.readOnly=true; G[a.k]=i; l.appendChild(i); if(a.not) l.appendChild(E('small',null,a.not)); f.appendChild(l); });
+    var b=E('button','dugme ana','Kaydet'); b.type='submit'; f.appendChild(hata); f.appendChild(b);
+    f.addEventListener('submit',function(ev){ ev.preventDefault(); var v={}; Object.keys(G).forEach(function(k){ v[k]=G[k].value; }); var git;
+      try{ git=kaydet(v); }catch(e){ hata.textContent=e.message||String(e); return; }
+      pen.close(); if(git) history.replaceState(null,'',git); yukle(); });
+    penI.appendChild(f); if(!pen.open) pen.showModal();
+  }
+  var SGKNOT='İsteğe bağlı. Yazarsanız aynı numaralı Teksen kaydı bu yere bağlanır.', KILIT='Teksen kaydı bu numarayla bağlı olduğu için değiştirilemez.';
+  function bilgiAlan(inf,kilit){ inf=inf||{}; return [{k:'sgk',ad:'SGK sicil no',deger:inf.sgk,kilit:kilit,not:kilit?KILIT:SGKNOT},{k:'adr',ad:'Adres',deger:inf.adr}]; }
+  function yazilabilir(F){ return K.onayli()&&!K.akkurt(F.name); }
+  function kisiForm(fid,sb,x,teksenSubesi){
+    form(x?'Kişiyi düzenle':'Kişi ekle',[{k:'ad',ad:'Ad soyad',deger:x&&x.ad},{k:'gorev',ad:'Görev',deger:x&&x.gorev},{k:'giris',ad:'İşe giriş tarihi',tur:'date',deger:x&&x.giris}],function(v){ v.teksenSubesi=teksenSubesi; K.kisiYaz(fid,sb,x?x.id:null,v); });
+  }
+
   function izgara(){ var g=E('div','kutular'); ana.appendChild(g); return g; }
   function kutu(g,o){
     var k=E(o.href?'a':(o.tik?'button':'div'),'kutu'+(o.ton?' '+o.ton:''));
@@ -48,7 +73,7 @@
     penB.textContent=baslik; penI.textContent='';
     if(!satirlar.length) penI.appendChild(E('p','bilgi',bosYazi||'Kayıt yok.'));
     satirlar.forEach(function(s){
-      var d=E(s.href?'a':'div','satir'); if(s.href){ d.href=s.href; d.addEventListener('click',function(){ pen.close(); }); }
+      var d=E(s.href?'a':(s.tik?'button':'div'),'satir'); if(s.tik){ d.type='button'; d.addEventListener('click',s.tik); } if(s.href){ d.href=s.href; d.addEventListener('click',function(){ pen.close(); }); }
       d.appendChild(E('b',null,s.b)); if(s.a) d.appendChild(E('span',null,s.a)); penI.appendChild(d);
     });
     pen.showModal(); penI.scrollTop=0;
@@ -57,7 +82,7 @@
   pen.addEventListener('click',function(e){ if(e.target===pen) pen.close(); });
 
   function panoAdres(fid,sb){ return '#pano/'+encodeURIComponent(fid)+'/'+encodeURIComponent(sb||''); }
-  function recSatir(m){ var l=V.lk.byRec[m.f.sicil]; return {b:recAd(m.f), a:(m.why.join(' · ')||'uyarı yok')+(l?'':' · firmaya bağlanmamış'), href:l?panoAdres(l.fid,l.sube):null}; }
+  function recSatir(m){ var l=V.lk.byRec[m.f.sicil]; return {b:recAd(m.f), a:(m.why.join(' · ')||'uyarı yok'), href:l?panoAdres(l.fid,l.sube):null}; }
 
   function veriYok(){
     if(V.data.f.length) return false;
@@ -69,6 +94,8 @@
   function bugunSayfa(){
     sayfa('Bugün','Hangi firma ve şubelerde bakılması gereken bir iş olduğunu gösterir.');
     if(veriYok()) return;
+    if(V.eklenen) ana.appendChild(E('p','bilgi',V.eklenen+' Teksen kaydı firma/şube olarak kaydedildi.'));
+    if(K.onayli()&&V.lk.unmatched.length) ana.appendChild(E('p','bilgi uyari',V.lk.unmatched.length+' Teksen kaydı kaydedilemedi (firma adı eksik olabilir): '+V.lk.unmatched.slice(0,5).map(function(r){ return recAd(r)+' (sicil '+r.sicil+')'; }).join(', ')+(V.lk.unmatched.length>5?' …':'')));
     var c=OZ.c, g=izgara(), rows=OZ.rows.slice().sort(function(a,b){ return (b.pts-a.pts)||H.trd(a.f.ad||'').localeCompare(H.trd(b.f.ad||''),'tr'); });
     var uyarili=rows.filter(function(m){ return m.why.length; });
     kutu(g,{sayi:rows.filter(function(m){ return m.pts>0; }).length,ad:'Öncelikli liste',alt:'en önemliden başlar',tik:function(){ ac('Öncelikli liste',rows.filter(function(m){ return m.pts>0; }).map(recSatir),'Uyarı yok.'); }});
@@ -85,33 +112,43 @@
     if(son&&son.t) ana.appendChild(E('p','not','Teksen verisi en son '+new Date(son.t).toLocaleString('tr-TR')+' tarihinde alındı.'));
   }
 
+  function duz(x){ return H.trd(x).replace(/ı/g,'i'); }
+
   /* ---- Firmalar ---- */
   function firmalarSayfa(){
     sayfa('Firmalar','Bir firmaya dokunarak şubelerini görün.');
     var q=E('input','ara'); q.type='search'; q.placeholder='Firma veya şube ara'; q.setAttribute('aria-label','Firma veya şube ara'); q.value=ARA; ana.appendChild(q);
     var pasifN=V.firmalar.filter(function(f){ return f.pasif; }).length+V.firmalar.reduce(function(t,f){ return t+Object.keys(f.sbp||{}).length; },0);
     if(pasifN){ var l=E('label','secim'), cb=E('input'); cb.type='checkbox'; cb.checked=PASIF; cb.addEventListener('change',function(){ PASIF=cb.checked; firmalarSayfa(); }); l.appendChild(cb); l.appendChild(document.createTextNode(' Pasif / arşiv olanları da göster ('+pasifN+')')); ana.appendChild(l); }
+    if(K.onayli()) islem('+ Firma ekle',function(){ form('Firma ekle',[{k:'ad',ad:'Firma adı'}].concat(bilgiAlan()),function(v){ return '#firma/'+encodeURIComponent(K.firmaEkle(v)); }); });
     var g=izgara();
     function ciz(){
-      g.textContent=''; var duz=function(x){ return H.trd(x).replace(/ı/g,'i'); }, s=duz(ARA).trim();
+      g.textContent=''; var s=duz(ARA).trim();
       var list=V.firmalar.filter(function(f){ return PASIF||!f.pasif; }).map(function(f){ return {f:f,ad:firmaAd(f),b:birimler(f)}; })
         .filter(function(x){ return !s||duz(x.ad+' '+(x.f.name||'')+' '+x.b.map(function(u){ return u.ad+' '+u.recs.map(recAd).join(' '); }).join(' ')).indexOf(s)>=0; })
         .sort(function(a,b){ return a.ad.localeCompare(b.ad,'tr'); });
       list.forEach(function(x){
         var recs=[]; x.b.forEach(function(u){ recs=recs.concat(u.recs); }); var w=uyariSay(recs);
         var sb=x.b.filter(function(u){ return u.sube; }).length;
-        kutu(g,{ad:x.ad,alt:(sb?sb+' şube':'şubesiz')+' · '+(!recs.length?'Teksen kaydı eşleşmedi':(w?w+' uyarı':'uyarı yok'))+(x.f.pasif?' · pasif':''),ton:w?'uyari':'',href:'#firma/'+encodeURIComponent(x.f.id)});
+        kutu(g,{ad:x.ad,alt:(sb?sb+' şube':'şubesiz')+' · '+(!recs.length?'Teksen kaydı eşleşmedi':(w?w+' uyarı':'uyarı yok'))+(x.f.pasif?' · pasif':'')+(x.f.name&&duz(x.f.name)!==duz(x.ad)?' · kayıtlı ad: '+x.f.name:''),ton:w?'uyari':'',href:'#firma/'+encodeURIComponent(x.f.id)});
       });
       if(!list.length) g.appendChild(E('p','bilgi',V.firmalar.length?'Aramaya uyan firma yok.':'Bu tarayıcıda kayıtlı firma yok. Bu sayfayı eski uygulamayla aynı adresten ve aynı tarayıcıda açın.'));
-      if(V.lk.unmatched.length&&!s) kutu(g,{sayi:V.lk.unmatched.length,ad:'Bağlanmamış Teksen kaydı',alt:'henüz bir firmaya bağlı değil',tik:function(){ ac('Bağlanmamış Teksen kayıtları',V.lk.unmatched.map(function(r){ return {b:recAd(r),a:r.adres||''}; })); }});
     }
     q.addEventListener('input',function(){ ARA=q.value; ciz(); }); ciz();
   }
+
+  /* O yerdeki SGK numarasıyla eşleşen bir Teksen kaydı var mı? */
+  function bagli(fid,sb){ var F=firma(fid), inf=(sb?(F.sbi||{})[sb]:F.info)||{}, k=String(inf.sgk||'').replace(/\D/g,''); return !!k&&(V.lk.byUnit[fid+'|'+sb]||[]).some(function(r){ return String(r.sicil).replace(/\D/g,'')===k; }); }
 
   /* ---- Şubeler ---- */
   function firmaSayfa(fid){
     var F=firma(fid); if(!F){ location.replace('#firmalar'); return; }
     sayfa(firmaAd(F),'Bir şubeye dokunarak panosunu açın.',[['Firmalar','#firmalar']]);
+    if(yazilabilir(F)){
+      islem('+ Şube ekle',function(){ form('Şube ekle',[{k:'ad',ad:'Şube adı',not:'Şube adı sonradan bu uygulamadan değiştirilemez.'}].concat(bilgiAlan()),function(v){ K.subeEkle(fid,v); }); });
+      islem('Firmayı düzenle',function(){ var kilit=bagli(fid,''); form('Firmayı düzenle',[{k:'ad',ad:'Kayıtlı firma adı',deger:F.name,not:'Teksen kaydı bağlı firmalarda sayfa başlığı Teksen’deki addan gelir.'}].concat(bilgiAlan(F.info,kilit)),function(v){ K.firmaDuzenle(fid,v); }); });
+    }
+    if(K.akkurt(F.name)) ana.appendChild(E('p','not','Akkurtlar kaydı bu uygulamada yalnızca görüntülenir.'));
     var g=izgara();
     birimler(F).forEach(function(u){
       var w=uyariSay(u.recs), n=kisiler(u.fid,u.sube).length, adres=u.recs[0]&&u.recs[0].adres;
@@ -124,6 +161,11 @@
     var F=firma(fid); if(!F){ location.replace('#firmalar'); return; }
     var recs=V.lk.byUnit[fid+'|'+sb]||[], L=kisiler(fid,sb), bugun=H.today(), cok=recs.length>1;
     sayfa(sb||'Firma geneli',firmaAd(F)+' için güncel durum özeti.',[['Firmalar','#firmalar'],['Şubeler','#firma/'+encodeURIComponent(fid)]]);
+    var kayitliSube=!sb||(F.sb||[]).indexOf(sb)>=0;
+    if(yazilabilir(F)){
+      islem('+ Kişi ekle',function(){ kisiForm(fid,sb,null,!kayitliSube); });
+      if(kayitliSube) islem(sb?'Şube bilgisini düzenle':'Firma bilgisini düzenle',function(){ form(sb?'Şube bilgisi':'Firma bilgisi',bilgiAlan(sb?(F.sbi||{})[sb]:F.info,bagli(fid,sb)),function(v){ K.subeDuzenle(fid,sb,v); }); });
+    }
     var g=izgara(), ad=function(r,x){ return cok?recAd(r)+' · '+x:x; };
     if(recs.length){
       var uyar=[], ziy=[], ugAcik=[], ugGec=0, bel=[], belKotu=0, belVar=false, egt=[], gorev=[], gorevEksik=0, tum={f:recs,h:V.data.h,u:V.data.u,d:V.data.d};
@@ -161,7 +203,7 @@
       b(gorevEksik,'Görevlendirme','eksik görev türü',gorevEksik?'uyari':'',gorev);
     }
     /* TC kimlik numarası bilerek gösterilmez */
-    kutu(g,{sayi:L.length,ad:'Personel',alt:'kayıtlı kişi',tik:function(){ ac('Personel',L.slice().sort(function(a,b){ return String(a.ad||'').localeCompare(String(b.ad||''),'tr'); }).map(function(x){ return {b:x.ad||'(adsız)',a:x.gorev||''}; }),'Bu şubede kayıtlı kişi yok.'); }});
+    kutu(g,{sayi:L.length,ad:'Personel',alt:'kayıtlı kişi',tik:function(){ ac('Personel',L.slice().sort(function(a,b){ return String(a.ad||'').localeCompare(String(b.ad||''),'tr'); }).map(function(x){ var yaz=yazilabilir(F); return {b:x.ad||'(adsız)',a:[x.gorev,x.giris?'işe giriş '+(/^\d{4}-\d{2}-\d{2}$/.test(x.giris)?H.vTr(x.giris):x.giris):'',yaz?'düzenlemek için dokunun':''].filter(Boolean).join(' · '),tik:yaz?function(){ kisiForm(fid,sb,x,!kayitliSube); }:null}; }),'Bu şubede kayıtlı kişi yok.'); }});
     if(!recs.length) ana.appendChild(E('p','bilgi','Bu şubeye bağlı Teksen kaydı yok; ziyaret, uygunsuzluk ve belge kutuları bu yüzden görünmüyor.'));
   }
 
@@ -177,12 +219,18 @@
   function yukle(){
     var n=++sira;
     return window.Veri.oku().then(function(v){
-      if(n!==sira) return; V=v;
+      if(n!==sira) return;
+      var ek=0; try{ ek=window.Kayit.otomatik(v.lk.unmatched); }catch(e){ v.hata.push('Otomatik kayıt yapılamadı: '+(e&&e.message||e)); }
+      if(ek) return window.Veri.oku().then(function(y){ if(n!==sira) return; y.eklenen=ek; goster(y); });
+      goster(v);
+    }).catch(function(e){ ana.textContent=''; ana.appendChild(E('p','bilgi uyari','Veriler gösterilemedi: '+(e&&e.message||e))); });
+  }
+  function goster(v){
+      V=v;
       var evp={get:function(fid,sb){ return kisiler(fid,sb); }};
       window.__evpApi=evp;
       OZ=H.ozet(V.data,V.lk,H.today()); UY={}; OZ.rows.forEach(function(m){ UY[m.f.sicil]=m; });
       yonlendir();
-    }).catch(function(e){ ana.textContent=''; ana.appendChild(E('p','bilgi uyari','Veriler gösterilemedi: '+(e&&e.message||e))); });
   }
   window.addEventListener('hashchange',yonlendir);
   /* Eski uygulamada yapılan değişiklikler, bu sayfaya dönünce görünsün */
