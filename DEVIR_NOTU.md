@@ -43,3 +43,23 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - Kişi eğitim durumu kuralı eskideki `egState` ile aynı; biri değişirse diğeri de değişmeli.
 - Henüz yok: dosyadan (Excel/PDF/resim) toplu ekleme, Teksen'deki eğitim tarihlerini kişilere işleme, eğitim kaydı silme (eski uygulamada).
 - Sıradaki: (3) Teksen verisi alma ve kalan firma/şube işlemleri.
+
+## Yeni sohbete devir (27.11.2026, 14.02)
+- Kural (Kerem): Sohbet uzayınca yeni sohbet kuralı unutulmayacak. Kuralın tam metni bu notta yoktu; uygulanışı: sohbet uzadığında yeni sohbet önerilir, önce bu not güncellenir.
+- Güncel durum: `/yeni/` sürüm 5, eski uygulama v235. Adım 3'ün incelemesi bitti; uygulama dosyaları ve kayıtlar değiştirilmedi. **Aşağıdaki plan henüz onaylanmadı.**
+- Yeni uygulama kuralları: Akkurtlar yalnız görüntülenir (personeli ve Teksen kayıtları dahil). TC kimlik no gösterilmez ve istenmez; düzenlemede mevcut değer korunur. Kullanıcıdan yedek dosyasını GitHub'a ya da sohbete yüklemesi istenmez.
+
+### Adım 3 inceleme bulguları (eski index.html, "Takip merkezi" bölümü)
+- Teksen alma: `parse`, `plan`, `periyot`, `importText`. `plan` kayıt yazmaz, yalnız yazılacakları ve raporu hesaplar. Alma silme yapmaz; aynı kimlikli kayıtları günceller. Tek işlemde yazılır; meta `son` ve `gunluk`. İrtibat bilgisi seçeneği varsayılan kapalı.
+- Teksen kaydı silme (`askDel`): silinenler kopyası alınamazsa da siliyor.
+- Firma silmek Teksen kayıtlarını silmez; kayıtlar boşta kalır ve otomatik kayıt (eskide `autoBind`, yenide `Kayit.otomatik`) firmayı yeniden oluşturabilir.
+- Şube adı değiştirme (incelenen satır) yalnız sb/sbi/sbp günceller; personel (`fid|sube`) ve `link:` kayıtları taşınmaz.
+
+### Adım 3 planı (onay bekliyor)
+- 3a (sürüm 6): Teksen verisi alma. Kurallar eskiden birebir kopyalanır (hesap.js yöntemi); yazmadan önce özet gösterilir; onaydan önce yedek indirilir; tek işlemde yazılır; irtibat kapalı; sonra otomatik kayıt çalışır. Akkurtlar'ın mevcut Teksen kayıtlarının güncellenip güncellenmeyeceği Kerem'e soruldu (öneri: yeni uygulama güncellemesin).
+- 3b (sürüm 7): firma/şube pasife alma, arşivleme, geri açma. Silme yalnız Teksen kaydı bağlı olmayan firma/şubede; silinenler kopyası kaydedilemezse silinmez. Şube adı değiştirme, toplu silme ve Teksen verisi silme şimdilik eski uygulamada.
+- 3b'de karar verilmedi / sonraya: firma kopyalama ve listede elle sıralama.
+
+### Testler
+- Önceki testler çalışma ortamındaki geçici klasördeydi, depoda yok; yeni sohbette gerekirse yeniden yazılmalı. `yeni/hesap.js` üreten betik de (eski index.html'den işlevleri birebir kopyalar) aynı durumda.
+- Gerçek telefonda ve gerçek veriyle deneme yapılmadı. Kerem, yeni "Bugün" sayılarının eskiyle aynı olduğunu henüz doğrulamadı.
