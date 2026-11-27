@@ -70,4 +70,11 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - teksen.js içindeki "KOPYA" bölümü eski index.html'den harfi harfine alındı; eskide değişirse burada da değişmeli.
 - Akkurtlar: ada, SGK numarasına veya elle bağa göre Akkurtlar'a ait girdiler hiç yazılmaz (yeni kayıtlar da). Güncelleme eski uygulamadan.
 - Uydurma veriyle tarayıcı testi geçti (eski/yeni kayıt karşılaştırması dahil). Gerçek veriyle ve telefonda denenmedi.
-- Sürüm 7: test sonucu Kerem'e bildirilecek, **onayı olmadan yüklenmeyecek.**
+- Sürüm 7 için ayrıca onay istendi (aşağıda).
+
+## Yeni sürüm 7: firma/şube işlemleri (27.11.2026, Kerem onayıyla yüklendi)
+- Pasife alma, arşivleme, geri açma; Teksen kaydı bağlı olmayan firma/şubede silme; "Silinenler"den geri alma (eskiyle ortak `kerem-trash`, tür `firm` / `sube`). Kopya kaydedilemezse silinmez. Akkurtlar kapalı.
+- Yeni uygulamada yok: şube adı değiştirme, toplu silme, Teksen verisi silme, firma kopyalama, elle sıralama.
+- Adım 3 tamamlandı. Sıradaki: (4) Evrak.
+- Şimdi: Kerem kendi cihazında gerçek veriyle ilk denemeyi yapacak (yedek, Bugün sayılarını eskiyle karşılaştırma, Teksen alma özeti). Sonuç henüz bilinmiyor. Canlı sitenin sürümü asistan tarafından doğrulanamadı.
+- Test betikleri ve `yeni/teksen.js` üreten betik depoda değil (çalışma ortamında).
