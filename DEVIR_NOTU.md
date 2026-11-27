@@ -78,3 +78,19 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - Adım 3 tamamlandı. Sıradaki: (4) Evrak.
 - Şimdi: Kerem kendi cihazında gerçek veriyle ilk denemeyi yapacak (yedek, Bugün sayılarını eskiyle karşılaştırma, Teksen alma özeti). Sonuç henüz bilinmiyor. Canlı sitenin sürümü asistan tarafından doğrulanamadı.
 - Test betikleri ve `yeni/teksen.js` üreten betik depoda değil (çalışma ortamında).
+
+## Yeni sohbete devir (28.11.2026, 00.52)
+- Güncel durum: `/yeni/` sürüm 7, eski uygulama v235. Kerem sayfada "sürüm 7" yazısını gördüğünü bildirdi.
+- Yeni uygulama adresi (Kerem'e verildi): https://hacivelioglu52.github.io/benim-sitem/yeni/
+- Sıradaki iş: Kerem'in cihazında gerçek veriyle ilk deneme. A, B, C adımlarının sonucu **henüz bildirilmedi**; kayıtlarının bu adreste göründüğü de doğrulanmadı.
+  - A: eski uygulamada "Sürüm 235", yedek indir, diğer sekmeleri kapat (karşılaştırma için bir tane kalsın).
+  - B: yenide "Yedek aldım, kayıtları başlat" görünüyorsa bas (basınca eksik firma/şube otomatik eklenir).
+  - C: yeni veri almadan önce eski ve yeni "Bugün" sayılarını karşılaştır. Fark varsa dur. Aynıysa eski sekmeyi kapat.
+  - D: "Teksen'den al" yer imi → yenide "Teksen verisi al" → "Özeti göster". **Kaydetmeden önce** sayıları ve uyarıları birlikte kontrol et.
+- Kerem'den firma adı, kişi bilgisi, yedek dosyası veya Teksen çıktısı istenmez; sayılar yeterli.
+- Bu denemeden sonra: adım (4) Evrak (önce inceleme ve plan, onayla).
+
+### Sohbet kuralları (her yeni sohbette geçerli)
+- Sade Türkçe. Önce açıkla, onay al, sonra yap, sonra rapor ver. Mesaj sonunda onay soruları numaralı.
+- Cevabı boş olan onay sorusu varsa o işe başlamadan önce sor.
+- Yeni sohbet kuralı: yukarıdaki "Yeni sohbet kuralı (Kerem)" maddesi.
