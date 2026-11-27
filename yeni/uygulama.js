@@ -38,8 +38,8 @@
   }
   function onayKutusu(){
     var d=E('div','bilgi uyari');
-    d.appendChild(E('p',null,'Kayıt işlemleri kapalı. Açılınca Teksen’deki eksik firma ve şubeler otomatik kaydedilir, elle kayıt da yapabilirsiniz. Önce: (1) eski uygulamayı yenileyin ve altta “Sürüm 235” yazdığını görün, (2) oradan “Yedek al” ile yedek indirin, (3) eski uygulamanın açık diğer sekmelerini kapatın.'));
-    var b=E('button','dugme ana','Yedek aldım, kayıtları başlat'); b.type='button'; b.addEventListener('click',function(){ try{ K.onayla(); yukle(); }catch(e){ alert(e.message||e); } }); d.appendChild(b); ana.appendChild(d);
+    d.appendChild(E('p',null,'Kayıt işlemleri kapalı. Açılınca Teksen’deki eksik firma ve şubeler otomatik kaydedilir, elle kayıt da yapabilirsiniz. Önce: (1) eski uygulamayı yenileyin ve altta “Sürüm 235” yazdığını görün, (2) aşağıdaki düğmeyle ya da eski uygulamadan yedek indirin, (3) eski uygulamanın açık diğer sekmelerini kapatın.'));
+    var b=E('button','dugme ana','Yedek aldım, kayıtları başlat'); b.type='button'; b.addEventListener('click',function(){ try{ K.onayla(); yukle(); }catch(e){ alert(e.message||e); } }); var y=E('button','dugme','Önce yedek al'); y.type='button'; y.addEventListener('click',yedekPenceresi); var s=E('div','islemler'); s.appendChild(y); s.appendChild(b); d.appendChild(s); ana.appendChild(d);
   }
   function islem(ad,fn){ var b=E('button','dugme ana',ad); b.type='button'; b.addEventListener('click',fn); var s=ana.querySelector('.islemler'); if(!s){ s=E('div','islemler'); ana.insertBefore(s,ana.querySelector('.aciklama').nextSibling); } s.appendChild(b); }
   /* alanlar: [{k,ad,deger,tur,kilit,not}] ; kaydet(değerler) hata fırlatırsa pencerede gösterilir */
@@ -78,8 +78,9 @@
     });
     pen.showModal(); penI.scrollTop=0;
   }
-  document.getElementById('pencere-kapat').addEventListener('click',function(){ pen.close(); });
-  pen.addEventListener('click',function(e){ if(e.target===pen) pen.close(); });
+  document.getElementById('pencere-kapat').addEventListener('click',function(){ if(!yukleniyor) pen.close(); });
+  pen.addEventListener('click',function(e){ if(e.target===pen&&!yukleniyor) pen.close(); });
+  pen.addEventListener('cancel',function(e){ if(yukleniyor) e.preventDefault(); });
 
   function panoAdres(fid,sb){ return '#pano/'+encodeURIComponent(fid)+'/'+encodeURIComponent(sb||''); }
   function recSatir(m){ var l=V.lk.byRec[m.f.sicil]; return {b:recAd(m.f), a:(m.why.join(' · ')||'uyarı yok'), href:l?panoAdres(l.fid,l.sube):null}; }
@@ -90,16 +91,10 @@
     return true;
   }
 
-  /* ---- Bugün ---- */
-  function bugunSayfa(){
-    sayfa('Bugün','Hangi firma ve şubelerde bakılması gereken bir iş olduğunu gösterir.');
-    if(veriYok()) return;
-    if(V.eklenen) ana.appendChild(E('p','bilgi',V.eklenen+' Teksen kaydı firma/şube olarak kaydedildi.'));
-    if(K.onayli()&&V.lk.unmatched.length) ana.appendChild(E('p','bilgi uyari',V.lk.unmatched.length+' Teksen kaydı kaydedilemedi (firma adı eksik olabilir): '+V.lk.unmatched.slice(0,5).map(function(r){ return recAd(r)+' (sicil '+r.sicil+')'; }).join(', ')+(V.lk.unmatched.length>5?' …':'')));
-    var c=OZ.c, g=izgara(), rows=OZ.rows.slice().sort(function(a,b){ return (b.pts-a.pts)||H.trd(a.f.ad||'').localeCompare(H.trd(b.f.ad||''),'tr'); });
-    var uyarili=rows.filter(function(m){ return m.why.length; });
-    kutu(g,{sayi:rows.filter(function(m){ return m.pts>0; }).length,ad:'Öncelikli liste',alt:'en önemliden başlar',tik:function(){ ac('Öncelikli liste',rows.filter(function(m){ return m.pts>0; }).map(recSatir),'Uyarı yok.'); }});
-    [['Ziyareti gecikmiş',c.gec,function(m){ return m.v.state==='gec'; }],
+  function sirali(){ return OZ.rows.slice().sort(function(a,b){ return (b.pts-a.pts)||H.trd(a.f.ad||'').localeCompare(H.trd(b.f.ad||''),'tr'); }); }
+  function kategoriler(){
+    var c=OZ.c, uyarili=sirali().filter(function(m){ return m.why.length; });
+    return [['Ziyareti gecikmiş',c.gec,function(m){ return m.v.state==='gec'; }],
      ['Hiç ziyareti yok',c.yok,function(m){ return m.v.state==='yok'; }],
      ['Süresi geçmiş uygunsuzluk',c.ug,function(m){ return m.ug>0; }],
      ['Belge uyarısı',c.doc,function(m){ return m.docBad>0; }],
@@ -107,7 +102,82 @@
      ['Eğitim kaydı yok',c.egy,function(m){ return m.eyok; }],
      ['Eğitim yenilenmeli',c.eyen,function(m){ return m.eyen; }],
      ['Kişi eğitimi yenilenmeli',c.kyen,function(m){ return m.kyen; }]
-    ].forEach(function(x){ kutu(g,{sayi:x[1],ad:x[0],alt:'firma/şube',ton:x[1]?'uyari':'iyi',tik:function(){ ac(x[0],uyarili.filter(x[2]).map(recSatir),'Bu başlıkta uyarı yok.'); }}); });
+    ].map(function(x){ return {ad:x[0],sayi:x[1],tik:function(){ ac(x[0],uyarili.filter(x[2]).map(recSatir),'Bu başlıkta uyarı yok.'); }}; });
+  }
+
+  /* ---- Ana sayfa ---- */
+  function bolum(ad){ ana.appendChild(E('h2',null,ad)); return izgara(); }
+  function sonYedek(){ var t=0; try{ t=parseInt(localStorage.getItem('isg-lastbk')||'0',10)||0; }catch(e){} return t; }
+  function yedekYazi(){ var t=sonYedek(); if(!t) return 'henüz yedek alınmadı'; var g=Math.floor((Date.now()-t)/864e5); return g<1?'son yedek bugün':'son yedek '+g+' gün önce'; }
+  function anaSayfa(){
+    sayfa('Ana sayfa','Günün uyarılarını görün, yapmak istediğiniz işi seçin.');
+    if(V.eklenen) ana.appendChild(E('p','bilgi',V.eklenen+' Teksen kaydı firma/şube olarak kaydedildi.'));
+    var g=bolum('Bugün');
+    if(!V.data.f.length) g.appendChild(E('p','bilgi','Bu tarayıcıda kayıtlı Teksen verisi yok.'));
+    else{
+      var dolu=kategoriler().filter(function(x){ return x.sayi; });
+      dolu.forEach(function(x){ kutu(g,{sayi:x.sayi,ad:x.ad,alt:'firma/şube',ton:'uyari',tik:x.tik}); });
+      kutu(g,{ad:'Tüm uyarılar',alt:dolu.length?'öncelikli liste':'uyarı yok',ton:dolu.length?'':'iyi',href:'#bugun'});
+    }
+    g=bolum('İşler');
+    var nF=V.firmalar.filter(function(f){ return !f.pasif; }).length;
+    kutu(g,{ad:'Firmalar',alt:nF+' firma · şubeler ve panolar',href:'#firmalar'});
+    [['Personel','tüm kişiler ve eğitim tarihleri'],['Evrak','firma ve personel evrakları, planlar'],['Eğitim','katılım formu, sınav, rehber ve afiş'],['Raporlar','raporlar ve belge sayıları']].forEach(function(x){ kutu(g,{ad:x[0],alt:'Hazırlanıyor · '+x[1],ton:'bekliyor'}); });
+    var gec=!sonYedek()||Date.now()-sonYedek()>=7*864e5;
+    kutu(g,{ad:'Ayarlar ve yedek',alt:yedekYazi(),ton:gec?'uyari':'',href:'#ayarlar'});
+  }
+
+  /* ---- Ayarlar ve yedek ---- */
+  function ayarSayfa(){
+    sayfa('Ayarlar ve yedek','Verilerinizin yedeğini alın veya bir yedekten geri yükleyin.');
+    var g=izgara();
+    kutu(g,{ad:'Yedek al',alt:yedekYazi(),tik:yedekPenceresi});
+    kutu(g,{ad:'Yedekten geri yükle',alt:'bu cihazdaki kayıtların üzerine yazar',tik:geriPenceresi});
+    kutu(g,{ad:'Diğer ayarlar',alt:'Hazırlanıyor',ton:'bekliyor'});
+    ana.appendChild(E('p','not','Yedek dosyasında kişisel bilgiler bulunur. Güvenli bir yerde saklayın; GitHub gibi herkese açık yerlere yüklemeyin. Eski ve yeni uygulama aynı yedek dosyasını kullanır.'));
+  }
+  function pencereAc(baslik){ penB.textContent=baslik; penI.textContent=''; if(!pen.open) pen.showModal(); }
+  function dugme(ad,fn){ var b=E('button','dugme ana',ad); b.type='button'; b.addEventListener('click',fn); return b; }
+  /* Yedek indirme düğmesi; indirme başlayınca sonra() çağrılır */
+  function indirDugmesi(yer,ad,sonra){
+    var durum=E('p','durum'); durum.setAttribute('role','status');
+    var b=dugme(ad,function(){ b.disabled=true; durum.className='durum'; durum.textContent='Yedek hazırlanıyor…';
+      window.Yedek.indir().then(function(r){ durum.textContent='İndirme başlatıldı: '+r.ad+' ('+r.ozet+'). Dosyanın indirilenler klasörüne geldiğini kontrol edin.'; if(sonra) sonra(); },function(e){ durum.className='durum hata'; durum.textContent=e&&e.message||String(e); }).then(function(){ b.disabled=false; }); });
+    yer.appendChild(b); yer.appendChild(durum);
+  }
+  function yedekPenceresi(){ pencereAc('Yedek al'); penI.appendChild(E('p',null,'Tüm kayıtlarınız tek bir dosya olarak bu cihaza indirilir.')); indirDugmesi(penI,'Yedeği indir',null); }
+  var yukleniyor=false;
+  function geriPenceresi(){
+    pencereAc('Yedekten geri yükle');
+    penI.appendChild(E('p',null,'Başlamadan eski uygulamanın açık sekmelerini kapatın. Yedek dosyasını seçin; siz onaylamadan hiçbir şey değişmez.'));
+    var i=E('input'); i.type='file'; i.accept='.json,application/json'; i.setAttribute('aria-label','Yedek dosyası seç'); var alan=E('div'); penI.appendChild(i); penI.appendChild(alan);
+    i.addEventListener('change',function(){
+      var f=i.files&&i.files[0]; alan.textContent=''; if(!f) return;
+      f.text().then(function(t){
+        var o=window.Yedek.coz(t), t2=new Date(o.date);
+        alan.appendChild(E('p','bilgi uyari','Seçilen yedek: '+(isNaN(t2)?'tarihi bilinmiyor':t2.toLocaleString('tr-TR'))+' · '+window.Yedek.ozet(o)+'. Yedekte bulunan bölümler bu cihazdakilerin yerine geçer; o tarihten sonra girdikleriniz kaybolur.'));
+        var git=dugme('2) Geri yükle',function(){
+          if(!confirm('Bu cihazdaki kayıtlar seçtiğiniz yedekle değiştirilsin mi?')) return;
+          git.disabled=true; yukleniyor=true; sonuc.className='durum'; sonuc.textContent='Geri yükleniyor, sayfayı kapatmayın…';
+          window.Yedek.geriYukle(o).then(function(){ sonuc.textContent='Geri yüklendi. Sayfa yenileniyor…'; setTimeout(function(){ location.reload(); },900); },function(e){ yukleniyor=false; git.disabled=false; sonuc.className='durum hata'; sonuc.textContent=e&&e.message||String(e); });
+        });
+        var sonuc=E('p','durum'); sonuc.setAttribute('role','status'); git.disabled=true;
+        var bosMu=!localStorage.getItem('isg-firms-v1')&&!V.data.f.length;
+        if(bosMu) git.disabled=false; else indirDugmesi(alan,'1) Önce şimdiki verilerin yedeğini indir',function(){ git.disabled=false; });
+        alan.appendChild(git); alan.appendChild(sonuc);
+      }).catch(function(e){ alan.appendChild(E('p','durum hata',e&&e.message||String(e))); });
+    });
+  }
+
+  /* ---- Bugün ---- */
+  function bugunSayfa(){
+    sayfa('Bugün','Hangi firma ve şubelerde bakılması gereken bir iş olduğunu gösterir.');
+    if(veriYok()) return;
+    if(V.eklenen) ana.appendChild(E('p','bilgi',V.eklenen+' Teksen kaydı firma/şube olarak kaydedildi.'));
+    if(K.onayli()&&V.lk.unmatched.length) ana.appendChild(E('p','bilgi uyari',V.lk.unmatched.length+' Teksen kaydı kaydedilemedi (firma adı eksik olabilir): '+V.lk.unmatched.slice(0,5).map(function(r){ return recAd(r)+' (sicil '+r.sicil+')'; }).join(', ')+(V.lk.unmatched.length>5?' …':'')));
+    var g=izgara(), rows=sirali();
+    kutu(g,{sayi:rows.filter(function(m){ return m.pts>0; }).length,ad:'Öncelikli liste',alt:'en önemliden başlar',tik:function(){ ac('Öncelikli liste',rows.filter(function(m){ return m.pts>0; }).map(recSatir),'Uyarı yok.'); }});
+    kategoriler().forEach(function(x){ kutu(g,{sayi:x.sayi,ad:x.ad,alt:'firma/şube',ton:x.sayi?'uyari':'iyi',tik:x.tik}); });
     var son=V.data.meta.filter(function(m){ return m.k==='son'; })[0];
     if(son&&son.t) ana.appendChild(E('p','not','Teksen verisi en son '+new Date(son.t).toLocaleString('tr-TR')+' tarihinde alındı.'));
   }
@@ -210,9 +280,9 @@
   function coz(x){ try{ return decodeURIComponent(x||''); }catch(e){ return ''; } }
   function yonlendir(){
     if(!V) return; if(pen.open) pen.close();
-    var p=location.hash.slice(1).split('/'), s=p[0]||'bugun';
-    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else bugunSayfa();
-    document.querySelectorAll('[data-sekme]').forEach(function(a){ var on=a.getAttribute('data-sekme')===(s==='firma'||s==='pano'?'firmalar':(s==='firmalar'?s:'bugun')); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+    var p=location.hash.slice(1).split('/'), s=p[0]||'ana';
+    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else anaSayfa();
+    document.querySelectorAll('[data-sekme]').forEach(function(a){ var on=a.getAttribute('data-sekme')===(s==='firma'||s==='pano'?'firmalar':(s==='firmalar'||s==='bugun'?s:'ana')); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
     window.scrollTo(0,0);
   }
   var sira=0;

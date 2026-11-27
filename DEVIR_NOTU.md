@@ -28,3 +28,11 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - Tespit (değiştirilmedi): index.html içinde `window.__PWA=false` olduğu için eski uygulama sw.js'yi yeni cihazda kaydetmiyor.
 - GERI_DON.md'de yazan `yedek-v234-2026-11-26` etiketi uzak depoda görünmüyor; `yedek-v234` dalı var.
 - Sonraki aşama: Personel, Evrak, Raporlar.
+
+## Yeni sürüm 4 ve çalışma sırası (27.11.2026)
+- Öncelik yeni uygulamayı tamamlamak. Eski uygulamada yalnız gerekirse ve önce onay alarak çalışılır.
+- Yapıldı: yeni ana sayfa; Ayarlar altında yedek alma / geri yükleme (`yeni/yedek.js`, eski yedek biçimiyle iki yönlü uyumlu). Eskideki BK yedek listesine anahtar eklenirse `yedek.js` de güncellenmeli.
+- Onaylanan sıra: (2) Personel: tüm kişiler, arama, toplu ekleme, eğitim tarihleri, geri alınabilir silme; (3) Teksen verisi alma ve kalan firma/şube işlemleri; (4) Evrak; (5) Eğitim; (6) Raporlar, Teksen OSGB, araçlar, kalan ayarlar; en son Akkurtlar RD/sertifika.
+- Koton belgeleri erken gelirse Koton raporu öne alınır.
+- Onay: her adım testten geçince ayrıca sormadan yüklenebilir. Eski uygulama, Akkurtlar veya veri silme riski taşıyan işlerde yine önce onay alınır.
+- Kaşe görselleri yeni uygulamanın koduna eklenmeyecek.
