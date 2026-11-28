@@ -134,3 +134,32 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 ### Sonraki işler / bekleyenler
 - D (gerçek Teksen alımı) beklemede (Teksen). Kerem sürüm 9'u sayfada henüz kontrol etmemişti.
 - Elle uygunsuzluk kapatma (sürüm 10'dan sonra, ayrıca plan ve onay): öncelik Teksen'de, elle işlem isteğe bağlı. Öneri: yalnız bu uygulamada "kapatıldı" işareti; Teksen'e bir şey gönderilmez. Teksen'le çelişme durumu başlamadan sorulacak. Kerem: elle kapatma sonrası oluşan sayı farklarında karışıklık olursa yeniden düzenleme isteyebilir.
+
+## Yeni istek (28.11.2026, 08.17): ziyaret akışlarını destekleyen uygulama — PLAN ONAY BEKLİYOR
+Kerem: "yaptığım bu iş ve işlemlere yardımcı olacak destek verecek uygulama istiyorum". Henüz kod yazılmadı.
+
+### A. İlk (yeni) firma/şube ziyareti
+1. Yasal atama ve süre: İSG-KATİP sözleşme onayı; tehlike sınıfına göre aylık zorunlu süre.
+2. Veri temini: NACE kodu/tehlike sınıfı, güncel SGK hizmet listesi, çalışan görev tanımları.
+3. Saha gezisi ve analiz: tüm bölümler, tehlike fotoğrafları; makine, ekipman, kimyasal, çalışma yöntemi.
+4. Temel dokümanlar: Risk Değerlendirmesi; ADEP ve tahliye krokileri; Yıllık Çalışma ve Eğitim Planı; Çalışan Temsilcisi ve Destek Elemanı (arama-kurtarma, yangın, ilk yardım) atama yazıları; alt işveren ve ziyaretçi İSG prosedürleri.
+5. Temel İSG eğitimleri; KKD zimmet tutanakları; personel İSG dosyaları.
+6. İşyeri hekimiyle EK-2 muayene planı; periyodik teknik kontroller (basınçlı kap, kaldırma, topraklama) ve ortam ölçümü takvimi.
+7. İlk tespit ve öneriler İSG Onaylı Defteri'ne; işveren/vekiline imza.
+
+### B. Periyodik ziyaret
+1. Yetkiliyle görüşme: personel hareketi, iş kazası/ramak kala, ortam değişikliği (makine, proses, tadilat).
+2. Yeni giriş: eğitim, KKD zimmeti, özlük evrakı; özel politika gerektiren gruplar için ek belge/önlem. Çıkış: temsilci, destek elemanı, ekip listeleri ve atamalar güncellenir.
+3. Kaza/meslek hastalığı şüphesi: yasal bildirim süresi, kök neden analizi; ramak kala kaydı ve önleyici faaliyet.
+4. Evrak, sağlık, teknik takip: İSG klasöründe eksikler; EK-2 geçerlilik; periyodik muayene ve ölçüm güncelliği; taşeron/bakım ekibi evrakı (SGK, eğitim, KKD).
+5. Önceki uygunsuzlukların yerinde kontrolü ve saha denetimi.
+6. 50 ve üzeri çalışanda İSG Kurulu; yeni tespit ve öneriler Onaylı Defter'e.
+
+### Önerilen sıra (onaylanmadı)
+- 11: "Ziyaret" ekranı: şube seç → İlk / Periyodik → adım listesi (yapıldı / eksik / gerekmiyor + not); uygulamadaki veriden hatırlatma; eksikler sonraki ziyarete taşınır; ziyaret özeti ve Onaylı Defter taslak metni (Kerem düzenler). Yedeğe dahil edilir (yedek.js; eski uygulamanın yeni anahtarı geri yükleyip yüklemediği kontrol edilmeli).
+- 12: Takvim: periyodik teknik kontrol, ölçüm, EK-2 (yalnız tarih; sağlık sonucu/tanı tutulmaz).
+- 13: Atama yazıları, KKD zimmeti (Kerem'in kendi şablonlarıyla).
+- Sonra: kaza/ramak kala, taşeron evrakı, kurul, fotoğraf (cihaz alanı ve yedek boyutu incelenmeli).
+- Yasal süre ve eşikler uygulamaya yazılmadan önce güncel mevzuattan doğrulanacak.
+- Elle uygunsuzluk kapatma işi de bekliyor; sırası Kerem'e sorulacak.
+- Akkurtlar'da ziyaret kaydı tutulup tutulmayacağı sorulacak (şimdiye kadar yeni uygulamada yalnız görüntüleme).
