@@ -177,3 +177,11 @@ Kerem: "yaptığım bu iş ve işlemlere yardımcı olacak destek verecek uygula
 - Şu an ziyaretleri diğer cihaza geçirmenin tek yolu tam yedek yüklemek; bu, firma/personel/Teksen kayıtlarını da yedektekiyle değiştirir.
 - Firma kimlikleri cihazlarda ayrı ayrı oluşturulduysa farklıdır; aktarılan ziyaret listede görünür ama oradaki firmaya bağlanmaz (hatırlatma ve eksik taşıma çalışmaz).
 - Öneri (sürüm 12): "Yalnız ziyaretleri aktar" (dışa/içe), birleştirmeli; firma eşleştirme SGK sicil no ile, gerekirse ad+şube ile ve onaylatarak.
+
+## İki cihaz: kendiliğinden eşitleme isteği (28.11.2026, 08.28) — ONAY BEKLİYOR, kod yazılmadı
+Kerem: "ikisi de aynı olmalı, ayrıca iş yükü olmamalı". Elle dosya aktarma önerisi (sürüm 12) bu yüzden geçersiz. Aktarım iki yönlü olacak.
+- Öneri: ayrı, **gizli (private)** bir GitHub deposu; veri cihazda parola ile şifrelenip yüklenir. Her cihazda bir kez erişim anahtarı (yalnız o depo, içerik oku/yaz) + parola; sonrası kendiliğinden. İnternet yoksa sonra eşitlenir. Herkese açık benim-sitem deposuna veri yazılmaz.
+- Aşama 1: yalnız ziyaretler (firma eşleştirme SGK no ile; emin olunmayan sorulur). Aşama 2: firma/şube ve personel (silme ve çakışma kuralları ayrıca planlanacak; eski uygulamadaki değişiklikler dahil). Teksen verisi ayrıca değerlendirilecek.
+- Riskler: veri yurt dışı sunucuya gider (KVKK yurt dışı aktarım; şifreleme hukuki yükümlülüğü kaldırır diye söylenemez, uzmana/OSGB'ye sorulmalı). Parola unutulursa buluttaki kopya açılamaz. Anahtar cihazda saklanır; aynı github.io adresindeki sayfalar aynı depolamayı görür. Git geçmişi eski şifreli sürümleri tutar. TC alanı eşitlemeye alınmamalı.
+- Akkurtlar eşitlemeye girip girmeyeceği sorulacak.
+- Cevapsız: Kerem iki cihazda kullanmaya başladı mı; bilgisayardaki kayıtlar telefon yedeğinden mi, ayrı mı oluştu?
