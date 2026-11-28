@@ -185,3 +185,20 @@ Kerem: "ikisi de aynı olmalı, ayrıca iş yükü olmamalı". Elle dosya aktarm
 - Riskler: veri yurt dışı sunucuya gider (KVKK yurt dışı aktarım; şifreleme hukuki yükümlülüğü kaldırır diye söylenemez, uzmana/OSGB'ye sorulmalı). Parola unutulursa buluttaki kopya açılamaz. Anahtar cihazda saklanır; aynı github.io adresindeki sayfalar aynı depolamayı görür. Git geçmişi eski şifreli sürümleri tutar. TC alanı eşitlemeye alınmamalı.
 - Akkurtlar eşitlemeye girip girmeyeceği sorulacak.
 - Cevapsız: Kerem iki cihazda kullanmaya başladı mı; bilgisayardaki kayıtlar telefon yedeğinden mi, ayrı mı oluştu?
+
+## Yeni sürüm 12: ziyaret eşitleme, 1. aşama (28.11.2026, Kerem onayıyla)
+(Yukarıdaki "Açık konu: iki cihaz" ve "ONAY BEKLİYOR" eşitleme notları bu iş için geçersiz.)
+- Kerem'in cevapları: eşitleme onaylı, **gerçek veriyle**; "KVKK bilgilendirmesi mevcut personelde"; Akkurtlar ziyaretleri eşitlensin; bilgisayar kayıtları "yedekle diye hatırlıyorum" (kesin değil); denemeyi en sonda Kerem yapacak.
+- KVKK: yurt dışına aktarım dayanağı (m.9) doğrulanmadı / hukuki görüş alınmadı. Aydınlatmanın tek başına yeterli sayılacağı söylenmemeli.
+- Yapıldı: `yeni/esitle.js`, `#esitle` (Ayarlar → İki cihaz eşitleme). Gizli GitHub deposunda `ziyaretler.sifreli.json`; PBKDF2-SHA256 600.000 + AES-GCM. Parola saklanmaz; erişim anahtarı ve dışa çıkarılamayan şifre anahtarı IndexedDB `kigu-esit`; yedeğe girmez. Depo herkese açıksa veya `benim-sitem` ise gönderilmez.
+- Eşitleme zamanı: açılışta, yazdıktan ~10 sn sonra, sekmeye dönünce/ayrılınca, internet gelince, açıkken 2 dakikada bir. Uygulama kapalıyken çalışmaz.
+- Birleştirme alan alan (üç yönlü). İki cihaz aynı yazıyı değiştirirse ikisi de tutulur ("[Diğer cihazda yazılan]:"). Aynı işin Yapıldı/Eksik seçimi iki cihazda farklıysa son değiştirilen kayıt kazanır. İki cihazda internetsiz ayrı ayrı açılan iki ziyaret ikisi de kalır.
+- Firma eşleştirme: aynı kimlik → SGK sicil no → firma adı + şube (tek aday); emin değilse ziyaret formunda kullanıcı seçer. Firma/personel/Teksen kayıtları yazılmaz.
+- Uydurma veri + taklit GitHub ile iki cihaz tarayıcı testi geçti. **Gerçek GitHub, gerçek veri ve gerçek telefonda denenmedi.** Test betikleri depoda değil.
+- Not: eski uygulama bazı işlerde dış kaynaktan (jsdelivr, cdnjs) kütüphane yüklüyor; aynı adresteki kod cihaz kayıtlarına erişebilir. Anahtar yalnız eşitleme deposuna izinli olmalı.
+- Kerem'den erişim anahtarı veya parola **sohbette istenmez**.
+
+### Bekleyenler
+- Kerem: gizli depo + erişim anahtarı + iki cihazda kurulum. Sonra sürüm 10, 11, 12 denemesi.
+- TC kimlik no: Kerem "tc kuralı olmasın. kişi izin vermedikçe yazmıyorum" dedi. Eski "TC gösterilmez/istenmez" kuralı kalkıyor; öneri: personel ekle/düzenle ekranına isteğe bağlı, boş TC alanı (raporlara girmez). Kapsam onayı bekliyor, kod yazılmadı.
+- Eşitleme 2. aşama (firma/şube, personel) ayrıca planlanacak. D (Teksen) beklemede. Elle uygunsuzluk kapatma bekliyor.

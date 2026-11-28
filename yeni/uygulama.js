@@ -152,6 +152,7 @@
     }
     g=bolum('İşler');
     kutu(g,{ad:'Ziyaret',alt:window.Ziyaret.durumYazi(),href:'#ziyaret'});
+    if(window.Esitle.hataVar()) kutu(g,{ad:'Eşitleme sorunu',alt:'ziyaretler diğer cihaza geçmiyor',ton:'uyari',href:'#esitle'});
     kutu(g,{ad:'Teksen verisi al',alt:sonTeksen(),tik:teksenPenceresi});
     var nF=V.firmalar.filter(function(f){ return !f.pasif; }).length;
     kutu(g,{ad:'Firmalar',alt:nF+' firma · şubeler ve panolar',href:'#firmalar'});
@@ -169,6 +170,7 @@
     kutu(g,{ad:'Teksen verisi al',alt:sonTeksen(),tik:teksenPenceresi});
     kutu(g,{ad:'Yedek al',alt:yedekYazi(),tik:yedekPenceresi});
     kutu(g,{ad:'Yedekten geri yükle',alt:'bu cihazdaki kayıtların üzerine yazar',tik:geriPenceresi});
+    kutu(g,{ad:'İki cihaz eşitleme',alt:window.Esitle.durumYazi(),ton:window.Esitle.hataVar()?'uyari':'',href:'#esitle'});
     kutu(g,{ad:'Diğer ayarlar',alt:'Hazırlanıyor',ton:'bekliyor'});
     ana.appendChild(E('p','not','Yedek dosyasında kişisel bilgiler bulunur. Güvenli bir yerde saklayın; GitHub gibi herkese açık yerlere yüklemeyin. Eski ve yeni uygulama aynı yedek dosyasını kullanır.'));
   }
@@ -494,7 +496,7 @@
   function yonlendir(){
     if(!V) return; if(pen.open) pen.close();
     var p=location.hash.slice(1).split('/'), s=p[0]||'ana';
-    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='personel') window.Personel.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else if(s==='raporlar') window.Rapor.sayfa(UI); else if(s==='ziyaret') window.Ziyaret.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='zform') window.Ziyaret.formSayfa(UI,coz(p[1])); else anaSayfa();
+    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='personel') window.Personel.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else if(s==='raporlar') window.Rapor.sayfa(UI); else if(s==='ziyaret') window.Ziyaret.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='esitle') window.Esitle.sayfa(UI); else if(s==='zform') window.Ziyaret.formSayfa(UI,coz(p[1])); else anaSayfa();
     document.querySelectorAll('[data-sekme]').forEach(function(a){ var on=a.getAttribute('data-sekme')===(s==='firma'||s==='pano'?'firmalar':(s==='firmalar'||s==='bugun'||s==='personel'?s:'ana')); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
     window.scrollTo(0,0);
   }
@@ -514,6 +516,7 @@
       window.__evpApi=evp;
       OZ=H.ozet(V.data,V.lk,H.today()); UY={}; OZ.rows.forEach(function(m){ UY[m.f.sicil]=m; });
       yonlendir();
+      window.Esitle.baslat(UI);
   }
   window.addEventListener('hashchange',yonlendir);
   /* Eski uygulamada yapılan değişiklikler, bu sayfaya dönünce görünsün */

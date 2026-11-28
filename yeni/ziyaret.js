@@ -39,7 +39,7 @@ window.Ziyaret=(function(){
     return o;
   }
   function oku(){ return coz(localStorage.getItem(ANAHTAR)); }
-  function yaz(o){ try{ localStorage.setItem(ANAHTAR,JSON.stringify(o)); }catch(e){ throw new Error('Kaydedilemedi: tarayıcının veri alanı dolu olabilir.'); } }
+  function yaz(o){ try{ localStorage.setItem(ANAHTAR,JSON.stringify(o)); }catch(e){ throw new Error('Kaydedilemedi: tarayıcının veri alanı dolu olabilir.'); } if(window.Esitle) window.Esitle.degisti(); }
   /* Yedek geri yüklenirken ziyaretler silinmez: iki liste birleştirilir, aynı kayıtta son değiştirilen kalır */
   function birlestir(mevcutRaw,gelenRaw){
     var a=coz(mevcutRaw), b=coz(gelenRaw), m={}, sira=[];
@@ -156,7 +156,7 @@ window.Ziyaret=(function(){
     var E=UI.E, V=UI.veri(), ana=el('ana');
     UI.sayfa('Ziyaret','Yeni ziyaret başlatın veya kayıtlı bir ziyareti açın.');
     var o; try{ o=oku(); }catch(e){ ana.appendChild(E('p','bilgi uyari',e.message)); return; }
-    ana.appendChild(E('p','not','Ziyaret kayıtları yalnız bu cihazda durur; telefon ile bilgisayar arasında kendiliğinden aktarılmaz. Yeni uygulamadan alınan yedeğe girer; eski uygulamanın yedeğine girmez.'));
+    ana.appendChild(E('p','not',window.Esitle.ziyaretNotu()+' Yeni uygulamadan alınan yedeğe girer; eski uygulamanın yedeğine girmez.'));
     if(!window.Kayit.onayli()) return;
     var firmalar=V.firmalar.filter(function(f){ return !f.pasif||f.id===fid; }).map(function(f){ return {f:f,ad:UI.firmaAd(f)}; }).sort(function(a,b){ return a.ad.localeCompare(b.ad,'tr'); });
     var kart=E('div','bilgi form'); ana.appendChild(kart);
@@ -211,6 +211,21 @@ window.Ziyaret=(function(){
     navigator.clipboard.writeText(metin).then(function(){ durum.textContent='Kopyalandı.'; },olmadi);
   }
 
+  /* Diğer cihazdan gelen ve firması eşleşmeyen ziyaret: kullanıcı seçer */
+  function yerSec(UI,ana,z,kaydet){
+    var E=UI.E, kart=E('div','bilgi form'), l=E('label'), s=E('select'); l.appendChild(E('span',null,'Firma / şube')); l.appendChild(s); kart.appendChild(l);
+    function secenek(v,y){ var op=E('option',null,y); op.value=v; s.appendChild(op); }
+    secenek('','Seçin');
+    var L=[]; UI.veri().firmalar.forEach(function(f){ UI.birimler(f).forEach(function(u){ L.push({fid:u.fid,sube:u.sube,ad:yerAdi(UI,u.fid,u.sube)}); }); });
+    L.sort(function(a,b){ return a.ad.localeCompare(b.ad,'tr'); }).forEach(function(u,i){ secenek(String(i),u.ad); });
+    kart.appendChild(dugme(UI,'Bu yere bağla',function(){
+      var u=L[s.value]; if(s.value===''||!u) return;
+      if(!confirm('“'+z.ad+'” ziyareti “'+u.ad+'” yerine bağlansın mı?')) return;
+      if(kaydet(function(x){ x.fid=u.fid; x.sube=u.sube; delete x.yer; })) UI.ciz();
+    },'dugme ana'));
+    ana.appendChild(kart);
+  }
+
   /* Ziyaret formu */
   function formSayfa(UI,id){
     var E=UI.E, V=UI.veri(), ana=el('ana'), z;
@@ -224,7 +239,7 @@ window.Ziyaret=(function(){
     function sayacCiz(){ var n=kodlar(z.tur).length+z.devir.length, b=isaretsiz(z).length; sayac.textContent=n+' işten '+(n-b)+' tanesi işaretlendi · '+eksikler(z).length+' eksik'; }
     var onceki=yerinde(oku(),z.fid,z.sube).filter(function(x){ return x.id!==z.id&&x.tarih<=z.tarih; })[0];
     var F=UI.firma(z.fid), ip=F?ipuclari(V,z.fid,z.sube,onceki?onceki.tarih:''):{};
-    if(!F) ana.appendChild(E('p','bilgi uyari','Bu ziyaretin firması listede bulunamadı; hatırlatmalar gösterilemiyor.'));
+    if(!F){ ana.appendChild(E('p','bilgi uyari','Bu ziyaretin firması bu cihazda kesin olarak bulunamadı; hatırlatmalar gösterilemiyor. Hangi firma/şube olduğunu biliyorsanız aşağıdan seçin.')); yerSec(UI,ana,z,kaydet); }
     else ana.appendChild(E('p','not','Hatırlatmalar bu cihazdaki güncel kayıtlardan gelir; ziyaret tarihindeki durumu göstermeyebilir.'));
     var alanlar=E('fieldset','secimler'); alanlar.disabled=z.tamam; ana.appendChild(alanlar);
 
