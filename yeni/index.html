@@ -71,7 +71,7 @@ main h2{font-size:15px;margin:18px 0 8px;color:var(--soluk)}
 .onizle{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--cizgi)}
 .onizle input{min-width:0;width:100%;padding:8px;border:1px solid var(--cizgi);border-radius:8px;font:inherit}
 .onizle input[type=checkbox]{width:20px;height:20px}
-.onizle input[type=date]{grid-column:2/-1}
+.onizle input[type=date],.onizle input.onizle-tc{grid-column:2/-1}
 .onizle small{grid-column:2/-1;color:var(--uyari)}
 .secimler{border:0;padding:0;margin:0;min-width:0}
 .kutucuk{display:flex;gap:8px;align-items:flex-start;padding:5px 0;margin:0;color:var(--yazi);font-size:15px}
@@ -133,23 +133,23 @@ div.secimler h3{font-size:15px;margin:12px 0 4px}
 <main id="ana"><p>Veriler okunuyor…</p></main>
 <footer>
   Şube adı değiştirme, toplu silme ve Teksen verisi silme işlemleri <a href="../index.html">eski uygulamada</a> yapılır.<br>
-  <span id="appver">Yeni sürüm 12 · 28.11.2026</span><span id="cevrimdisi"></span><span id="esitdurum"></span>
+  <span id="appver">Yeni sürüm 13 · 28.11.2026</span><span id="cevrimdisi"></span><span id="esitdurum"></span>
 </footer>
 <dialog id="pencere" aria-labelledby="pencere-baslik">
   <div class="pencere-ust"><h2 id="pencere-baslik"></h2><button type="button" id="pencere-kapat">Kapat</button></div>
   <div id="pencere-icerik"></div>
 </dialog>
-<script src="hesap.js?v=12"></script>
-<script src="veri.js?v=12"></script>
-<script src="kayit.js?v=12"></script>
-<script src="yedek.js?v=12"></script>
-<script src="personel.js?v=12"></script>
-<script src="teksen.js?v=12"></script>
-<script src="jszip.min.js?v=12"></script>
-<script src="rapor.js?v=12"></script>
-<script src="ziyaret.js?v=12"></script>
-<script src="esitle.js?v=12"></script>
-<script src="uygulama.js?v=12"></script>
+<script src="hesap.js?v=13"></script>
+<script src="veri.js?v=13"></script>
+<script src="kayit.js?v=13"></script>
+<script src="yedek.js?v=13"></script>
+<script src="personel.js?v=13"></script>
+<script src="teksen.js?v=13"></script>
+<script src="jszip.min.js?v=13"></script>
+<script src="rapor.js?v=13"></script>
+<script src="ziyaret.js?v=13"></script>
+<script src="esitle.js?v=13"></script>
+<script src="uygulama.js?v=13"></script>
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(r){

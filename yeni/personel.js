@@ -1,4 +1,4 @@
-/* Personel sayfası: tüm kişiler, arama, toplu ekleme, eğitim tarihleri, silme / geri alma. TC kimlik numarası gösterilmez. */
+/* Personel sayfası: tüm kişiler, arama, toplu ekleme, eğitim tarihleri, silme / geri alma. TC kimlik numarası isteğe bağlı girilir; listelerde ve kişi penceresinde gösterilmez. */
 window.Personel=(function(){
   var H=window.Hesap, K=window.Kayit;
   var DURUM={yok:'Eğitim kaydı yok',eski:'Eğitim yenilenmeli',yakin:'Yenileme yaklaşıyor'};
@@ -46,6 +46,15 @@ window.Personel=(function(){
     return function(){ if(!fS.value) throw new Error('Firma seçin.'); return {fid:fS.value,sb:sS.value}; };
   }
   function girdi(E,f,ad,tur,deger){ var l=E('label'); l.appendChild(E('span',null,ad)); var i=E('input'); i.type=tur||'text'; i.value=deger||''; i.autocomplete='off'; l.appendChild(i); f.appendChild(l); return i; }
+  /* TC: varsayılan "Ekleme". secenekler: [değer, yazı] */
+  function tcSecici(E,f,secenekler){
+    var l=E('label'), s=E('select'); l.appendChild(E('span',null,'TC kimlik no')); secenekler.forEach(function(x){ var o=E('option',null,x[1]); o.value=x[0]; s.appendChild(o); }); l.appendChild(s); l.appendChild(E('small',null,'Yalnız kişi izin verdiyse ekleyin.')); f.appendChild(l); return s;
+  }
+  function tcAlani(E,f,varMi){
+    var s=tcSecici(E,f,varMi?[['','Ekleme (kayıtlı numara olduğu gibi kalır)'],['ekle','Ekle (kayıtlı numarayı değiştir)'],['sil','Kayıtlı numarayı sil']]:[['','Ekleme'],['ekle','Ekle']]);
+    var i=girdi(E,f,'TC kimlik numarası'); i.inputMode='numeric'; i.maxLength=14; var l=i.parentNode; l.hidden=true; s.addEventListener('change',function(){ l.hidden=s.value!=='ekle'; });
+    return function(){ if(s.value==='sil') return {tcSil:true}; if(s.value!=='ekle') return {}; if(!i.value.trim()) throw new Error('TC numarasını yazın ya da “Ekleme” seçin.'); return {tc:i.value}; };
+  }
   /* Ortak pencere formu. kaydet() mesaj döndürür; hata fırlatırsa pencerede kalır */
   function formAc(U,baslik,kur,dugmeAdi){
     var E=U.E, govde=U.pencere(baslik), f=E('form','form'), hata=E('p','hata'); hata.setAttribute('role','alert');
@@ -57,8 +66,8 @@ window.Personel=(function(){
 
   function kisiEkle(U,fid,sb){
     formAc(U,'Kişi ekle',function(f){
-      var yer=yerSecici(U,f,fid,sb), a=girdi(U.E,f,'Ad soyad'), g=girdi(U.E,f,'Görev'), d=girdi(U.E,f,'İşe giriş tarihi','date');
-      return function(){ var y=yer(); K.kisiYaz(y.fid,y.sb,null,{ad:a.value,gorev:g.value,giris:d.value,teksenSubesi:true}); return 'Kişi eklendi.'; };
+      var yer=yerSecici(U,f,fid,sb), a=girdi(U.E,f,'Ad soyad'), g=girdi(U.E,f,'Görev'), d=girdi(U.E,f,'İşe giriş tarihi','date'), tc=tcAlani(U.E,f,false);
+      return function(){ var y=yer(); K.kisiYaz(y.fid,y.sb,null,Object.assign({ad:a.value,gorev:g.value,giris:d.value,teksenSubesi:true},tc())); return 'Kişi eklendi.'; };
     });
   }
 
@@ -68,7 +77,9 @@ window.Personel=(function(){
     var d=new Date(Date.UTC(y,a-1,g)); if(d.getUTCMonth()!==a-1||d.getUTCDate()!==g) return ''; return d.toISOString().slice(0,10);
   }
   function baslikTuru(h){ var t=duz(h).replace(/[.:]/g,'').trim();
-    if(/^(sira|no|sicil|personel no)/.test(t)||/(tc|t c|kimlik|telefon)/.test(t)) return 'atla';
+    if(/telefon/.test(t)) return 'atla';
+    if(/^(tc|t c)( |$|kimlik|no|kn)|kimlik (no|numara)|^kimlik$/.test(t)) return 'tc';
+    if(/^(sira|no|sicil|personel no)/.test(t)||/(tc|t c|kimlik)/.test(t)) return 'atla';
     if(/(giriş|giris|başlama|baslama)/.test(t)) return 'giris';
     if(/^(soyad|soyisim)/.test(t)) return 'soyad';
     if(/^(adi? ?(ve )?soy|ad ?soyad|isim ?soy|çalişan|calisan|personel$|personel adi)/.test(t)) return 'adsoyad';
@@ -81,10 +92,10 @@ window.Personel=(function(){
     var harita=rows[0].map(baslikTuru), basli=harita.some(function(h){ return h==='ad'||h==='adsoyad'; });
     if(basli) rows=rows.slice(1);
     return rows.map(function(r){
-      var o={ad:'',gorev:'',giris:'',not:''}, soyad='';
-      if(basli) r.forEach(function(c,i){ var h=harita[i]; if(h==='ad'||h==='adsoyad') o.ad=c; else if(h==='soyad') soyad=c; else if(h==='gorev') o.gorev=c; else if(h==='giris'&&c){ o.giris=isoTarih(c); if(!o.giris) o.not='tarih okunamadı: '+c; } });
+      var o={ad:'',gorev:'',giris:'',tc:'',not:''}, soyad='';
+      if(basli) r.forEach(function(c,i){ var h=harita[i]; if(h==='ad'||h==='adsoyad') o.ad=c; else if(h==='soyad') soyad=c; else if(h==='gorev') o.gorev=c; else if(h==='tc') o.tc=c.replace(/[\s-]/g,''); else if(h==='giris'&&c){ o.giris=isoTarih(c); if(!o.giris) o.not='tarih okunamadı: '+c; } });
       else{
-        var yazi=[]; r.forEach(function(c){ if(!c) return; if(/^\d{1,4}[.\/-]\d{1,2}[.\/-]\d{1,4}$/.test(c)){ o.giris=isoTarih(c); if(!o.giris) o.not='tarih okunamadı: '+c; } else if(/[a-zçğıöşü]/i.test(c)) yazi.push(c); });
+        var yazi=[]; r.forEach(function(c){ if(!c) return; if(/^[1-9]\d{10}$/.test(c)) o.tc=c; else if(/^\d{1,4}[.\/-]\d{1,2}[.\/-]\d{1,4}$/.test(c)){ o.giris=isoTarih(c); if(!o.giris) o.not='tarih okunamadı: '+c; } else if(/[a-zçğıöşü]/i.test(c)) yazi.push(c); });
         o.ad=yazi[0]||''; o.gorev=yazi[1]||''; if(yazi.length>2) o.not='fazla sütun var; ad ve görevi kontrol edin (başlık satırı eklemek yardımcı olur)';
       }
       if(soyad) o.ad=(o.ad+' '+soyad).trim();
@@ -95,13 +106,14 @@ window.Personel=(function(){
   function topluEkle(U,fid,sb){
     var E=U.E, govde=U.pencere('Toplu kişi ekle'), f=E('form','form');
     var yer=yerSecici(U,f,fid,sb), l=E('label'); l.appendChild(E('span',null,'Listeyi yapıştırın')); var ta=E('textarea'); ta.rows=7; ta.placeholder='Ayşe Yılmaz ; Kasiyer ; 01.03.2026'; l.appendChild(ta);
-    l.appendChild(E('small',null,'Her satıra bir kişi. Excel’den sütunları kopyalayabilirsiniz. Ad ve soyad ayrı sütunlardaysa başlık satırını da (Ad, Soyad, Görev) kopyalayın. TC kimlik numarası alınmaz.')); f.appendChild(l);
+    l.appendChild(E('small',null,'Her satıra bir kişi. Excel’den sütunları kopyalayabilirsiniz. Ad ve soyad ayrı sütunlardaysa başlık satırını da (Ad, Soyad, Görev) kopyalayın.')); f.appendChild(l);
+    var tcS=tcSecici(E,f,[['','Ekleme (listedeki numaralar alınmaz)'],['ekle','Ekle (listedeki numaraları al)']]);
     var hata=E('p','hata'); hata.setAttribute('role','alert'); var b=E('button','dugme ana','Önizle'); b.type='submit'; f.appendChild(hata); f.appendChild(b);
     var alan=E('div'); govde.appendChild(f); govde.appendChild(alan);
     function sil(){ alan.textContent=''; }
     f.addEventListener('input',sil); f.addEventListener('change',sil);
     f.addEventListener('submit',function(ev){
-      ev.preventDefault(); sil(); hata.textContent=''; var y, S;
+      ev.preventDefault(); sil(); hata.textContent=''; var y, S, tcAl=tcS.value==='ekle';
       try{ y=yer(); S=ayristir(ta.value); if(!S.length) throw new Error('Okunabilen satır yok.'); }catch(e){ hata.textContent=e.message; return; }
       var kayitli={}; (U.veri().kisiler[y.fid+'|'+y.sb]||[]).forEach(function(x){ kayitli[duz(x.ad)]=1; });
       alan.appendChild(E('p','bilgi uyari','Henüz kaydedilmedi. Satırları kontrol edin; hataları düzeltebilirsiniz.'));
@@ -109,11 +121,13 @@ window.Personel=(function(){
         var cift=kayitli[duz(s.ad)]; kayitli[duz(s.ad)]=1;
         var d=E('div','onizle'), c=E('input'); c.type='checkbox'; c.checked=!cift; c.disabled=!!cift; c.setAttribute('aria-label','Bu satırı ekle');
         var i=['ad','gorev','giris'].map(function(k,n){ var x=E('input'); x.type=k==='giris'?'date':'text'; x.value=s[k]; x.setAttribute('aria-label',['Ad soyad','Görev','İşe giriş tarihi'][n]); x.placeholder=['Ad soyad','Görev',''][n]; return x; });
-        d.appendChild(c); i.forEach(function(x){ d.appendChild(x); }); if(cift||s.not) d.appendChild(E('small',null,cift?'Bu ad zaten var, eklenmeyecek.':s.not)); alan.appendChild(d); return {c:c,i:i};
+        var tcI=null; if(tcAl){ tcI=E('input','onizle-tc'); tcI.value=s.tc; tcI.inputMode='numeric'; tcI.autocomplete='off'; tcI.setAttribute('aria-label','TC kimlik no'); tcI.placeholder='TC (izin yoksa boş bırakın)'; }
+        d.appendChild(c); i.forEach(function(x){ d.appendChild(x); }); if(tcI) d.appendChild(tcI); if(cift||s.not) d.appendChild(E('small',null,cift?'Bu ad zaten var, eklenmeyecek.':s.not)); alan.appendChild(d); return {c:c,i:i,tc:tcI};
       });
+      if(tcAl) alan.appendChild(E('p','not','İzin vermeyen kişinin TC kutusunu boşaltın. Zaten kayıtlı kişilerin numarası değiştirilmez.'));
       var kh=E('p','hata'), kb=E('button','dugme ana','İşaretli kişileri kaydet'); kb.type='button';
       kb.addEventListener('click',function(){
-        var sec=G.filter(function(g){ return g.c.checked; }).map(function(g){ return {ad:g.i[0].value,gorev:g.i[1].value,giris:g.i[2].value}; }); if(!sec.length){ kh.textContent='Eklenecek kişi seçilmedi.'; return; }
+        var sec=G.filter(function(g){ return g.c.checked; }).map(function(g){ return {ad:g.i[0].value,gorev:g.i[1].value,giris:g.i[2].value,tc:g.tc?g.tc.value:''}; }); if(!sec.length){ kh.textContent='Eklenecek kişi seçilmedi.'; return; }
         var r; try{ r=K.topluEkle(y.fid,y.sb,sec); }catch(e){ kh.textContent=e.message; return; }
         bitti(U,r.eklenen+' kişi eklendi.'+(r.atlanan?' '+r.atlanan+' satır atlandı (aynı ad veya boş).':''));
       });
@@ -147,7 +161,7 @@ window.Personel=(function(){
     var s=E('div','islemler'); g.appendChild(s);
     function dugme(ad,fn,ana){ var b=E('button','dugme'+(ana?' ana':''),ad); b.type='button'; b.addEventListener('click',fn); s.appendChild(b); return b; }
     dugme('Eğitim ekle',function(){ formAc(U,'Eğitim ekle: '+x.ad,function(f){ var A=egitimAlanlari(E,f); return function(){ return egitimSonuc(K.egitimEkle(p.fid,p.sb,[x.id],deger(A))); }; }); },true);
-    dugme('Bilgileri düzenle',function(){ formAc(U,'Kişiyi düzenle',function(f){ var a=girdi(E,f,'Ad soyad','text',x.ad), gv=girdi(E,f,'Görev','text',x.gorev), d=girdi(E,f,'İşe giriş tarihi','date',x.giris); return function(){ K.kisiYaz(p.fid,p.sb,x.id,{ad:a.value,gorev:gv.value,giris:d.value,teksenSubesi:true}); return 'Kişi güncellendi.'; }; }); });
+    dugme('Bilgileri düzenle',function(){ formAc(U,'Kişiyi düzenle',function(f){ var a=girdi(E,f,'Ad soyad','text',x.ad), gv=girdi(E,f,'Görev','text',x.gorev), d=girdi(E,f,'İşe giriş tarihi','date',x.giris), tc=tcAlani(E,f,!!x.tc); return function(){ K.kisiYaz(p.fid,p.sb,x.id,Object.assign({ad:a.value,gorev:gv.value,giris:d.value,teksenSubesi:true},tc())); return 'Kişi güncellendi.'; }; }); });
     var hata=E('p','hata'); hata.setAttribute('role','alert');
     dugme('Kişiyi sil',function(){
       if(!confirm(x.ad+' silinsin mi?\n“Silinenler” bölümünden 30 gün içinde geri alabilirsiniz.')) return;

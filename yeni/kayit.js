@@ -84,14 +84,19 @@ window.Kayit=(function(){
     sgkBos(o,v.sgk); f.sb.push(s); f.sbi[s]=bilgi({},v); return s; }); }
   function subeDuzenle(id,s,v){ firmaDegistir(function(o){ var f=bul(o,id); if(s&&(f.sb||[]).indexOf(s)<0) throw new Error('Şube bulunamadı.'); sgkBos(o,v.sgk,id,s); if(s){ f.sbi=f.sbi||{}; f.sbi[s]=bilgi(f.sbi[s],v); } else f.info=bilgi(f.info,v); }); }
 
-  /* pid verilirse o kişi düzenlenir; diğer alanları (TC, eğitimler vb.) aynen korunur */
+  /* TC isteğe bağlıdır. Boşsa boş döner; yazıldıysa 11 haneli olmalı */
+  function tcDenetle(x,ad){
+    var s=String(x==null?'':x).replace(/[\s-]/g,''); if(s&&!/^[1-9]\d{10}$/.test(s)) throw new Error((ad?ad+': ':'')+'TC kimlik no 11 rakam olmalı ve 0 ile başlamamalı.'); return s;
+  }
+  /* pid verilirse o kişi düzenlenir; diğer alanları (eğitimler vb.) aynen korunur. TC yalnız v.tc doluysa yazılır, yalnız v.tcSil ile silinir */
   function kisiYaz(fid,sube,pid,v){
     gerekOnay(); var f=bul(firmaOku(),fid); if(sube&&(f.sb||[]).indexOf(sube)<0&&!v.teksenSubesi) throw new Error('Şube bulunamadı.');
     var raw=localStorage.getItem(PK), a=raw?JSON.parse(raw):{}, key=fid+'|'+(sube||''), L=a[key]||[], ad=buyuk(v.ad);
     if(!ad) throw new Error('Ad soyad boş olamaz.');
+    var tc=tcDenetle(v.tc);
     if(L.some(function(x){ return x.id!==pid&&buyuk(x.ad)===ad; })) throw new Error('Bu şubede aynı adla bir kişi zaten kayıtlı.');
-    if(pid){ var k=L.filter(function(x){ return x.id===pid; })[0]; if(!k) throw new Error('Kişi bulunamadı.'); k.ad=ad; k.gorev=buyuk(v.gorev); k.giris=v.giris||''; }
-    else L.push({id:kimlik('p'),ad:ad,tc:'',gorev:buyuk(v.gorev),giris:v.giris||''});
+    if(pid){ var k=L.filter(function(x){ return x.id===pid; })[0]; if(!k) throw new Error('Kişi bulunamadı.'); k.ad=ad; k.gorev=buyuk(v.gorev); k.giris=v.giris||''; if(v.tcSil) k.tc=''; else if(tc) k.tc=tc; }
+    else L.push({id:kimlik('p'),ad:ad,tc:tc,gorev:buyuk(v.gorev),giris:v.giris||''});
     a[key]=L; yaz(PK,a);
   }
   /* ---- Personel: toplu işlemler, eğitim, silme / geri alma ---- */
@@ -103,7 +108,7 @@ window.Kayit=(function(){
   function topluEkle(fid,sube,satirlar){
     yazilacak(fid); var a=kisiler(), key=fid+'|'+(sube||''), L=a[key]||[], var_={}, n=0, atlanan=0;
     L.forEach(function(x){ var_[buyuk(x.ad)]=1; });
-    satirlar.forEach(function(s){ var ad=buyuk(s.ad); if(!ad||var_[ad]){ atlanan++; return; } var_[ad]=1; L.push({id:kimlik('p')+n,ad:ad,tc:'',gorev:buyuk(s.gorev),giris:s.giris||''}); n++; });
+    satirlar.forEach(function(s){ var ad=buyuk(s.ad); if(!ad||var_[ad]){ atlanan++; return; } var tc=tcDenetle(s.tc,ad); var_[ad]=1; L.push({id:kimlik('p')+n,ad:ad,tc:tc,gorev:buyuk(s.gorev),giris:s.giris||''}); n++; });
     if(n){ a[key]=L; yaz(PK,a); }
     return {eklenen:n,atlanan:atlanan};
   }

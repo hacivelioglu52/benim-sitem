@@ -202,3 +202,14 @@ Kerem: "ikisi de aynı olmalı, ayrıca iş yükü olmamalı". Elle dosya aktarm
 - Kerem: gizli depo + erişim anahtarı + iki cihazda kurulum. Sonra sürüm 10, 11, 12 denemesi.
 - TC kimlik no: Kerem "tc kuralı olmasın. kişi izin vermedikçe yazmıyorum" dedi. Eski "TC gösterilmez/istenmez" kuralı kalkıyor; öneri: personel ekle/düzenle ekranına isteğe bağlı, boş TC alanı (raporlara girmez). Kapsam onayı bekliyor, kod yazılmadı.
 - Eşitleme 2. aşama (firma/şube, personel) ayrıca planlanacak. D (Teksen) beklemede. Elle uygunsuzluk kapatma bekliyor.
+
+## 28.11.2026 öğleden sonra: kurulum ve çalışma şekli
+- Kerem iki cihazda eşitlemeyi kurdu ("eşitlendi" / "telefon eşitlendi"). Gerçek cihazlar arasında kayıt geçişi **denenmedi**.
+- Kerem'in çalışma şekli: ziyarette veriyi **önce Teksen'e** girer, sonra bu uygulamaya alır; Teksen'e girmeden burada işlem yapmaz. Genelde **bilgisayardan** alır. Teksen sayfası hâlâ çalışmıyor (hafta sonu).
+- Ziyaret ekranı kalsın.
+
+## Yeni sürüm 13: isteğe bağlı TC (28.11.2026, Kerem onayıyla)
+- Eski "TC gösterilmez/istenmez" kuralı değişti. Tekli ekleme, düzenleme ve toplu eklemede "Ekle / Ekleme", varsayılan **Ekleme**. Toplu eklemede satır bazında boşaltılabilir.
+- Numara listelerde, kişi penceresinde, aramada, raporlarda gösterilmez. Düzenlemede eski numara gösterilmez; değiştirme ve silme seçeneği var. Yalnız 11 rakam ve ilk hane 0 değil kontrolü (doğrulama algoritması yok). Zaten kayıtlı kişinin numarası toplu eklemeyle değişmez.
+- TC yedek dosyasına girer; ziyaret eşitlemesine girmez (personel eşitlenmiyor).
+- Uydurma veriyle tarayıcı testi geçti (eşitleme testi de yeniden geçti). Gerçek veri ve telefonda denenmedi.
