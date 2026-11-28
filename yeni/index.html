@@ -88,6 +88,25 @@ main h2{font-size:15px;margin:18px 0 8px;color:var(--soluk)}
 .satir b{display:block;font-weight:600}
 .satir span{font-size:14px;color:var(--soluk)}
 a.satir b{color:var(--ana)}
+.ozet-satir{margin:0}
+div.bilgi p.ozet-satir{margin:0 0 3px}
+div.secimler h3{font-size:15px;margin:12px 0 4px}
+#yazdir{display:none}
+@page{size:A4 landscape;margin:9mm}
+@media print{
+  body{background:#fff;color:#000}
+  body:has(#yazdir)>*:not(#yazdir){display:none!important}
+  #yazdir{display:block;font-size:9pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #yazdir h1{font-size:15pt;margin:0 0 4px}
+  #yazdir h2{font-size:11pt;margin:12px 0 4px;color:#000;break-after:avoid}
+  #yazdir p{margin:0 0 2px}
+  #yazdir table{width:100%;border-collapse:collapse;table-layout:fixed}
+  #yazdir table.sik{font-size:7pt}
+  #yazdir th,#yazdir td{border:1px solid #999;padding:2px 3px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+  #yazdir th{background:#dce6f8}
+  #yazdir td.gun{white-space:nowrap;overflow-wrap:normal}
+  #yazdir tr{break-inside:avoid}
+}
 @media (max-width:430px){.sekmeler{gap:4px}.sekmeler a{padding:8px 9px;font-size:14px}}
 </style>
 </head>
@@ -99,19 +118,21 @@ a.satir b{color:var(--ana)}
 <main id="ana"><p>Veriler okunuyor…</p></main>
 <footer>
   Şube adı değiştirme, toplu silme ve Teksen verisi silme işlemleri <a href="../index.html">eski uygulamada</a> yapılır.<br>
-  <span id="appver">Yeni sürüm 9 · 28.11.2026</span><span id="cevrimdisi"></span>
+  <span id="appver">Yeni sürüm 10 · 28.11.2026</span><span id="cevrimdisi"></span>
 </footer>
 <dialog id="pencere" aria-labelledby="pencere-baslik">
   <div class="pencere-ust"><h2 id="pencere-baslik"></h2><button type="button" id="pencere-kapat">Kapat</button></div>
   <div id="pencere-icerik"></div>
 </dialog>
-<script src="hesap.js?v=9"></script>
-<script src="veri.js?v=9"></script>
-<script src="kayit.js?v=9"></script>
-<script src="yedek.js?v=9"></script>
-<script src="personel.js?v=9"></script>
-<script src="teksen.js?v=9"></script>
-<script src="uygulama.js?v=9"></script>
+<script src="hesap.js?v=10"></script>
+<script src="veri.js?v=10"></script>
+<script src="kayit.js?v=10"></script>
+<script src="yedek.js?v=10"></script>
+<script src="personel.js?v=10"></script>
+<script src="teksen.js?v=10"></script>
+<script src="jszip.min.js?v=10"></script>
+<script src="rapor.js?v=10"></script>
+<script src="uygulama.js?v=10"></script>
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(r){

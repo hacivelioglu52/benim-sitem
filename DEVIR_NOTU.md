@@ -121,3 +121,16 @@ Mağaza başına Koton şablonu, başlıklar değişmez, "Sağlık" boş (hekim)
 - Kerem: uygunsuzluk kapanışı Teksen'i izlesin ("Teksen'de kapandıktan sonra kapanacak, burada işlem yapmayacağım") "yine de burada da işlem yapabileyim". Elle işlemin kapsamı belirsiz. Yeni uygulamada elle kapatma yok.
 - Teksen'e yüklü belge dosyalarını indirme: cevap "b şuan için gerek gibi" ("gerek yok" mu "gerekli" mi belirsiz).
 - Daha eski "toplu veri alma" sorusu netleşti: seçmeli alma (sürüm 9) ve rapor (sürüm 10).
+
+## Yeni sürüm 10: seçmeli rapor (28.11.2026, Kerem onayıyla)
+- Kerem'in onayları: dönem dışı açık uygunsuzluklar ayrı bölüm ve ayrı sayı; belge durumu seçmeli bölüm; pasif/arşiv normalde dışarıda, kutuyla eklenir; elle kapatma sonraya; Teksen'deki belge dosyalarını indirme **gerekmiyor**.
+- Yapıldı: Ana sayfa "Raporlar" → `#raporlar` (`yeni/rapor.js`). PDF (yazdırma ekranı), Excel (.xlsx), Word (.docx). `yeni/jszip.min.js` eski index.html'deki JSZip 3.10.1'in aynen kopyası. Eski uygulama değişmedi.
+- Dönem: hizmette hizmet tarihi, uygunsuzlukta tespit tarihi. Dönem dışında tespit edilip dönem içinde kapananlar rapora girmez. Açık/kapalı durumu bugünkü kayda göredir. Tarihi okunamayan hizmet kaydı alınır ve ayrı sayılır; tespit tarihi okunamayan uygunsuzluk ayrı bölümdedir. Teksen'de "silindi" olanlar rapora girmez, sayısı yazılır.
+- Gizlilik: Akkurtlar girmez; yalnız kodda adı yazılan alanlar girer (kişi listeleri girmez); irtibat ve uygunsuzluk "sorumlu" alanı yalnız irtibat seçilirse; serbest metinde TC biçimli sayılar gizlenir, irtibat kapalıyken telefon ve e-posta da gizlenir. Ad soyad gibi metin içindeki bilgiler otomatik ayıklanamaz.
+- Rapor yalnız Teksen kaydı olan firma/şubeleri kapsar (elle eklenip Teksen kaydı olmayanlar girmez).
+- Belge durumu 7 belge türünü gösterir (eksik veya yenilenecek / yaklaşıyor / kontrol edilmeli).
+- Uydurma veriyle tarayıcı testi geçti; Excel/Word LibreOffice'te açıldı. **Gerçek veri, telefon ve telefonda PDF kaydetme denenmedi.** Test betikleri depoda değil.
+
+### Sonraki işler / bekleyenler
+- D (gerçek Teksen alımı) beklemede (Teksen). Kerem sürüm 9'u sayfada henüz kontrol etmemişti.
+- Elle uygunsuzluk kapatma (sürüm 10'dan sonra, ayrıca plan ve onay): öncelik Teksen'de, elle işlem isteğe bağlı. Öneri: yalnız bu uygulamada "kapatıldı" işareti; Teksen'e bir şey gönderilmez. Teksen'le çelişme durumu başlamadan sorulacak. Kerem: elle kapatma sonrası oluşan sayı farklarında karışıklık olursa yeniden düzenleme isteyebilir.

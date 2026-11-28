@@ -241,5 +241,5 @@ window.Teksen=(function(){
       };
     });
   }
-  return {BELGELER:BELGELER,donem:donem,liste:liste,parse:parse,periyot:periyot,plan:plan,hesapla:hesapla,bos:bos,kaydet:kaydet,today:today};
+  return {akkurtSiciller:akkurtSiciller,gunOku:gunOku,BELGELER:BELGELER,donem:donem,liste:liste,parse:parse,periyot:periyot,plan:plan,hesapla:hesapla,bos:bos,kaydet:kaydet,today:today};
 })();

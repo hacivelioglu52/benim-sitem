@@ -155,7 +155,8 @@
     var nF=V.firmalar.filter(function(f){ return !f.pasif; }).length;
     kutu(g,{ad:'Firmalar',alt:nF+' firma · şubeler ve panolar',href:'#firmalar'});
     kutu(g,{ad:'Personel',alt:window.Personel.say(UI)+' kişi · eğitim durumları',href:'#personel'});
-    [['Evrak','firma ve personel evrakları, planlar'],['Eğitim','katılım formu, sınav, rehber ve afiş'],['Raporlar','raporlar ve belge sayıları']].forEach(function(x){ kutu(g,{ad:x[0],alt:'Hazırlanıyor · '+x[1],ton:'bekliyor'}); });
+    [['Evrak','firma ve personel evrakları, planlar'],['Eğitim','katılım formu, sınav, rehber ve afiş']].forEach(function(x){ kutu(g,{ad:x[0],alt:'Hazırlanıyor · '+x[1],ton:'bekliyor'}); });
+    kutu(g,{ad:'Raporlar',alt:'PDF, Excel veya Word raporu al',href:'#raporlar'});
     var gec=!sonYedek()||Date.now()-sonYedek()>=7*864e5;
     kutu(g,{ad:'Ayarlar ve yedek',alt:yedekYazi(),ton:gec?'uyari':'',href:'#ayarlar'});
   }
@@ -491,7 +492,7 @@
   function yonlendir(){
     if(!V) return; if(pen.open) pen.close();
     var p=location.hash.slice(1).split('/'), s=p[0]||'ana';
-    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='personel') window.Personel.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else anaSayfa();
+    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='personel') window.Personel.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else if(s==='raporlar') window.Rapor.sayfa(UI); else anaSayfa();
     document.querySelectorAll('[data-sekme]').forEach(function(a){ var on=a.getAttribute('data-sekme')===(s==='firma'||s==='pano'?'firmalar':(s==='firmalar'||s==='bugun'||s==='personel'?s:'ana')); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
     window.scrollTo(0,0);
   }
