@@ -151,6 +151,7 @@
       kutu(g,{ad:'Tüm uyarılar',alt:dolu.length?'öncelikli liste':'uyarı yok',ton:dolu.length?'':'iyi',href:'#bugun'});
     }
     g=bolum('İşler');
+    kutu(g,{ad:'Ziyaret',alt:window.Ziyaret.durumYazi(),href:'#ziyaret'});
     kutu(g,{ad:'Teksen verisi al',alt:sonTeksen(),tik:teksenPenceresi});
     var nF=V.firmalar.filter(function(f){ return !f.pasif; }).length;
     kutu(g,{ad:'Firmalar',alt:nF+' firma · şubeler ve panolar',href:'#firmalar'});
@@ -190,7 +191,7 @@
       var f=i.files&&i.files[0]; alan.textContent=''; if(!f) return;
       f.text().then(function(t){
         var o=window.Yedek.coz(t), t2=new Date(o.date);
-        alan.appendChild(E('p','bilgi uyari','Seçilen yedek: '+(isNaN(t2)?'tarihi bilinmiyor':t2.toLocaleString('tr-TR'))+' · '+window.Yedek.ozet(o)+'. Yedekte bulunan bölümler bu cihazdakilerin yerine geçer; o tarihten sonra girdikleriniz kaybolur.'));
+        alan.appendChild(E('p','bilgi uyari','Seçilen yedek: '+(isNaN(t2)?'tarihi bilinmiyor':t2.toLocaleString('tr-TR'))+' · '+window.Yedek.ozet(o)+'. Yedekte bulunan bölümler bu cihazdakilerin yerine geçer; o tarihten sonra girdikleriniz kaybolur. Ziyaret kayıtları ise silinmez, birleştirilir (aynı ziyarette son değiştirilen kalır).'));
         var git=dugme('2) Geri yükle',function(){
           if(!confirm('Bu cihazdaki kayıtlar seçtiğiniz yedekle değiştirilsin mi?')) return;
           git.disabled=true; yukleniyor=true; sonuc.className='durum'; sonuc.textContent='Geri yükleniyor, sayfayı kapatmayın…';
@@ -480,6 +481,7 @@
       b(null,'Eğitim',egtSorun?'kontrol gerekli':'uyarı yok',egtSorun?'uyari':'iyi',egt);
       b(gorevEksik,'Görevlendirme','eksik görev türü',gorevEksik?'uyari':'',gorev);
     }
+    kutu(g,{ad:'Ziyaret formu',alt:window.Ziyaret.durumYazi(fid,sb),href:'#ziyaret/'+encodeURIComponent(fid)+'/'+encodeURIComponent(sb||'')});
     kutu(g,{sayi:L.length,ad:'Personel',alt:'kayıtlı kişi · eğitim durumları',href:'#personel/'+encodeURIComponent(fid)+'/'+encodeURIComponent(sb||'')});
     if(!recs.length) ana.appendChild(E('p','bilgi','Bu şubeye bağlı Teksen kaydı yok; ziyaret, uygunsuzluk ve belge kutuları bu yüzden görünmüyor.'));
   }
@@ -492,7 +494,7 @@
   function yonlendir(){
     if(!V) return; if(pen.open) pen.close();
     var p=location.hash.slice(1).split('/'), s=p[0]||'ana';
-    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='personel') window.Personel.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else if(s==='raporlar') window.Rapor.sayfa(UI); else anaSayfa();
+    if(s==='firmalar') firmalarSayfa(); else if(s==='firma') firmaSayfa(coz(p[1])); else if(s==='pano') panoSayfa(coz(p[1]),coz(p[2])); else if(s==='personel') window.Personel.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='bugun') bugunSayfa(); else if(s==='ayarlar') ayarSayfa(); else if(s==='raporlar') window.Rapor.sayfa(UI); else if(s==='ziyaret') window.Ziyaret.sayfa(UI,coz(p[1]),coz(p[2])); else if(s==='zform') window.Ziyaret.formSayfa(UI,coz(p[1])); else anaSayfa();
     document.querySelectorAll('[data-sekme]').forEach(function(a){ var on=a.getAttribute('data-sekme')===(s==='firma'||s==='pano'?'firmalar':(s==='firmalar'||s==='bugun'||s==='personel'?s:'ana')); if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
     window.scrollTo(0,0);
   }
@@ -515,6 +517,6 @@
   }
   window.addEventListener('hashchange',yonlendir);
   /* Eski uygulamada yapılan değişiklikler, bu sayfaya dönünce görünsün */
-  document.addEventListener('visibilitychange',function(){ if(!document.hidden&&!pen.open) yukle(); });
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden&&!pen.open&&!/^#(ziyaret|zform)/.test(location.hash)) yukle(); }); /* ziyaret formu yazarken yerinden oynamasın */
   yukle();
 })();

@@ -2,7 +2,9 @@
    Eski uygulamadaki BK listesine yeni bir anahtar eklenirse buraya da eklenmelidir. */
 window.Yedek=(function(){
   var BK=[['firms','isg-firms-v1'],['logo','isg-logo-v1'],['stamps','isg-kase-v2'],['risk','risk-olusturucu-v1'],['cert','cert-olusturucu-v1'],['log','isg-log-v1'],['ctr','isg-ctr-v2'],['qcustom','isg-qcustom-v1'],['defs','isg-defs-v1'],
-    ['edp','isg-edp-v1','raw'],['evrak','isg-evrak-v1','raw'],['evrakp','isg-evrakp-v1','raw'],['evrakps','isg-evrakp-set-v1','raw'],['plan','isg-plan-v2','raw'],['hz','isg-hz-v1','raw'],['osgbfo','osgb-folders','raw'],['osgbfm','osgb-forms','raw']];
+    ['edp','isg-edp-v1','raw'],['evrak','isg-evrak-v1','raw'],['evrakp','isg-evrakp-v1','raw'],['evrakps','isg-evrakp-set-v1','raw'],['plan','isg-plan-v2','raw'],['hz','isg-hz-v1','raw'],['osgbfo','osgb-folders','raw'],['osgbfm','osgb-forms','raw'],
+    /* Yalnız yeni uygulamanın kaydı: eski uygulama bunu yedeğe almaz, geri yüklerken de dokunmaz */
+    ['ziyaret','kigu-ziyaret-v1','raw']];
   var TAKIP={ad:'teksen-takip',tablo:{firms:'sicil',hizmet:'id',uyg:'id',docs:'sicil',meta:'k'}}, OSGB={ad:'teksen-osgb',tablo:{files:'id'}};
 
   /* Okuma: veri deposu yoksa oluşturulmaz */
@@ -66,6 +68,7 @@ window.Yedek=(function(){
     if(fm&&fm.list) s.push(fm.list.length+' firma');
     if(o.data.evrakp){ try{ var P=JSON.parse(o.data.evrakp); Object.keys(P).forEach(function(k){ p+=(P[k]||[]).length; }); s.push(p+' kişi'); }catch(e){} }
     if(o.takip) s.push(o.takip.firms.length+' Teksen kaydı');
+    if(o.data.ziyaret){ try{ s.push(window.Ziyaret.coz(o.data.ziyaret).list.filter(function(z){ return !z.silindi; }).length+' ziyaret'); }catch(e){} }
     if(o.osgbfiles) s.push(o.osgbfiles.length+' OSGB dosyası');
     return s.join(', ')||'diğer ayarlar';
   }
@@ -80,6 +83,7 @@ window.Yedek=(function(){
     var fm=o.data.firms; if(fm!=null&&!(nesne(fm)&&Array.isArray(fm.list)&&fm.list.length&&fm.list.every(function(f){ return nesne(f)&&f.id; }))) bozuk();
     BK.forEach(function(k){ var v=o.data[k[0]]; if(v!=null&&k[2]==='raw'&&typeof v!=='string') bozuk(); });
     if(o.data.evrakp!=null){ var P; try{ P=JSON.parse(o.data.evrakp); }catch(e){ bozuk(); } if(!nesne(P)) bozuk(); }
+    if(o.data.ziyaret!=null){ try{ window.Ziyaret.coz(o.data.ziyaret); }catch(e){ bozuk(); } }
     if(o.takip!=null){ if(!nesne(o.takip)) bozuk(); Object.keys(TAKIP.tablo).forEach(function(n){ var a=o.takip[n]; if(!Array.isArray(a)||!a.every(function(x){ return nesne(x)&&x[TAKIP.tablo[n]]!=null; })) bozuk(); }); }
     if(o.osgbfiles!=null){ if(!Array.isArray(o.osgbfiles)) bozuk(); o.osgbfiles.forEach(function(x){ if(!x||!x.id||typeof x.b!=='string') bozuk(); try{ atob(x.b); }catch(e){ bozuk(); } }); }
     return o;
@@ -91,6 +95,8 @@ window.Yedek=(function(){
     var onceki={}, oncekiTakip=await oku(TAKIP), takipYazildi=false;
     var isler=BK.filter(function(k){ return o.data[k[0]]!=null; }).map(function(k){ return [k[1], k[2]==='raw'?o.data[k[0]]:JSON.stringify(o.data[k[0]])]; });
     isler.forEach(function(i){ onceki[i[0]]=localStorage.getItem(i[0]); });
+    /* Ziyaretler yedekle değiştirilmez, birleştirilir: bu cihazdaki ziyaretler kaybolmaz */
+    isler.forEach(function(i){ if(i[0]===window.Ziyaret.ANAHTAR) i[1]=window.Ziyaret.birlestir(onceki[i[0]],i[1]); });
     function geriAl(){
       /* önce yeni yazılanlar kaldırılır ki eskilere yer açılsın */
       Object.keys(onceki).forEach(function(k){ localStorage.removeItem(k); });

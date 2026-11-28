@@ -163,3 +163,17 @@ Kerem: "yaptığım bu iş ve işlemlere yardımcı olacak destek verecek uygula
 - Yasal süre ve eşikler uygulamaya yazılmadan önce güncel mevzuattan doğrulanacak.
 - Elle uygunsuzluk kapatma işi de bekliyor; sırası Kerem'e sorulacak.
 - Akkurtlar'da ziyaret kaydı tutulup tutulmayacağı sorulacak (şimdiye kadar yeni uygulamada yalnız görüntüleme).
+
+## Yeni sürüm 11: Ziyaret ekranı (28.11.2026, Kerem onayıyla)
+- Kerem'in cevapları: Ziyaret ekranı sıradaki iş; Yapıldı/Eksik/Gerekmiyor + not + eksik taşıma uygun; cihazlar **telefon ve bilgisayar**; Akkurtlar için ziyaret notu tutulabilir (mevcut kayıt/şablon değişmez); Onaylı Defter için belli yazım biçimi **yok**. (Yukarıdaki "plan onay bekliyor" notu bu iş için geçersiz.)
+- Yapıldı: `yeni/ziyaret.js`, `#ziyaret`, `#zform/<id>`, ana sayfa ve pano kutuları. İlk ziyaret 20, periyodik 16 iş. Adım kodları kayıtlarda saklanır, değiştirilmemeli. Adımlar Kerem'in akışıdır, mevzuat doğrulaması yapılmadı.
+- Kayıt: localStorage `kigu-ziyaret-v1` (yalnız yeni uygulama). Yazdıkça kaydedilir. Silme geri alınabilir (süresiz, aynı kayıtta `silindi`).
+- Taşıma: "Eksik" olanlar ve önceden kalıp işaretlenmeyenler yeni ziyarete geçer. Aynı yerde tek tamamlanmamış ziyaret olur. Liste ziyaret açılırken sabitlenir.
+- Yedek: `yedek.js` içinde `ziyaret` bölümü; geri yüklemede ziyaretler **birleştirilir** (son değiştirilen kalır). Eski uygulamanın yedeğinde bu bölüm yok ve eski uygulama bu kayda dokunmaz.
+- Akkurtlar ziyaret kayıtları raporlara girmez (raporda ziyaret formu verisi hiç yok).
+- Uydurma veriyle tarayıcı testi geçti (telefon ve bilgisayar genişliği; firma/personel/Teksen kayıtları değişmedi). Gerçek veri ve gerçek telefonda denenmedi. Test betikleri depoda değil.
+
+### Açık konu: iki cihaz (onay bekliyor)
+- Şu an ziyaretleri diğer cihaza geçirmenin tek yolu tam yedek yüklemek; bu, firma/personel/Teksen kayıtlarını da yedektekiyle değiştirir.
+- Firma kimlikleri cihazlarda ayrı ayrı oluşturulduysa farklıdır; aktarılan ziyaret listede görünür ama oradaki firmaya bağlanmaz (hatırlatma ve eksik taşıma çalışmaz).
+- Öneri (sürüm 12): "Yalnız ziyaretleri aktar" (dışa/içe), birleştirmeli; firma eşleştirme SGK sicil no ile, gerekirse ad+şube ile ve onaylatarak.
