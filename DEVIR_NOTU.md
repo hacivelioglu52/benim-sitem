@@ -232,3 +232,17 @@ Kerem: "sayfa çalışmıyor, yine de incele".
 7. Test: uydurma veri + taklit GitHub; sonra Kerem'in gerçek verisi.
 ### Cevap bekleyen
 Ana cihaz; Akkurtlar Teksen kayıtları; kayıtlı irtibat bilgisi; plan onayı.
+
+## Yeni sürüm 14: Teksen eşitlemesi (28.11.2026 akşam, Kerem onayıyla)
+(Yukarıdaki "Teksen eşitlemesi: PLAN ONAY BEKLİYOR" ve "Cevap bekleyen" notları geçersiz.)
+- Kerem'in cevapları: plan onaylı ("sen eşitlemeyi yap"); ana cihaz **bilgisayar**; Akkurtlar Teksen kayıtları **kopyalansın**; kayıtlı irtibat bilgisi şifreli kopyaya **girsin**; telefonda bilgisayarda olmayan Teksen verisi **yok**. Teksen sayfası hâlâ çalışmıyor.
+- Kerem'in beyanı (KVKK): İSG hizmeti alınırken/verilirken firmalara personel verilerinin ne için kullanılacağı söylenmiş; KVKK bilgilendirmesi var; hizmet için gereken izin alınmış. Asistan bunu ve yurt dışına aktarım dayanağını (m.9) doğrulamadı; hukuki görüş değildir.
+- Yapıldı: `yeni/teksen-esit.js` (yeni), `yeni/esitle.js`, `yeni/uygulama.js`. Aynı gizli depo ve parola, ayrı dosya `teksen.sifreli.json` (gzip + AES-GCM). Teksen sitesine bağlanmaz.
+- Her cihazda bir kez Ayarlar → İki cihaz eşitleme → "Teksen verisi eşitleme" altında cihaz seçilir (önce bilgisayar = ana cihaz). Seçilmeden Teksen verisi gönderilmez.
+- "Sürüm" olarak içerik özeti + dosya sha saklanır. Yalnız karşı taraf değiştiyse aynen alınır; yalnız bu cihaz değiştiyse gönderilir. İkisi de değiştiyse sorulur (birleştir). Veri belirgin azaldıysa (bir tür boşaldı ya da en az 3 kayıt ve %10'dan fazla) veya son alım tarihi eskiye döndüyse sorulur (planda yalnız gelen veri vardı; gönderimde de sorulur).
+- İkinci cihazda kendi Teksen verisi varsa ilk alımdan önce yedek indirme şart; boşsa doğrudan alır. Tek adımlık "Önceki kopyayı geri al"; geri alınca kullanıcı seçene kadar eşitleme bekler. Eşitleme kapatılsa da bu kopya cihazda kalır.
+- Teksen hizmet kayıtları olduğu gibi taşınır; içlerinde eğitime katılan adları ve varsa kazazede bilgisi olabilir.
+- Elle kurulan Teksen–firma bağı SGK no / ad ile çevrilir; eşleşemezse kayıt SGK ile eşleşir ya da otomatik kayıt Teksen adından firma açabilir. Elle eklenen firma/şube ve personel hâlâ eşitlenmiyor.
+- Bağımsız kod incelemesi yapıldı; geri alma kopyası, geçersiz kurulumda gönderim, çevrimdışı onay ve geri alma sorusu düzeltildi.
+- Uydurma veri + taklit GitHub ile iki cihaz tarayıcı testi geçti (41 kontrol, ~2 MB şifreli dosya). **Gerçek GitHub, gerçek veri ve gerçek telefonda denenmedi.** Test betikleri depoda değil.
+- Sıradaki: Kerem'in gerçek cihaz denemesi (önce yedek, sonra bilgisayarda "ana cihaz", sonra telefonda "ikinci cihaz"). Bekleyenler: ziyaret kaydı geçiş denemesi, D (gerçek Teksen alımı), personel/firma eşitlemesi (ayrı plan), elle uygunsuzluk kapatma.

@@ -152,7 +152,8 @@
     }
     g=bolum('İşler');
     kutu(g,{ad:'Ziyaret',alt:window.Ziyaret.durumYazi(),href:'#ziyaret'});
-    if(window.Esitle.hataVar()) kutu(g,{ad:'Eşitleme sorunu',alt:'ziyaretler diğer cihaza geçmiyor',ton:'uyari',href:'#esitle'});
+    if(window.Esitle.hataVar()) kutu(g,{ad:'Eşitleme sorunu',alt:'bazı kayıtlar diğer cihaza geçmiyor',ton:'uyari',href:'#esitle'});
+    if(window.TeksenEsit.soruVar()) kutu(g,{ad:'Teksen eşitlemesi',alt:'onayınız bekliyor',ton:'uyari',href:'#esitle'});
     kutu(g,{ad:'Teksen verisi al',alt:sonTeksen(),tik:teksenPenceresi});
     var nF=V.firmalar.filter(function(f){ return !f.pasif; }).length;
     kutu(g,{ad:'Firmalar',alt:nF+' firma · şubeler ve panolar',href:'#firmalar'});
@@ -296,7 +297,7 @@
       var kilit=girdiler.concat([goster,git,kutular]); kilit.forEach(function(e){ e.disabled=true; }); yukleniyor=true; sonuc.className='durum'; sonuc.textContent='Kaydediliyor, sayfayı kapatmayın…';
       /* Firma listesi kayıt anında yeniden okunur */
       window.Veri.oku().then(function(v){ if(v.hata.length) throw new Error(v.hata.join(' ')); return T.kaydet(P,o,v.firmalar); }).then(function(R2){
-        yukleniyor=false; try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+        yukleniyor=false; window.Esitle.degisti(); try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
         return yukle().then(function(){
           pencereAc('Teksen verisi kaydedildi'); raporYaz(penI,R2);
           if(V.eklenen) penI.appendChild(E('p','bilgi',V.eklenen+' Teksen kaydı firma/şube olarak kaydedildi.'));

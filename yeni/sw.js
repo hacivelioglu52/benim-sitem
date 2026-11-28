@@ -1,6 +1,6 @@
 /* Yeni uygulamanın internetsiz kullanımı. Her sürümde CACHE adı ve ?v= numaraları artırılır. */
-const CACHE='kigu-v13';
-const FILES=['./','./index.html','./hesap.js?v=13','./veri.js?v=13','./kayit.js?v=13','./yedek.js?v=13','./personel.js?v=13','./teksen.js?v=13','./jszip.min.js?v=13','./rapor.js?v=13','./ziyaret.js?v=13','./esitle.js?v=13','./uygulama.js?v=13'];
+const CACHE='kigu-v14';
+const FILES=['./','./index.html','./hesap.js?v=14','./veri.js?v=14','./kayit.js?v=14','./yedek.js?v=14','./personel.js?v=14','./teksen.js?v=14','./jszip.min.js?v=14','./rapor.js?v=14','./ziyaret.js?v=14','./esitle.js?v=14','./teksen-esit.js?v=14','./uygulama.js?v=14'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))).then(()=>self.skipWaiting()));});
 /* Yalnız kendi eski önbellekleri silinir; eski uygulamanınkine dokunulmaz */
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('kigu-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

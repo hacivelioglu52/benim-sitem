@@ -1,4 +1,4 @@
-/* İki cihaz eşitleme (1. aşama: yalnız ziyaret kayıtları, Akkurtlar dahil).
+/* İki cihaz eşitleme: ziyaret kayıtları (Akkurtlar dahil). Teksen verisinin eşitlenmesi teksen-esit.js içindedir ve aynı turda çalışır.
    Veri cihazda şifrelenir (PBKDF2 + AES-GCM) ve yalnız GİZLİ bir GitHub deposuna yazılır; depo herkese açıksa hiçbir şey gönderilmez.
    Parola saklanmaz. Erişim anahtarı ve şifre anahtarı yalnız bu cihazda (IndexedDB 'kigu-esit') durur; yedeğe girmez.
    Firma, personel ve Teksen kayıtlarını yalnız okur (ziyareti doğru firmaya bağlamak için). Ziyaret silmez: silme bir işarettir. */
@@ -20,7 +20,7 @@ window.Esitle=(function(){
   }
   async function ayarOku(){ return (await depo('readonly',function(s){ return s.get('ayar'); }))||null; }
   function ayarYaz(a){ return depo('readwrite',function(s){ return s.put(a); }); }
-  function ayarSil(){ return depo('readwrite',function(s){ return s.delete('ayar'); }); }
+  function ayarSil(){ return depo('readwrite',function(s){ return s.delete('ayar'); }).then(function(){ return window.TeksenEsit.sifirla(); }); }
 
   /* ---- Şifreleme ---- */
   function b64(u){ var s=''; for(var i=0;i<u.length;i+=32768) s+=String.fromCharCode.apply(null,u.subarray(i,i+32768)); return btoa(s); }
@@ -42,6 +42,8 @@ window.Esitle=(function(){
     var acik; try{ acik=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(o.iv)},anahtar,ub64(o.veri)); }catch(e){ throw new Error('Parola yanlış ya da depodaki dosya bozuk. Üzerine yazılmadı.'); }
     return window.Ziyaret.coz(new TextDecoder().decode(acik)).list;
   }
+
+  function kurulumHata(e){ e.kurulum=true; return e; }
 
   /* ---- GitHub ---- */
   async function istek(a,yol,secenek){
@@ -180,7 +182,7 @@ window.Esitle=(function(){
     await depoDenetle(a);
     for(var i=0;i<4;i++){
       var d=await dosyaAl(a), uzak=[];
-      if(d){ if(d.zarf.tuz!==a.tuz) throw new Error('Depodaki dosya yeniden oluşturulmuş. Bu cihazda eşitlemeyi kapatıp yeniden kurun.'); uzak=await coz(a.anahtar,d.zarf); }
+      if(d){ if(d.zarf.tuz!==a.tuz) throw kurulumHata(new Error('Depodaki dosya yeniden oluşturulmuş. Bu cihazda eşitlemeyi kapatıp yeniden kurun.')); try{ uzak=await coz(a.anahtar,d.zarf); }catch(e){ throw kurulumHata(e); } }
       var s=uygula(a.taban||{},uzak);
       if(!s){ bilgiNotu='Yazı yazdığınız için diğer cihazdan gelen değişiklik bekliyor.'; tetikle(20000); return; }
       a.taban=harita(uzak); await ayarYaz(a);
@@ -200,11 +202,23 @@ window.Esitle=(function(){
     if(!UI||!UI.veri()) return Promise.resolve();
     if(calisiyor){ tekrar=true; return calisiyor; }
     clearTimeout(bekleyen); bekleyen=null;
-    var is=navigator.locks?navigator.locks.request('kigu-esit',tur):tur();
-    calisiyor=is.then(function(){ hata=''; },function(e){ hata=e&&e.message||String(e); }).then(function(){
-      calisiyor=null; durumCiz(); if(tekrar){ tekrar=false; tetikle(1000); }
+    /* Birinin hatası diğerini durdurmaz */
+    var is=kilitle(function(){
+      var gecersiz=false;
+      return tur().then(function(){ hata=''; },function(e){ hata=e&&e.message||String(e); gecersiz=!!(e&&e.kurulum); })
+        .then(ayarOku).then(function(a){ if(!a) return; if(gecersiz) return window.TeksenEsit.atla(); return window.TeksenEsit.tur(a); });
+    });
+    calisiyor=is.catch(function(e){ hata=e&&e.message||String(e); }).then(function(){
+      calisiyor=null; durumCiz(); window.TeksenEsit.ekran(); anaYenile(); if(tekrar){ tekrar=false; tetikle(1000); }
     });
     durumCiz(); return calisiyor;
+  }
+  function kilitle(fn){ return navigator.locks?navigator.locks.request('kigu-esit',fn):Promise.resolve().then(fn); }
+  /* Ana sayfadaki "onayınız bekliyor / eşitleme sorunu" kutuları güncel kalsın */
+  var uyariImza='';
+  function anaYenile(){
+    var i=[!!hata,window.TeksenEsit.hataVar(),window.TeksenEsit.soruVar()].join(); if(i===uyariImza) return; uyariImza=i;
+    if(/^#(ana)?$/.test(location.hash||'#')&&!document.getElementById('pencere').open&&!yaziyor()) UI.ciz();
   }
   function tetikle(ms){ if(!cfg) return; clearTimeout(bekleyen); bekleyen=setTimeout(simdi,ms); }
 
@@ -218,10 +232,11 @@ window.Esitle=(function(){
     return son;
   }
   function durumCiz(){
-    var f=document.getElementById('esitdurum'); if(f) f.textContent=cfg?' · Ziyaret eşitleme: '+durumYazi():'';
+    var f=document.getElementById('esitdurum'); if(f) f.textContent=cfg?' · Ziyaret eşitleme: '+durumYazi()+(window.TeksenEsit.acik()?' · Teksen eşitleme: '+window.TeksenEsit.durumYazi():''):'';
+    window.TeksenEsit.ciz();
     Array.prototype.forEach.call(document.querySelectorAll('[data-esit]'),function(x){ x.textContent=durumYazi()+(hata?' · '+hata:'')+(bilgiNotu?' · '+bilgiNotu:''); x.className=hata?'bilgi uyari':'bilgi'; });
   }
-  function ziyaretNotu(){ return cfg?'Ziyaret kayıtları iki cihaz arasında şifreli olarak kendiliğinden eşitlenir. Firma, personel ve Teksen kayıtları eşitlenmez.':'Ziyaret kayıtları yalnız bu cihazda durur. İki cihazda aynı olması için Ayarlar’dan eşitlemeyi kurun.'; }
+  function ziyaretNotu(){ return cfg?'Ziyaret kayıtları iki cihaz arasında şifreli olarak kendiliğinden eşitlenir. Elle eklenen firma/şube ve personel kayıtları eşitlenmez.':'Ziyaret kayıtları yalnız bu cihazda durur. İki cihazda aynı olması için Ayarlar’dan eşitlemeyi kurun.'; }
 
   /* ---- Kurulum ---- */
   function depoAdi(x){
@@ -253,9 +268,9 @@ window.Esitle=(function(){
 
   function sayfa(U){
     var E=U.E, ana=document.getElementById('ana');
-    U.sayfa('İki cihaz eşitleme','Ziyaret kayıtları telefonda ve bilgisayarda kendiliğinden aynı olur.',[['Ayarlar','#ayarlar']]);
+    U.sayfa('İki cihaz eşitleme','Ziyaret kayıtları ve Teksen verisi telefonda ve bilgisayarda aynı olur.',[['Ayarlar','#ayarlar']]);
     if(!window.Kayit.onayli()) return;
-    ana.appendChild(E('p','not','Şimdilik yalnız ziyaret kayıtları (Akkurtlar dahil) eşitlenir; firma, personel ve Teksen kayıtları eşitlenmez. Veri bu cihazda şifrelenip gizli GitHub deponuza (yurt dışındaki sunucu) gönderilir.'));
+    ana.appendChild(E('p','not','Ziyaret kayıtları (Akkurtlar dahil) kendiliğinden eşitlenir; Teksen verisi eşitlemesi kurulumdan sonra bu sayfada açılır. Elle eklenen firma/şube ve personel kayıtları eşitlenmez. Veri bu cihazda şifrelenip gizli GitHub deponuza (yurt dışındaki sunucu) gönderilir.'));
     function alan(f,ad,tur_,deger,not){ var l=E('label'); l.appendChild(E('span',null,ad)); var i=E('input'); i.type=tur_; i.value=deger||''; i.autocomplete=tur_==='password'?'new-password':'off'; i.autocapitalize='off'; i.spellcheck=false; l.appendChild(i); if(not) l.appendChild(E('small',null,not)); f.appendChild(l); return i; }
     function gonder(f,ad,calistir){
       var h=E('p','durum'); h.setAttribute('role','status'); var b=E('button','dugme ana',ad); b.type='submit'; f.appendChild(h); f.appendChild(b);
@@ -277,7 +292,8 @@ window.Esitle=(function(){
     var s=E('div','islemler'); ana.appendChild(s);
     function dugme(ad,fn){ var b=E('button','dugme ana',ad); b.type='button'; b.addEventListener('click',fn); s.appendChild(b); }
     dugme('Şimdi eşitle',function(){ simdi(); });
-    dugme('Bu cihazda eşitlemeyi kapat',function(){ if(!confirm('Eşitleme bu cihazda kapatılsın mı? Ziyaretler bu cihazda kalır; depodaki kopya silinmez.')) return; clearTimeout(bekleyen); var bitir=calisiyor||Promise.resolve(); bitir.then(ayarSil).then(function(){ cfg=null; hata=''; bilgiNotu=''; durumCiz(); U.ciz(); },function(e){ alert(e&&e.message||e); }); });
+    dugme('Bu cihazda eşitlemeyi kapat',function(){ if(!confirm('Eşitleme bu cihazda kapatılsın mı? Ziyaretler ve Teksen verisi bu cihazda kalır; depodaki kopya silinmez.')) return; clearTimeout(bekleyen); var bitir=calisiyor||Promise.resolve(); bitir.then(ayarSil).then(function(){ cfg=null; hata=''; bilgiNotu=''; durumCiz(); U.ciz(); },function(e){ alert(e&&e.message||e); }); });
+    window.TeksenEsit.sayfa(ana);
     var det=E('details'); det.appendChild(E('summary',null,'Erişim anahtarını yenile (süresi dolduğunda)')); ana.appendChild(det);
     var f2=E('form','bilgi form'); det.appendChild(f2); var t2=alan(f2,'Yeni erişim anahtarı','password',''); gonder(f2,'Anahtarı değiştir',function(){ return anahtarYenile(t2.value); });
   }
@@ -286,11 +302,13 @@ window.Esitle=(function(){
   var basladi=false;
   function baslat(U){
     if(basladi) return; basladi=true; UI=U;
+    window.TeksenEsit.bagla({depo:depo,istek:istek,ghHata:ghHata,depoDenetle:depoDenetle,zarf:zarf,b64:b64,ub64:ub64,yerler:yerler,esle:esle,saat:saat,yaziyor:yaziyor,tetikle:tetikle,simdi:simdi,kilitle:kilitle,
+      bekle:function(){ return calisiyor||Promise.resolve(); },ayarVar:function(){ return ayarOku().then(function(a){ return !!a; }); },UI:function(){ return UI; }});
     window.addEventListener('online',function(){ tetikle(500); });
     document.addEventListener('visibilitychange',function(){ tetikle(document.hidden?0:800); });
     setInterval(function(){ if(!document.hidden&&!calisiyor&&!bekleyen) simdi(); },120000);
     ayarOku().then(function(a){ cfg=a; durumCiz(); if(a){ if(location.hash.indexOf('#esitle')===0||/^#(ziyaret|ana)?$/.test(location.hash||'#')) UI.ciz(); simdi(); } },function(){});
   }
-  return {baslat:baslat,sayfa:sayfa,degisti:function(){ tetikle(10000); },simdi:simdi,durumYazi:durumYazi,hataVar:function(){ return !!hata; },ziyaretNotu:ziyaretNotu,
+  return {baslat:baslat,sayfa:sayfa,degisti:function(){ tetikle(10000); },simdi:simdi,durumYazi:durumYazi,hataVar:function(){ return !!hata||window.TeksenEsit.hataVar(); },ziyaretNotu:ziyaretNotu,
     _test:{birKayit:birKayit,imza:imza,esle:esle,yerler:yerler}};
 })();
