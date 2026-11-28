@@ -213,3 +213,22 @@ Kerem: "ikisi de aynı olmalı, ayrıca iş yükü olmamalı". Elle dosya aktarm
 - Numara listelerde, kişi penceresinde, aramada, raporlarda gösterilmez. Düzenlemede eski numara gösterilmez; değiştirme ve silme seçeneği var. Yalnız 11 rakam ve ilk hane 0 değil kontrolü (doğrulama algoritması yok). Zaten kayıtlı kişinin numarası toplu eklemeyle değişmez.
 - TC yedek dosyasına girer; ziyaret eşitlemesine girmez (personel eşitlenmiyor).
 - Uydurma veriyle tarayıcı testi geçti (eşitleme testi de yeniden geçti). Gerçek veri ve telefonda denenmedi.
+
+## Teksen eşitlemesi: inceleme ve plan (28.11.2026) — PLAN ONAY BEKLİYOR, kod yazılmadı
+Kerem: "sayfa çalışmıyor, yine de incele".
+### Bulgular
+- Veri: IndexedDB `teksen-takip`: firms/docs (anahtar sicil), hizmet/uyg (id), meta (`son`, `gunluk`, `link:`, `plan:`, `plannames`). Kayıtlarda yalnız gün tarihi var (firms/docs `guncelleme`, uyg `sonGorulme`); `meta son.t` tam saat. Tek başına kayıt bazlı "yenisi kazanır" yeterli değil.
+- Eski uygulama silmeleri (delRecs, clearAll) iz bırakmaz: düz birleştirme silineni geri getirir.
+- `link:` içindeki fid cihaza özgü olabilir; ziyaretteki gibi SGK no / ad ile çevrilmeli. Elle eklenen firma/şube ve personel eşitlenmediği için karşı cihazda olmayabilir.
+- Boyut: uydurma veriyle 3–13 MB ham, gzip ile 0,3–1,3 MB (gerçek ölçüm yok). Sıkıştır, sonra şifrele. GitHub dosya sınırı 100 MB; geçmiş her gönderimde büyür.
+- Teksen sitesi gerekmeden, cihazda kayıtlı veriyle denenebilir.
+### Önerilen plan
+1. Aynı gizli depo ve parola, ayrı dosya. Sürüm numarası: her cihaz son eşitlediği sürümü saklar.
+2. Yalnız karşı taraf değiştiyse kopyası aynen alınır (silmeler dahil); yalnız bu cihaz değiştiyse gönderilir.
+3. İkisi de değiştiyse kendiliğinden yazılmaz/silinmez; kullanıcıya sorulur (birleştir: silme yok, yeni tarihli kalır).
+4. İlk bağlantıda ana cihaz sorulur (öneri: bilgisayar); diğerinde önce yedek.
+5. Üzerine yazmadan önce önceki kopya cihazda saklanır (geri al). Gelen veri belirgin azsa onay istenir.
+6. Eski uygulamada yapılan alma/silme de, yeni uygulama açılınca fark edilip gönderilir.
+7. Test: uydurma veri + taklit GitHub; sonra Kerem'in gerçek verisi.
+### Cevap bekleyen
+Ana cihaz; Akkurtlar Teksen kayıtları; kayıtlı irtibat bilgisi; plan onayı.
